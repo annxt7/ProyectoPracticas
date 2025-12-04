@@ -2,7 +2,8 @@ name: deploy
 
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ develop ] # Usa el nombre de tu rama principal
 
 jobs:
   deploy:
