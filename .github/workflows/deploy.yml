@@ -14,10 +14,10 @@ jobs:
       - name: Deploy
         uses: appleboy/ssh-action@v0.1.8
         with:
-            host: ${{secrets.IP}}
+            host: ${{ secrets.IP }}
             port: 2222
             username: AXEL
-            key: ${{secrets.PRIVATE_KEY}}
+            key: ${{ secrets.PRIVATE_KEY }}
             script: "cd /var/www/html/ProyectoPracticas;
                     git reset --hard ; 
                     git pull origin develop; 
