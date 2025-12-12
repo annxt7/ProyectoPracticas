@@ -47,7 +47,7 @@ const AuthScreen = ({ type = 'login' }) => {
             </h2>
             <p className="mt-3 text-base text-base-content/70">
               {isLogin 
-                ? 'Continúa curando tu mundo digital.' 
+                ? '' 
                 : 'Empieza a crear tus colecciones hoy mismo.'}
             </p>
           </div>

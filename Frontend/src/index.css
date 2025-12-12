@@ -1,2 +1,6 @@
 @import 'tailwindcss';
 @plugin "daisyui";
+
+html, body, #root {
+  @apply bg-base-300 text-base-content h-full;
+}

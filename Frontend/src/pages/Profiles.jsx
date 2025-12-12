@@ -39,19 +39,19 @@ const Profile = ({ isOwnProfile = true }) => {
           className="h-15 w-auto object-contain"
         />
         <div className="flex gap-8">
-          <NavLinkDesktop icon={<Home size={28} />} page={"/"} label="Inicio" />
+          <NavLinkDesktop icon={<Home size={28} />} page={"/feed"} label="Inicio" />
           <NavLinkDesktop
-            icon={<Search size={28} />}
+            icon={<Search size={24} />}
             page={"/explorer"}
             label="Explorar"
           />
           <NavLinkDesktop
-            icon={<Heart size={28} />}
+            icon={<Heart size={24} />}
             page={"/feed"}
             label="Actividad"
           />
           <NavLinkDesktop
-            icon={<User size={28} />}
+            icon={<User size={24} />}
             page={"/profile/:username"}
             label="Perfil"
             active
@@ -189,13 +189,37 @@ const Profile = ({ isOwnProfile = true }) => {
             <>
               <div class="card card-sm bg-base-200 max-w-60 shadow">
                 <figure class="hover-gallery" key={item}>
-                  <img  src={`https://picsum.photos/400?random=${item + 10}`} alt="Collection" />
-                  <img  src={`https://picsum.photos/400?random=${item + 11}`} alt="Collection" />
-                  <img  src={`https://picsum.photos/400?random=${item + 12}`} alt="Collection" />
-                   <img  src={`https://picsum.photos/400?random=${item + 13}`} alt="Collection" />
-                  <img  src={`https://picsum.photos/400?random=${item + 14}`} alt="Collection" />
-                  <img  src={`https://picsum.photos/400?random=${item + 15}`} alt="Collection" />
+                  <img
+                    src={`https://picsum.photos/400?random=${item + 10}`}
+                    alt="Collection"
+                  />
+                  <img
+                    src={`https://picsum.photos/400?random=${item + 11}`}
+                    alt="Collection"
+                  />
+                  <img
+                    src={`https://picsum.photos/400?random=${item + 12}`}
+                    alt="Collection"
+                  />
+                  <img
+                    src={`https://picsum.photos/400?random=${item + 13}`}
+                    alt="Collection"
+                  />
+                  <img
+                    src={`https://picsum.photos/400?random=${item + 14}`}
+                    alt="Collection"
+                  />
+                  <img
+                    src={`https://picsum.photos/400?random=${item + 15}`}
+                    alt="Collection"
+                  />
                 </figure>
+                <div class="card-body">
+                    <p className="text-white font-serif font-bold truncate">
+                      Retro Vibes
+                    </p>
+                    <p className="text-white/70 text-xs">24 items</p>
+                </div>
               </div>
             </>
             // <div
@@ -224,7 +248,7 @@ const Profile = ({ isOwnProfile = true }) => {
       ======================== */}
       <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-200 px-6 py-3 md:hidden z-50">
         <div className="flex justify-between items-center max-w-sm mx-auto">
-          <NavLinkMobile icon={<Home size={24} />} />
+          <NavLinkMobile icon={<Home size={24} />}page={"/feed"} />
           <NavLinkMobile icon={<Search size={24} />} page={"/explorer"} />
           <NavLinkMobile icon={<Heart size={24} />} />
 
