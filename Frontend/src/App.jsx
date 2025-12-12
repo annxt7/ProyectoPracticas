@@ -1,15 +1,24 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
-import { Route,Routes} from "react-router";
+// CORRECCIÓN 1: Importa desde 'react-router-dom'
+import { Route, Routes } from "react-router-dom"; 
+
+import AuthScreen from "./pages/LoginCard.jsx";
+import Landing from "./pages/Landing.jsx";
+import Notifications from "./pages/Feed.jsx";
+import Explorer from "./pages/Buscador.jsx"; 
+import Profile from "./pages/Profiles.jsx";
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<HomePage/>}/>
-        <Route path="profile" element={<UserProfile/>}/>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<AuthScreen />} />
+        <Route path="/register" element={<AuthScreen type="register" />} />
+        <Route path="/explorer" element={<Explorer />} />
+        <Route path="/feed" element={<Notifications />} />
+        {/* Nota: Asegúrate de que Profile maneje la lógica de recibir parámetros si usas :username */}
+        <Route path="/profile/:username" element={<Profile />} />
       </Routes>
     </>
   );
