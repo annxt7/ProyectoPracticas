@@ -1,5 +1,4 @@
 import "./App.css";
-// CORRECCIÓN 1: Importa desde 'react-router-dom'
 import { Route, Routes } from "react-router-dom"; 
 
 import AuthScreen from "./pages/LoginCard.jsx";
@@ -7,6 +6,9 @@ import Landing from "./pages/Landing.jsx";
 import Feed from "./pages/Feed.jsx";
 import Explorer from "./pages/Buscador.jsx"; 
 import Profile from "./pages/Profiles.jsx";
+import Activity from "./pages/Notifications.jsx";
+import Collection from "./pages/CollectionPage.jsx";
+import CreateCollection from "./pages/CreateCollection.jsx";
 
 function App() {
   return (
@@ -17,8 +19,10 @@ function App() {
         <Route path="/register" element={<AuthScreen type="register" />} />
         <Route path="/explorer" element={<Explorer />} />
         <Route path="/feed" element={<Feed />} />
-        {/* Nota: Asegúrate de que Profile maneje la lógica de recibir parámetros si usas :username */}
+        <Route path="/activity" element={<Activity />} />
         <Route path="/profile/:username" element={<Profile />} />
+        <Route path="/collection/:id" element={<Collection />} />
+        <Route path="/create-collection" element={<CreateCollection />} />
       </Routes>
     </>
   );

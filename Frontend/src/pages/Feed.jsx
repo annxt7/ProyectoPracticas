@@ -1,19 +1,14 @@
 import React, { useState } from "react";
 import {
   Heart,
-  MessageCircle,
-  Share2,
   MoreHorizontal,
   Home,
   Search,
   User,
-  Plus,
 } from "lucide-react";
-import Logo from "../assets/LogoClaro.png";
-// Asumiendo que estos componentes están en la ruta correcta según tu proyecto
-import NavLinkDesktop from "../components/NavDesktop.jsx";
-import NavLinkMobile from "../components/NavMobile.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
+import NavDesktop from "../components/NavDesktop.jsx";
+import NavMobile from "../components/NavMobile.jsx";  
 
 const Feed = () => {
   // Datos simulados del Feed
@@ -64,33 +59,7 @@ const Feed = () => {
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content">
-      <nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-base-200 z-40 px-6 py-3 justify-between items-center">
-        <img
-          src={Logo}
-          alt="Tribe Logo"
-          className="h-10 w-auto object-contain"
-        />
-        <div className="flex gap-8">
-          <NavLinkDesktop icon={<Home size={28} />} page={"/feed"} label="Inicio" active />
-          <NavLinkDesktop
-            icon={<Search size={24} />}
-            page={"/explorer"}
-            label="Explorar"
-          />
-          <NavLinkDesktop
-            icon={<Heart size={24} />}
-            page={"/feed"}
-            label="Actividad"
-            a
-          />{" "}
-          {/* Active aquí */}
-          <NavLinkDesktop
-            icon={<User size={24} />}
-            page={"/profile/me"}
-            label="Perfil"
-          />
-        </div>
-      </nav>
+     <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
         {/* COLUMNA IZQUIERDA (FEED) - Ocupa 2 columnas en desktop */}
         <div className="md:col-span-2 space-y-6">
@@ -180,21 +149,7 @@ const Feed = () => {
           </div>
         </div>
       </main>
-      <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-200 px-6 py-3 md:hidden z-50">
-        <div className="flex justify-between items-center max-w-sm mx-auto">
-          <NavLinkMobile icon={<Home size={24} />} active page={"feed"}/> {/* Active aquí */}
-          <NavLinkMobile icon={<Search size={24} />} page={"/explorer"} />
-          <NavLinkMobile icon={<Heart size={24} />} page={"/feed"} />
-          <div className="cursor-pointer border-2 border-transparent rounded-full p-0.5">
-            <div className="w-6 h-6 rounded-full bg-neutral overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
-                alt="me"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+     <NavMobile />
     </div>
   );
 };
