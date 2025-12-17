@@ -34,7 +34,7 @@ const Landing = () => {
 
             <h1 className="text-5xl sm:text-7xl font-bold font-serif leading-[0.95] tracking-tight">
               Tribe <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">
+              <span className="text-transparent bg-clip-text bg-indigo-500 font-extrabold">
                 Encuentra
               </span>{" "}
               <br />a tu gente
