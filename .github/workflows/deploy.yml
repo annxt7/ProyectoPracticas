@@ -1,0 +1,30 @@
+name: deploy
+
+
+on:
+  push:
+    branches: [ develop ] # Usa el nombre de tu rama principal
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+            host: ${{ secrets.IP }}
+            port: 2222
+            username: AXEL
+            key: ${{ secrets.PRIVATE_KEY }}
+            script: "cd /var/www/html/ProyectoPracticas;
+                    git reset --hard ; 
+                    git pull origin develop; 
+                    cd Backend/; 
+                    npm i;
+                    cd ../;
+                    cd Frontend/;
+                    npm i;
+                    npm i react-router;
+                    npm run build;" 
