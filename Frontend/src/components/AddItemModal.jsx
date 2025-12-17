@@ -3,51 +3,13 @@ import {
   Search,
   Plus,
   X,
-  Image as ImageIcon,
   Database,
   PenTool,
-  Camera, // Nos aseguramos de usar Camera
+  Camera,
+  Loader2,
 } from "lucide-react";
 import ItemCover from "./ItemCover";
-
-const MOCK_DB = {
-  Music: [
-    {
-      id: 1,
-      title: "Bohemian Rhapsody",
-      subtitle: "Queen",
-      year: 1975,
-      cover:
-        "https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody.png",
-    },
-    {
-      id: 2,
-      title: "Hotel California",
-      subtitle: "Eagles",
-      year: 1976,
-      cover:
-        "https://upload.wikimedia.org/wikipedia/en/4/49/Hotel_California.jpg",
-    },
-  ],
-  Movies: [
-    {
-      id: 1,
-      title: "Inception",
-      subtitle: "Christopher Nolan",
-      year: 2010,
-      cover:
-        "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_.jpg",
-    },
-    {
-      id: 2,
-      title: "Interstellar",
-      subtitle: "Christopher Nolan",
-      year: 2014,
-      cover:
-        "https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg",
-    },
-  ],
-};
+import api from "../services/api";
 
 // Estado Inicial Limpio
 const INITIAL_FORM_STATE = {
@@ -62,41 +24,67 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
   const [mode, setMode] = useState("search");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Estado para el formulario manual (match con tabla Items)
+  // Estado para el formulario manual
   const [customForm, setCustomForm] = useState(INITIAL_FORM_STATE);
-
-  // Referencia al input de archivo para poder resetearlo y activarlo
   const fileInputRef = useRef(null);
 
-  // Efecto: Cuando escribes, simula búsqueda en la BD correcta
+  // --- EFECTO DE BÚSQUEDA CORREGIDO ---
   useEffect(() => {
-    if (
-      mode === "search" &&
-      searchTerm.length > 1 &&
-      collectionType !== "Custom"
-    ) {
-      const db = MOCK_DB[collectionType] || [];
-      const results = db.filter((item) =>
-        item.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setSearchResults(results);
-    } else {
+    // 1. Validaciones iniciales: Si no buscamos o hay poco texto, limpiamos y salimos.
+    if (mode !== "search" || searchTerm.length < 2) {
       setSearchResults([]);
+      return;
     }
-  }, [searchTerm, collectionType, mode]);
 
-  // Si abrimos una colección "Custom" pura, vamos directo al modo manual
-  // Y reseteamos al cerrar
+    // 2. Definimos el Debounce (Espera)
+    const delayDebounceFn = setTimeout(async () => {
+      setLoading(true);
+      try {
+        // TRUCO: Si la colección es Custom, pedimos 'General'
+        const categoryToSend = collectionType === "Custom" ? "General" : collectionType;
+
+        // 
+        // Hacemos la llamada dentro de una función asíncrona interna
+        const response = await api.get("/catalog/search", {
+          params: { 
+            category: categoryToSend, 
+            query: searchTerm 
+          }
+        });
+
+        // 3. Mapeo de datos (Backend -> Frontend)
+        const itemsAdapted = response.data.map((item) => ({
+            ...item,
+            // Aseguramos que subtitle tenga contenido
+            subtitle: item.subtitle || item.artist || item.author || item.developer || item.director || "Desconocido", 
+            
+            // MAPEO DE IMAGEN ROBUSTO:
+            // Buscamos cualquier campo que pueda contener la imagen
+            cover: item.image || item.cover_url || item.poster_url,      
+            
+            year: item.release_year || item.year,
+            realType: item.type 
+        }));
+
+        setSearchResults(itemsAdapted);
+      } catch (error) {
+        console.error("Error buscando:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 500); // 500ms de espera
+
+    // Limpieza del timeout (Cancelación si el usuario sigue escribiendo)
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, collectionType, mode]); // Dependencias
+
+  // Reset al abrir/cerrar
   useEffect(() => {
     if (isOpen) {
-      if (collectionType === "Custom") {
-        setMode("custom");
-      } else {
-        setMode("search"); // Reset por defecto
-      }
+      setMode("search");
     } else {
-      // RESETEAR AL CERRAR
       const timer = setTimeout(() => {
         setCustomForm(INITIAL_FORM_STATE);
         setSearchTerm("");
@@ -105,27 +93,32 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, collectionType]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  // Lógica para añadir item de la BD
+  // --- MANEJADORES ---
   const handleAddFromDB = (item) => {
-    console.log("Añadiendo desde BD:", item);
-    onAddItem(item);
+    const itemToSend = {
+        ...item,
+        // En Custom guardamos el tipo real, en específicas forzamos el tipo de la colección
+        item_type: collectionType === "Custom" ? item.realType : collectionType,
+        reference_id: item.id
+    };
+    onAddItem(itemToSend); 
     onClose();
   };
 
-  // Lógica para añadir item manual
   const handleAddCustom = (e) => {
     e.preventDefault();
     const newItem = {
       title: customForm.title,
       subtitle: customForm.subtitle,
-      cover: customForm.coverPreview, // Usamos la preview o el ItemCover lo gestionará
+      cover: customForm.coverPreview,
       isCustom: true,
+      description: customForm.description,
+      item_type: "Custom" 
     };
-    console.log("Añadiendo Custom:", newItem);
     onAddItem(newItem);
     onClose();
   };
@@ -149,12 +142,13 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
       ></div>
 
       <div className="relative bg-base-100 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        
         {/* HEADER */}
         <div className="p-4 border-b border-base-200 flex justify-between items-center bg-base-100">
           <h3 className="font-bold text-lg flex items-center gap-2">
             {mode === "search" ? <Database size={18} /> : <PenTool size={18} />}
             {mode === "search"
-              ? `Buscar en catálogo: ${collectionType}`
+              ? collectionType === "Custom" ? "Buscar en todo el catálogo" : `Buscar en: ${collectionType}`
               : "Añadir elemento manual"}
           </h3>
           <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
@@ -162,9 +156,8 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
           </button>
         </div>
 
-        {/* TABS DE MODO (Solo si no es una colección 100% custom) */}
-        {collectionType !== "Custom" && (
-          <div className="flex border-b border-base-200">
+        {/* TABS DE MODO */}
+        <div className="flex border-b border-base-200">
             <button
               onClick={() => setMode("search")}
               className={`flex-1 py-3 text-sm font-bold transition-colors ${
@@ -185,49 +178,60 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
             >
               Crear Manualmente
             </button>
-          </div>
-        )}
+        </div>
 
         {/* CONTENIDO SCROLLABLE */}
         <div className="overflow-y-auto p-4 flex-1">
+          
           {/* === MODO BUSCADOR === */}
           {mode === "search" && (
             <div className="space-y-4">
               <div className="relative">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40"
-                  size={20}
-                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40" size={20} />
                 <input
                   type="text"
-                  placeholder={`Escribe el nombre de la ${
-                    collectionType === "Music" ? "canción" : "película"
-                  }...`}
+                  placeholder={
+                    collectionType === "Custom" 
+                    ? "Busca pelis, juegos, música..." 
+                    : `Buscar ${collectionType}...`
+                  }
                   className="input input-bordered w-full pl-10 focus:input-primary"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   autoFocus
                 />
+                
+                {loading && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <Loader2 className="animate-spin text-primary" size={20} />
+                    </div>
+                )}
               </div>
 
               {/* Resultados */}
               <div className="space-y-2">
                 {searchResults.map((item) => (
                   <div
-                    key={item.id}
+                    key={`${item.type}-${item.id}`} 
                     className="flex items-center gap-3 p-2 hover:bg-base-200 rounded-xl transition-colors group cursor-pointer border border-transparent hover:border-base-300"
                     onClick={() => handleAddFromDB(item)}
                   >
-                    <img
-                      src={item.cover}
-                      alt=""
-                      className="w-12 h-16 object-cover rounded-md bg-base-300"
-                    />
+                    {/*  */}
+                    {/* Imagen con Componente Seguro */}
+                    <div className="w-12 h-16 rounded-md overflow-hidden bg-base-300 flex-none relative">
+                        <ItemCover src={item.cover} title={item.title} />
+                    </div>
+                    
                     <div className="flex-1 min-w-0">
                       <p className="font-bold truncate">{item.title}</p>
-                      <p className="text-xs opacity-60">
-                        {item.subtitle} • {item.year}
-                      </p>
+                      <div className="flex items-center gap-2 text-xs opacity-60">
+                        {collectionType === "Custom" && (
+                            <span className="badge badge-xs badge-ghost font-normal px-1">{item.type}</span>
+                        )}
+                        <span className="truncate">
+                             {item.subtitle} {item.year && `• ${item.year}`}
+                        </span>
+                      </div>
                     </div>
                     <button className="btn btn-sm btn-circle btn-primary opacity-0 group-hover:opacity-100 transition-opacity">
                       <Plus size={16} />
@@ -235,9 +239,9 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
                   </div>
                 ))}
 
-                {searchTerm && searchResults.length === 0 && (
+                {!loading && searchTerm.length > 1 && searchResults.length === 0 && (
                   <div className="text-center py-8 opacity-60">
-                    <p>No encontramos nada en la base de datos.</p>
+                    <p>No encontramos nada.</p>
                     <button
                       onClick={() => setMode("custom")}
                       className="btn btn-link btn-sm text-primary"
@@ -254,25 +258,17 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
           {mode === "custom" && (
             <form onSubmit={handleAddCustom} className="space-y-4">
               <div className="flex gap-4 items-start">
-                
-                {/* --- ZONA DE PORTADA OPTIMIZADA PARA MÓVIL --- */}
-                {/* Usamos ItemCover y Badge fijo de cámara */}
                 <div 
                   className="w-24 h-32 bg-base-200 rounded-xl overflow-hidden relative border border-base-300 shadow-sm cursor-pointer group"
                   onClick={() => fileInputRef.current.click()}
                 >
-                    {/* 1. Componente Visual */}
                     <ItemCover 
                         src={customForm.coverPreview} 
                         title={customForm.title || "?"} 
                     />
-
-                    {/* 2. Badge de Cámara (Siempre visible, perfecto para móvil) */}
                     <div className="absolute bottom-1 right-1 bg-black/60 text-white p-1.5 rounded-full backdrop-blur-sm z-10 shadow-md border border-white/10">
-                         <Camera size={14} />
+                          <Camera size={14} />
                     </div>
-
-                    {/* 3. Input Oculto */}
                     <input 
                         type="file" 
                         ref={fileInputRef}
@@ -284,65 +280,40 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
 
                 <div className="flex-1 space-y-3">
                   <div>
-                    <label className="text-xs font-bold uppercase opacity-60 ml-1">
-                      Título *
-                    </label>
+                    <label className="text-xs font-bold uppercase opacity-60 ml-1">Título *</label>
                     <input
                       required
                       type="text"
                       className="input input-bordered input-sm w-full focus:input-primary"
-                      placeholder="Ej: Mi canción favorita"
+                      placeholder="Ej: Mi item personal"
                       value={customForm.title}
-                      onChange={(e) =>
-                        setCustomForm({ ...customForm, title: e.target.value })
-                      }
+                      onChange={(e) => setCustomForm({ ...customForm, title: e.target.value })}
                     />
                   </div>
                   <div>
                     <label className="text-xs font-bold uppercase opacity-60 ml-1">
-                      {collectionType === "Music"
-                        ? "Artista"
-                        : collectionType === "Books"
-                        ? "Autor"
-                        : "Subtítulo"}{" "}
-                      *
+                      Subtítulo (Autor/Info) *
                     </label>
                     <input
                       required
                       type="text"
                       className="input input-bordered input-sm w-full focus:input-primary"
-                      placeholder={
-                        collectionType === "Music"
-                          ? "Ej: Queen"
-                          : "Ej: Nombre del autor"
-                      }
+                      placeholder="Ej: Detalles..."
                       value={customForm.subtitle}
-                      onChange={(e) =>
-                        setCustomForm({
-                          ...customForm,
-                          subtitle: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setCustomForm({ ...customForm, subtitle: e.target.value })}
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold uppercase opacity-60 ml-1">
-                  Nota / Descripción
-                </label>
+                <label className="text-xs font-bold uppercase opacity-60 ml-1">Nota</label>
                 <textarea
                   className="textarea textarea-bordered w-full text-sm focus:textarea-primary"
                   rows="3"
-                  placeholder="¿Por qué añades esto?"
+                  placeholder="Descripción opcional..."
                   value={customForm.description}
-                  onChange={(e) =>
-                    setCustomForm({
-                      ...customForm,
-                      description: e.target.value,
-                    })
-                  }
+                  onChange={(e) => setCustomForm({ ...customForm, description: e.target.value })}
                 ></textarea>
               </div>
 

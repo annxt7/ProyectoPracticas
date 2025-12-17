@@ -1,36 +1,31 @@
+require("dotenv").config();
 const express = require("express");
-const app = express();
+const helmet = require("helmet");
+const cors = require("cors");
+const userRoutes = require('./routes/userRoutes');
+const collectionRoutes = require ('./routes/collectionRoutes');
+const catalogRoutes = require ('./routes/catalogRoutes');
 const port = 3000;
-const userRoutes= require('./routes/userRoutes')
 const dbconection = require("./config/dbconect");
 
+
+const app = express();
+// MIDDLEWARES 
+app.use(helmet());
+app.use(cors()); 
+app.use(express.json());
+
+// RUTAS 
+app.use('/api/users', userRoutes);
+app.use('/api/collections', collectionRoutes); // <--- NUEVO
+app.use('/api/catalog', catalogRoutes);
+
+// Ruta base de prueba
 app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-async function fetchData() {
-  try {
-    const [rows, fields] = await dbconection.execute("SELECT * FROM `Users`");
-
-    console.log("Resultados de Users:", rows);
-  } catch (error) {
-    console.error("ERROR al ejecutar SELECT * FROM Users:", error);
-  }
-}
-
-app.use('/api/users',userRoutes)
-app.get("/test-db", (req, res) => {
-  dbconection.query("SELECT 1 + 1 AS solution", (err, rows) => {
-    if (err) {
-      console.log("Error en la consulta: ", err);
-      res.status(500).send("Error al consultar la base de datos");
-    } else {
-      console.log("La solución es:", rows[0].solution);
-      res.send("TODO OK");
-    }
-  });
+  res.send("API funcionando 🚀");
 });
 
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Servidor corriendo en http://localhost:${port}`);
 });
