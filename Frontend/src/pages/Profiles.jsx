@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 
-const Profile = ({ isOwnProfile = true }) => {
+const Profile = ({ isOwnProfile = false }) => {
   const [activeTab, setActiveTab] = useState("collections");
 
   // ESTADO DE LA IMAGEN DE PERFIL

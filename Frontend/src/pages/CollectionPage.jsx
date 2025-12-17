@@ -28,7 +28,7 @@ const CollectionPage = () => {
   // Verificamos si venimos de "Crear Colección"
   const incomingData = location.state?.newCollectionData;
 
-  const isOwner = true;
+  const isOwner = false;
 
   const defaultCollection = {
     title: "Cinema Paradiso",
