@@ -24,7 +24,7 @@ const forgotPasswordSchema = z.object({
 });
 
 const registerSchema = z.object({
-  username: z.string().min(3, "Mínimo 3 caracteres").max(20).regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guiones bajos").trim(),
+  username: z.string().min(4, "Mínimo 4 caracteres").max(20).regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guiones bajos").trim(),
   email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
   password: z.string()
     .min(8, "Mínimo 8 caracteres")
@@ -95,7 +95,7 @@ const AuthScreen = ({ type = 'login' }) => {
       if (isRegister) endpoint = '/api/auth/register';
       if (isForgot) endpoint = '/api/auth/forgot-password';
 
-      const response = await axios.post(endpoint, { ...data, 'g-recaptcha-response': token });
+      const response = await api.post(endpoint, { ...data, 'g-recaptcha-response': token });
       
       setSuccess(response.data.message || "Operación exitosa");
       if (isForgot) reset();
