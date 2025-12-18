@@ -9,6 +9,7 @@ import Profile from "./pages/Profiles.jsx";
 import Activity from "./pages/Notifications.jsx";
 import Collection from "./pages/CollectionPage.jsx";
 import CreateCollection from "./pages/CreateCollection.jsx";
+//comentario comprobar cambios 
 
 function App() {
   return (
