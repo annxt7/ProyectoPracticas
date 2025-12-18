@@ -5,9 +5,10 @@ import axios from 'axios'
 import GoogleSignIn from '../components/GoogleSignIn';
 import fotoLogin from '../assets/foto-login.jpg'
 import Logo from '../assets/LogoClaro.png'
+import api from "../services/api";
 
 const SITE_KEY = '6LdZWC0sAAAAAEuorDFJYAuZWVbR_zGL-FTmgHHh';
-const API_ENDPOINT = '/api/auth/register'; 
+
 
 const AuthScreen = ({ type = 'login' }) => {
   const isLogin = type === 'login';
