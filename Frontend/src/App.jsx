@@ -18,6 +18,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<AuthScreen />} />
         <Route path="/register" element={<AuthScreen type="register" />} />
+        <Route path="/forgot-password" element={<AuthScreen type="forgot" />} />
         <Route path="/explorer" element={<Explorer />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/activity" element={<Activity />} />
