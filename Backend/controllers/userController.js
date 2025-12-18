@@ -99,36 +99,47 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
+// POST: Finalizar configuración de perfil
 exports.completeProfile = async (req, res) => {
-  const { userId, avatarUrl, selectedCategories } = req.body;
+  const { userId, avatarUrl, interests } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ error: "ID de usuario no proporcionado" });
+  }
 
   try {
-    // 1. Guardamos la foto en la tabla Users
-    await db.query("UPDATE Users SET avatar_url = ? WHERE user_id = ?", [avatarUrl, userId]);
+    // 1. Actualizar el avatar del usuario
+    if (avatarUrl) {
+      await db.query("UPDATE Users SET avatar_url = ? WHERE user_id = ?", [avatarUrl, userId]);
+    }
 
-    // 2. Creamos las colecciones automáticamente
-    // selectedCategories es un array como ['Music', 'Books']
-    if (selectedCategories && selectedCategories.length > 0) {
+    // 2. Crear colecciones automáticas según los intereses
+    // 'interests' es un array como ['Music', 'Books']
+    if (interests && interests.length > 0) {
       
-      // Preparamos las consultas para crear las carpetas por defecto
-      for (const category of selectedCategories) {
-        const collectionName = `Mis ${category === 'Music' ? 'Canciones' : 
-                                  category === 'Books' ? 'Libros' : 
-                                  category === 'Movies' ? 'Películas' : 
-                                  category === 'Games' ? 'Juegos' : 'Series'}`;
+      for (const category of interests) {
+        // Personalizamos el nombre según el tipo
+        const name = category === 'Music' ? 'Mi Música' :
+                     category === 'Books' ? 'Mis Libros' :
+                     category === 'Movies' ? 'Mis Pelis' :
+                     category === 'Games' ? 'Mis Juegos' : 'Mis Series';
 
-        const sql = "INSERT INTO Collections (user_id, collection_type, collection_name, collection_description) VALUES (?, ?, ?, ?)";
-        await db.query(sql, [userId, category, collectionName, `Mi colección personal de ${category}`]);
+        const sql = `
+          INSERT INTO Collections (user_id, collection_type, collection_name, collection_description) 
+          VALUES (?, ?, ?, ?)
+        `;
+        
+        await db.query(sql, [userId, category, name, `Colección automática de ${category}`]);
       }
     }
 
     res.status(200).json({ 
       success: true, 
-      message: "¡Perfil configurado y colecciones creadas!" 
+      message: "¡Perfil completado y colecciones creadas!" 
     });
 
   } catch (error) {
-    console.error("Error al completar perfil:", error);
-    res.status(500).json({ error: "No se pudieron crear las colecciones iniciales." });
+    console.error("Error en completeProfile:", error);
+    res.status(500).json({ error: "Error interno al procesar el perfil" });
   }
 };

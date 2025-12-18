@@ -12,5 +12,6 @@ router.get("/test-users", userController.getUsers)
 
 router.post("/register", registerValidator, userController.createUser) 
 router.post("/google", userController.googleLogin);
+router.put("/complete-profile", userController.completeProfile);
 
 module.exports=router
