@@ -5,7 +5,7 @@ const cors = require("cors");
 const userRoutes = require('./routes/userRoutes');
 const collectionRoutes = require ('./routes/collectionRoutes');
 const catalogRoutes = require ('./routes/catalogRoutes');
-const port = 3000;
+const port = process.env.PORT;
 const dbconection = require("./config/dbconect");
 
 
