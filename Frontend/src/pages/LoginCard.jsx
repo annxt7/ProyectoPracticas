@@ -22,7 +22,7 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
 });
 const registerSchema = z.object({
-  username: z.string().min(3, "Mínimo 3 caracteres").max(20).regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guiones bajos").trim(),
+  username: z.string().min(4, "Mínimo 4 caracteres").max(20).regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guiones bajos").trim(),
   email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
   password: z.string()
     .min(8, "Mínimo 8 caracteres")
