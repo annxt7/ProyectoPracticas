@@ -9,6 +9,7 @@ import Profile from "./pages/Profiles.jsx";
 import Activity from "./pages/Notifications.jsx";
 import Collection from "./pages/CollectionPage.jsx";
 import CreateCollection from "./pages/CreateCollection.jsx";
+import OnboardingPage from "./pages/OnBoarding.jsx";
 //comentario comprobar cambios 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/profile/:username" element={<Profile />} />
         <Route path="/collection/:id" element={<Collection />} />
         <Route path="/create-collection" element={<CreateCollection />} />
+        <Route path="/onboarding" element={<OnboardingPage/>}/>
       </Routes>
     </>
   );

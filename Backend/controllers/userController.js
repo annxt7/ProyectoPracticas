@@ -32,7 +32,7 @@ exports.createUser = async (req, res) => {
     params.append("response", captchaToken);
 
     const googleResp = await axios.post("https://www.google.com/recaptcha/api/siteverify", params);
-
+    console.log("Respuesta de Google Captcha:", googleResp.data);
     if (!googleResp.data.success) {
       return res.status(403).json({ error: "La verificación de seguridad ha fallado." });
     }
