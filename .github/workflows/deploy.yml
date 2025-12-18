@@ -21,11 +21,9 @@ jobs:
             script: "cd /var/www/html/ProyectoPracticas;
                     git reset --hard ; 
                     git pull origin develop;
-                    #Actualizar e iniciar Backend 
                     cd Backend/; 
                     npm i;
                     pm2 restart backend-tribe;
-                    #Actualizar e iniciar Frontend
                     cd ../;
                     cd Frontend/;
                     npm i;
