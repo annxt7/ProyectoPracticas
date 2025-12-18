@@ -1,7 +1,7 @@
 import React from "react";
 import Logo from "../assets/LogoClaro.png";
 import NavLinkDesktop from "./NavLinkDesktop";
-import { useLocation } from "react-router";
+import { useLocation } from "react-router-dom";
 import { Home, Search, Heart, User } from "lucide-react";
 
 const NavDesktop=()=>{
