@@ -10,7 +10,7 @@ const NavDesktop=()=>{
 
 return(
     <>
-<nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-white z-40 px-6 py-3 justify-between items-center">          <img
+<nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-white/40 z-40 px-6 py-3 justify-between items-center">          <img
             src={Logo}
             alt="Tribe Logo"
             className="h-14 w-auto object-contain"

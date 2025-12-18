@@ -20,7 +20,7 @@ const Profile = ({ isOwnProfile = true }) => {
 
   // ESTADO DE LA IMAGEN DE PERFIL
   const [profileImage, setProfileImage] = useState(
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300"
+    "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg"
   );
 
   // REFERENCIA AL INPUT INVISIBLE DE ARCHIVO
@@ -80,7 +80,7 @@ const Profile = ({ isOwnProfile = true }) => {
           <div className="h-40 md:h-80 w-full relative bg-neutral-900 overflow-hidden">
             {/* Imagen normal (sin opacity-50 que la dejaba gris) */}
             <img
-              src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=1000"
+              src="https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg"
               alt="cover"
               className="w-full h-full object-cover"
             />
@@ -105,7 +105,7 @@ const Profile = ({ isOwnProfile = true }) => {
                 {/* BOTÓN DE CÁMARA FLOTANTE (Badge) - Soluciona el problema móvil */}
                 {isOwnProfile && (
                   <button
-                    className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white hover:bg-base-200 transition-colors z-10"
+                    className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white/40 hover:bg-base-200 transition-colors z-10"
                     title="Cambiar foto"
                   >
                     <Camera size={16} className="md:w-5 md:h-5" />
@@ -128,13 +128,13 @@ const Profile = ({ isOwnProfile = true }) => {
                   <>
                     <button
                       onClick={handleStartEditing}base-300
-                      className="btn btn-sm md:btn-md py-1 btn-ghost border border-white rounded-full px-4 md:px-6 hover:bg-base-200"
+                      className="btn btn-sm md:btn-md py-1 btn-ghost border border-white/40 rounded-full px-4 md:px-6 hover:bg-base-200"
                     >
                       Editar Perfil
                     </button>
                     <button
                       onClick={handleStartEditing}
-                      className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white"
+                      className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40"
                     >
                       <Settings size={18} />
                     </button>
@@ -144,7 +144,7 @@ const Profile = ({ isOwnProfile = true }) => {
                     <button className="btn btn-primary btn-sm rounded-full px-6 gap-2">
                       <UserPlus size={16} /> Seguir
                     </button>
-                    <button className="btn btn-sm btn-circle btn-ghost border border-white">
+                    <button className="btn btn-sm btn-circle btn-ghost border border-white/40">
                       <Share2 size={18} />
                     </button>
                   </>
@@ -225,7 +225,7 @@ const Profile = ({ isOwnProfile = true }) => {
         </div>
 
         {/* TABS */}
-        <div className="border-t border-white mt-4 sticky top-16 bg-base-100/95 backdrop-blur-sm z-30">
+        <div className="border-t border-white/40 mt-4 sticky top-16 bg-base-100/95 backdrop-blur-sm z-30">
           <div className="flex justify-center gap-4 md:gap-12">
             <button
               onClick={() => setActiveTab("collections")}
