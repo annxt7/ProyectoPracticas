@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Music, Book, Film, Gamepad2, Tv, Camera, Check, ArrowRight, Plus } from 'lucide-react';
 import api from "../services/api"; // Tu instancia de axios
 
+
 const categories = [
   { id: 'Music', label: 'Música', icon: <Music size={32} /> },
   { id: 'Books', label: 'Libros', icon: <Book size={32} /> },

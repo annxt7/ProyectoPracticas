@@ -73,7 +73,7 @@ const AuthScreen = ({ type = 'login' }) => {
     }
   }, [isRegister]);
 
-  const onSubmit = async (data) => {
+const onSubmit = async (data) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -89,30 +89,32 @@ const AuthScreen = ({ type = 'login' }) => {
     }
 
     try {
-      let endpoint = '/users/login';
-      if (isRegister) endpoint = '/users/register';
-      if (isForgot) endpoint = '/user/forgot-password';
+      let endpoint = isRegister ? '/users/register' : '/users/login';
+      if (isForgot) endpoint = '/users/forgot-password';
 
       const response = await api.post(endpoint, { ...data, 'g-recaptcha-response': token });
-  if (response.data.success) { 
-  const userId = response.data.userId; 
-   if (success) {
-      if (isRegister) {
-        navigate('/onboarding', { state: { userId } });
-      } else if (isLogin) {
-        navigate('/feed');
-      } else {
-        setSuccess("Enlace enviado. Revisa tu correo.");
+      
+      // 1. Verificamos si el servidor dice que todo OK
+      if (response.data.success) {
+        const userId = response.data.userId; // Extraemos el ID del nuevo usuario
+        
+        if (isRegister) {
+          // 🚀 SI ES REGISTRO: Vamos directos al Onboarding
+          navigate('/onboarding', { state: { userId } });
+        } else if (isLogin) {
+          // SI ES LOGIN: Vamos al feed/inicio
+          navigate('/feed');
+        } else {
+          setSuccess("Enlace enviado con éxito.");
+        }
       }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error de conexión.');
+      if (isRegister) window.grecaptcha.reset();
+    } finally {
+      setLoading(false);
     }
-    }
-  } catch (err) {
-    setError(err.response?.data?.error || 'Error de conexión.');
-    if (isRegister) window.grecaptcha.reset();
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleGoogleSuccess = async (idToken) => {
     setLoading(true);
