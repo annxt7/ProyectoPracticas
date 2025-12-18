@@ -29,4 +29,5 @@ jobs:
                     cd ../;
                     cd Frontend/;
                     npm i;
+                    npm i react-router;
                     npm run build;" 
