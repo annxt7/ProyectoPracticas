@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-
+import { useNavigate } from 'react-router-dom';
 import GoogleSignIn from '../components/GoogleSignIn';
 import fotoLogin from '../assets/foto-login.jpg';
 import Logo from '../assets/LogoClaro.png';
@@ -18,11 +18,9 @@ const loginSchema = z.object({
   identifier: z.string().min(3, "Mínimo 3 caracteres").max(50).trim(),
   password: z.string().min(1, "La contraseña es requerida"),
 });
-
 const forgotPasswordSchema = z.object({
   email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
 });
-
 const registerSchema = z.object({
   username: z.string().min(3, "Mínimo 3 caracteres").max(20).regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guiones bajos").trim(),
   email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
@@ -40,6 +38,7 @@ const registerSchema = z.object({
 
 
 const AuthScreen = ({ type = 'login' }) => {
+  const navigate= useNavigate();
   const isLogin = type === 'login';
   const isForgot = type === 'forgot';
   const isRegister = type === 'register';
@@ -48,7 +47,6 @@ const AuthScreen = ({ type = 'login' }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const recaptchaRef = useRef(null);
-
 
   // Seleccionar esquema según el tipo
   const currentSchema = isForgot ? forgotPasswordSchema : (isLogin ? loginSchema : registerSchema);
@@ -91,33 +89,48 @@ const AuthScreen = ({ type = 'login' }) => {
     }
 
     try {
-      let endpoint = '/api/auth/login';
-      if (isRegister) endpoint = '/api/auth/register';
-      if (isForgot) endpoint = '/api/auth/forgot-password';
+      let endpoint = '/users/login';
+      if (isRegister) endpoint = '/users/register';
+      if (isForgot) endpoint = '/user/forgot-password';
 
-      const response = await axios.post(endpoint, { ...data, 'g-recaptcha-response': token });
-      
-      setSuccess(response.data.message || "Operación exitosa");
-      if (isForgot) reset();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error de conexión.');
-      if (isRegister) window.grecaptcha.reset();
-    } finally {
-      setLoading(false);
+      const response = await api.post(endpoint, { ...data, 'g-recaptcha-response': token });
+  if (response.data.success) { 
+  const userId = response.data.userId; 
+   if (success) {
+      if (isRegister) {
+        navigate('/onboarding', { state: { userId } });
+      } else if (isLogin) {
+        navigate('/feed');
+      } else {
+        setSuccess("Enlace enviado. Revisa tu correo.");
+      }
     }
-  };
+    }
+  } catch (err) {
+    setError(err.response?.data?.error || 'Error de conexión.');
+    if (isRegister) window.grecaptcha.reset();
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleGoogleSuccess = async (idToken) => {
     setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.post('/api/auth/google', { token: idToken });
-      setSuccess(response.data.message || '¡Éxito!');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error Google.');
-    } finally {
-      setLoading(false);
+  setError(null);
+  try {
+    const response = await api.post('/users/google', { token: idToken });
+    const { userId, isNewUser } = response.data;
+
+    if (isNewUser) {
+      navigate('/onboarding', { state: { userId } });
+    } else {
+      navigate('/feed');
     }
+  } catch (err) {
+    setError(err.response?.data?.error || 'Error Google.');
+  } finally {
+    setLoading(false);
+  }
   };
 
   return (
