@@ -194,7 +194,7 @@ const Explorer = () => {
 
                   {/* Botón Seguir */}
                   {user.isFollowing ? (
-                    <button className="btn btn-sm btn-ghost border border-base-300 px-4 text-xs font-bold bg-base-200">
+                    <button className="btn btn-sm btn-ghost border border-white/40 px-4 text-xs font-bold bg-base-200">
                       Siguiendo
                     </button>
                   ) : (

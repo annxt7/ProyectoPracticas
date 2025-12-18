@@ -197,7 +197,7 @@ const CollectionPage = () => {
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* --- PORTADA DE LA COLECCIÓN --- */}
-            <div className="flex-none w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border border-base-200 bg-base-200 relative group">
+            <div className="flex-none w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/80 bg-base-200 relative group">
               <img
                 src={isEditing ? editForm.cover : collectionInfo.cover}
                 alt="Cover"
@@ -242,7 +242,7 @@ const CollectionPage = () => {
                 {isEditing ? (
                   <input
                     type="text"
-                    className="input input-ghost w-full text-4xl md:text-5xl font-bold font-serif px-0 h-auto focus:bg-transparent focus:text-primary border-b-2 border-base-300 rounded-none placeholder-base-content/30"
+                    className="input input-ghost w-full text-4xl md:text-5xl font-bold font-serif px-0 h-auto focus:bg-transparent focus:text-primary border-b-2 border-white/40 rounded-none placeholder-base-content/30"
                     value={editForm.title}
                     onChange={(e) =>
                       setEditForm({ ...editForm, title: e.target.value })
@@ -259,20 +259,20 @@ const CollectionPage = () => {
               {/* DESCRIPCIÓN EDITABLE */}
               {isEditing ? (
                 <textarea
-                  className="textarea textarea-ghost w-full text-lg leading-relaxed px-0 h-32 resize-none focus:bg-transparent border-l-4 border-primary/50 rounded-none pl-4"
+                  className="textarea textarea-ghost w-full text-lg leading-relaxed px-0 h-32 resize-none focus:bg-transparent border-l-4 border-white/40 rounded-none pl-4"
                   value={editForm.description}
                   onChange={(e) =>
                     setEditForm({ ...editForm, description: e.target.value })
                   }
                 />
               ) : (
-                <p className="text-lg opacity-80 leading-relaxed max-w-2xl border-l-4 border-base-300 pl-4 whitespace-pre-wrap">
+                <p className="text-lg opacity-80 leading-relaxed max-w-2xl border-l-4 border-white/40 pl-4 whitespace-pre-wrap">
                   {collectionInfo.description}
                 </p>
               )}
 
               {/* Stats & Actions */}
-              <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-base-200/50">
+              <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-white/40">
                 <div className="flex gap-6 text-sm">
                   <div className="text-center">
                     <span className="block font-bold text-lg">
@@ -403,7 +403,7 @@ const CollectionPage = () => {
           {isOwner && (
             <div
               onClick={() => setIsAddItemOpen(true)}
-              className="aspect-2/3 rounded-xl border-2 border-dashed border-base-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group"
+              className="aspect-2/3 rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group"
             >
               <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
                 <Plus size={24} />
