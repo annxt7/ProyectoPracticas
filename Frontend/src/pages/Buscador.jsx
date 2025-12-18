@@ -127,7 +127,7 @@ const Explorer = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar personas o colecciones..."
-              className="input input-lg w-full bg-base-200/50 border-none rounded-2xl pl-11 pr-10 focus:ring-2 ring-primary/50 focus:outline-none placeholder:text-base-content/40"
+              className="input input-lg w-full bg-base-200/50 border-b border-white rounded-2xl pl-11 pr-10 focus:ring-2 ring-primary/50 focus:outline-none placeholder:text-base-content/40"
               autoFocus
             />
             {query && (
