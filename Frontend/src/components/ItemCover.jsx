@@ -22,8 +22,7 @@ const ItemCover = ({ src, title, className = "" }) => {
     return (words[0][0] + words[1][0]).toUpperCase();
   };
 
-  // 2. Lógica para asignar un color "fijo" basado en el título
-  // (Así "Matrix" siempre tendrá el mismo color, aunque recargues la página)
+
   const getGradient = (text) => {
     if (!text) return GRADIENTS[0];
     let hash = 0;
@@ -40,6 +39,7 @@ const ItemCover = ({ src, title, className = "" }) => {
       <img
         src={src}
         alt={title}
+        referrerPolicy="no-referrer"
         className={`w-full h-full object-cover ${className}`}
         onError={() => setImgError(true)} // Si falla, activamos el modo texto
       />
