@@ -110,7 +110,7 @@ const NotificationItem = ({ data }) => {
   return (
     <div
       className={`
-      relative group flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 border-2 border-base-300
+      relative group flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 border-b border-white
       ${data.read ? "hover:bg-base-200/50" : "bg-base-200/30 hover:bg-base-200"}
     `}
     >

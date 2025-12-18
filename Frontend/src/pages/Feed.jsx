@@ -72,13 +72,13 @@ const Feed = () => {
           {activities.map((item) => (
             <div
               key={item.id}
-              className="card border-b bg-base-100 border-base-300 md:border md:rounded-2xl md:shadow-sm overflow-hidden"
+              className="card border-b bg-base-100 border-white  md:border md:rounded-2xl md:shadow-sm overflow-hidden"
             >
               {/* Header de la Card */}
-              <div className="p-4 flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between ">
                 <div className="flex items-center gap-3">
                   <div className="avatar">
-                    <div className="w-10 h-10 rounded-full ring ring-base-200 ring-offset-1">
+                    <div className="w-10 h-10 rounded-full ring ring-base-200 ring-offset-1 ">
                       <img src={item.avatar} alt={item.user} />
                     </div>
                   </div>
@@ -134,9 +134,9 @@ const Feed = () => {
         </div>
 
         {/* Otros perfiles*/}
-        <div className="hidden md:block col-span-1">
+        <div className="hidden md:block col-span-1 ">
           <div className="sticky top-24 space-y-6">
-            <div className="bg-base-200/50 rounded-2xl p-5">
+            <div className="border border-white bg-base-200/50 rounded-2xl p-5  ">
               <h3 className="font-bold font-serif text-lg mb-4 text-primary">
                 Tribers Sugeridos
               </h3>

@@ -29,7 +29,7 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-base-100 flex flex-col overflow-x-hidden font-sans">
+    <div className="h-screen bg-base-100 flex flex-col justify-center overflow-hidden font-sans">
       {/* HERO SECTION */}
       <div className="relative pt-6 pb-20 lg:pt-12 lg:pb-32 px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
@@ -113,51 +113,6 @@ const Landing = () => {
           </div>
         </div>
       </div>
-
-      {/* Features Rápidas */}
-      <div className="bg-base-200 py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <Layers className="w-10 h-10 text-primary mb-2" />
-                <h3 className="text-xl font-bold font-serif">
-                  Organiza Visualmente
-                </h3>
-                <p className="opacity-70">
-                  Olvida las hojas de cálculo. Tus libros y películas merecen
-                  verse tan bien como en tu estantería.
-                </p>
-              </div>
-            </div>
-            <div className="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <Users className="w-10 h-10 text-primary mb-2" />
-                <h3 className="text-xl font-bold font-serif">
-                  Comunidad de Nicho
-                </h3>
-                <p className="opacity-70">
-                  Sigue a Tribers con gustos afines, no algoritmos que te venden
-                  cosas.
-                </p>
-              </div>
-            </div>
-            <div className="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <Star className="w-10 h-10 text-primary mb-2" />
-                <h3 className="text-xl font-bold font-serif">
-                  Descubrimiento Real
-                </h3>
-                <p className="opacity-70">
-                  Encuentra tu próxima obsesión a través de las colecciones de
-                  expertos y amigos.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <style>{`
         @keyframes scrollY {
           0% { transform: translateY(0); }

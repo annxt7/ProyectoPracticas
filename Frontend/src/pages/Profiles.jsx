@@ -105,7 +105,7 @@ const Profile = ({ isOwnProfile = true }) => {
                 {/* BOTÓN DE CÁMARA FLOTANTE (Badge) - Soluciona el problema móvil */}
                 {isOwnProfile && (
                   <button
-                    className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-base-200 hover:bg-base-200 transition-colors z-10"
+                    className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white hover:bg-base-200 transition-colors z-10"
                     title="Cambiar foto"
                   >
                     <Camera size={16} className="md:w-5 md:h-5" />
@@ -127,14 +127,14 @@ const Profile = ({ isOwnProfile = true }) => {
                 {isOwnProfile ? (
                   <>
                     <button
-                      onClick={handleStartEditing}
-                      className="btn btn-sm md:btn-md py-1 btn-ghost border border-base-300 rounded-full px-4 md:px-6 hover:bg-base-200"
+                      onClick={handleStartEditing}base-300
+                      className="btn btn-sm md:btn-md py-1 btn-ghost border border-white rounded-full px-4 md:px-6 hover:bg-base-200"
                     >
                       Editar Perfil
                     </button>
                     <button
                       onClick={handleStartEditing}
-                      className="btn btn-sm md:btn-md btn-circle btn-ghost border border-base-300"
+                      className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white"
                     >
                       <Settings size={18} />
                     </button>
@@ -144,7 +144,7 @@ const Profile = ({ isOwnProfile = true }) => {
                     <button className="btn btn-primary btn-sm rounded-full px-6 gap-2">
                       <UserPlus size={16} /> Seguir
                     </button>
-                    <button className="btn btn-sm btn-circle btn-ghost border border-base-300">
+                    <button className="btn btn-sm btn-circle btn-ghost border border-white">
                       <Share2 size={18} />
                     </button>
                   </>
@@ -225,7 +225,7 @@ const Profile = ({ isOwnProfile = true }) => {
         </div>
 
         {/* TABS */}
-        <div className="border-t border-base-200 mt-4 sticky top-16 bg-base-100/95 backdrop-blur-sm z-30">
+        <div className="border-t border-white mt-4 sticky top-16 bg-base-100/95 backdrop-blur-sm z-30">
           <div className="flex justify-center gap-4 md:gap-12">
             <button
               onClick={() => setActiveTab("collections")}
