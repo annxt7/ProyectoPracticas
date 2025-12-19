@@ -8,28 +8,25 @@ import {
   Heart,
   BookmarkPlus,
   Trash2,
-  Camera, // Icono para la foto
-  Check, // Icono para guardar
-  X, // Icono para cancelar
+  Camera,
+  Check,
+  X,
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import ItemCover from "../components/ItemCover.jsx";
-
-// Modales de Items (ya no necesitamos el EditCollectionModal)
+import { uploadFileToCloudinary } from "../services/upload.js";
 import AddToCollectionModal from "../components/AddToCollectionModal";
 import AddItemModal from "../components/AddItemModal";
+import api from "../services/api.js";
+import { set } from "zod";
 
 const CollectionPage = () => {
   const { id } = useParams();
   const location = useLocation();
   const fileInputRef = useRef(null);
-
-  // Verificamos si venimos de "Crear Colección"
   const incomingData = location.state?.newCollectionData;
-
   const isOwner = true;
-
   const defaultCollection = {
     title: "Cinema Paradiso",
     description:
@@ -45,8 +42,8 @@ const CollectionPage = () => {
       "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1200",
     stats: { items: 6, followers: 340, likes: 85 },
   };
-
-  // ESTADO PRINCIPAL DE LA COLECCIÓN
+  const [fileToUpload, setFileToUpload] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [collectionInfo, setCollectionInfo] = useState(
     incomingData
       ? {
@@ -64,7 +61,6 @@ const CollectionPage = () => {
         }
       : defaultCollection
   );
-
   const [items, setItems] = useState(
     incomingData
       ? []
@@ -95,20 +91,14 @@ const CollectionPage = () => {
           },
         ]
   );
-
-  // --- ESTADOS DE EDICIÓN (INLINE) ---
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
     description: "",
     cover: "",
   });
-
-  // --- ESTADOS PARA MODALES ---
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedItemForSave, setSelectedItemForSave] = useState(null);
-
-  // --- HANDLERS DE EDICIÓN ---
 
   const handleStartEditing = () => {
     setEditForm({
@@ -121,35 +111,45 @@ const CollectionPage = () => {
 
   const handleCancelEditing = () => {
     setIsEditing(false);
-    setEditForm({ title: "", description: "", cover: "" }); // Reset
+    setEditForm({ title: "", description: "", cover: "" });
   };
 
-  const handleSaveEditing = () => {
-    setCollectionInfo({
-      ...collectionInfo,
-      title: editForm.title,
-      description: editForm.description,
-      cover: editForm.cover,
-    });
-    setIsEditing(false);
-    // AQUÍ HARÍAS LA LLAMADA PUT A LA API
+  const handleSaveEditing = async () => {
+    setIsUploading(true);
+    try {
+      let finalCoverUrl = collectionInfo.cover;
+      if (fileToUpload) {
+        finalCoverUrl = await uploadFileToCloudinary(fileToUpload);
+      }
+      setCollectionInfo({
+        ...collectionInfo,
+        title: editForm.title,
+        description: editForm.description,
+        cover: finalCoverUrl,
+      });
+      setFileToUpload(null);
+      setIsEditing(false);
+      console.log("Foto guardada");
+    } catch {
+      console.log("Error al guardar foto", error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setEditForm({ ...editForm, cover: url });
+      setFileToUpload(file);
+      const previewUrl = URL.createObjectURL(file);
+      setEditForm({ ...editForm, cover: previewUrl });
     }
   };
-
-  // --- HANDLERS DE ITEMS ---
   const handleDelete = (itemId) => {
     if (window.confirm("¿Eliminar de la colección?")) {
       setItems(items.filter((i) => i.id !== itemId));
     }
   };
-
   const handleAddItemToState = (newItem) => {
     const itemFormatted = {
       id: Date.now(),
@@ -160,14 +160,10 @@ const CollectionPage = () => {
     };
     setItems([...items, itemFormatted]);
   };
-
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
-
-      {/* --- HEADER --- */}
       <div className="relative bg-base-100">
-        {/* Banner Blur Background (Usa la imagen actual o la editada en tiempo real) */}
         <div className="absolute inset-0 h-80 overflow-hidden -z-10 opacity-30">
           <img
             src={isEditing ? editForm.cover : collectionInfo.cover}
@@ -176,9 +172,7 @@ const CollectionPage = () => {
           />
           <div className="absolute inset-0 bg-linear-to-b from-transparent via-base-100/80 to-base-100"></div>
         </div>
-
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-8">
-          {/* Breadcrumb */}
           <div className="mb-6">
             <Link
               to={
@@ -196,15 +190,12 @@ const CollectionPage = () => {
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* --- PORTADA DE LA COLECCIÓN --- */}
             <div className="flex-none w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/80 bg-base-200 relative group">
               <img
                 src={isEditing ? editForm.cover : collectionInfo.cover}
                 alt="Cover"
                 className="w-full h-full object-cover"
               />
-
-              {/* Overlay de Edición de Foto (Solo visible si isEditing es true) */}
               {isEditing && (
                 <div
                   onClick={() => fileInputRef.current.click()}
@@ -216,7 +207,6 @@ const CollectionPage = () => {
                   </span>
                 </div>
               )}
-              {/* Input oculto */}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -225,8 +215,6 @@ const CollectionPage = () => {
                 accept="image/*"
               />
             </div>
-
-            {/* --- INFO TEXTO (INLINE EDITING) --- */}
             <div className="flex-1 w-full space-y-5">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
@@ -237,8 +225,6 @@ const CollectionPage = () => {
                     {collectionInfo.type}
                   </span>
                 </div>
-
-                {/* TÍTULO EDITABLE */}
                 {isEditing ? (
                   <input
                     type="text"
@@ -256,7 +242,6 @@ const CollectionPage = () => {
                 )}
               </div>
 
-              {/* DESCRIPCIÓN EDITABLE */}
               {isEditing ? (
                 <textarea
                   className="textarea textarea-ghost w-full text-lg leading-relaxed px-0 h-32 resize-none focus:bg-transparent border-l-4 border-white/40 rounded-none pl-4"
@@ -270,8 +255,6 @@ const CollectionPage = () => {
                   {collectionInfo.description}
                 </p>
               )}
-
-              {/* Stats & Actions */}
               <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-white/40">
                 <div className="flex gap-6 text-sm">
                   <div className="text-center">
@@ -287,14 +270,10 @@ const CollectionPage = () => {
                     <span className="opacity-60">Likes</span>
                   </div>
                 </div>
-
-                {/* BOTONERA DE ACCIONES */}
                 <div className="flex gap-3">
                   {isOwner ? (
-                    /* MODO DUEÑO */
                     <>
                       {isEditing ? (
-                        /* BOTONES DE GUARDAR / CANCELAR */
                         <>
                           <button
                             onClick={handleSaveEditing}
@@ -311,7 +290,6 @@ const CollectionPage = () => {
                           </button>
                         </>
                       ) : (
-                        /* BOTONES NORMALES */
                         <>
                           <button
                             onClick={handleStartEditing}
@@ -329,7 +307,6 @@ const CollectionPage = () => {
                       )}
                     </>
                   ) : (
-                    /* ACCIONES VISITANTE */
                     <>
                       <button className="btn btn-outline btn-sm gap-2 rounded-full hover:bg-pink-50 hover:border-pink-200 hover:text-pink-500 transition-colors">
                         <Heart size={18} /> Me gusta
@@ -339,8 +316,6 @@ const CollectionPage = () => {
                       </button>
                     </>
                   )}
-
-                  {/* Botón compartir siempre visible */}
                   {!isEditing && (
                     <button className="btn btn-square btn-ghost btn-sm rounded-full">
                       <Share2 size={18} />
@@ -352,8 +327,6 @@ const CollectionPage = () => {
           </div>
         </div>
       </div>
-
-      {/* --- GRID DE ITEMS --- */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-8">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           Contenido

@@ -10,7 +10,7 @@ import GoogleSignIn from '../components/GoogleSignIn';
 import fotoLogin from '../assets/foto-login.jpg';
 import Logo from '../assets/LogoClaro.png';
 import api from "../services/api";
-
+import {useAuth} from '../context/AuthContext';
 const SITE_KEY = '6LdZWC0sAAAAAEuorDFJYAuZWVbR_zGL-FTmgHHh';
 
 // 1. Esquemas de validación
@@ -42,7 +42,7 @@ const AuthScreen = ({ type = 'login' }) => {
   const isLogin = type === 'login';
   const isForgot = type === 'forgot';
   const isRegister = type === 'register';
-
+  const {login}= useAuth()
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -93,16 +93,19 @@ const onSubmit = async (data) => {
       if (isForgot) endpoint = '/users/forgot-password';
 
       const response = await api.post(endpoint, { ...data, 'g-recaptcha-response': token });
-      
-      // 1. Verificamos si el servidor dice que todo OK
+    
       if (response.data.success) {
-        const userId = response.data.userId; // Extraemos el ID del nuevo usuario
-        
+        login(
+          {
+            id:response.data.userId,
+            username:response.data.username,
+            avatar:response.data.avatar
+          }
+          ,response.data.token
+          );
         if (isRegister) {
-          // 🚀 SI ES REGISTRO: Vamos directos al Onboarding
-          navigate('/onboarding', { state: { userId } });
-        } else if (isLogin) {
-          // SI ES LOGIN: Vamos al feed/inicio
+          navigate('/onboarding');
+        } else if (isLogin) {  
           navigate('/feed');
         } else {
           setSuccess("Enlace enviado con éxito.");
@@ -139,7 +142,7 @@ const onSubmit = async (data) => {
     <div className="min-h-screen flex w-full bg-base-100">
       {/* SECCIÓN IZQUIERDA */}
       <div className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative" style={{ backgroundImage: `url(${fotoLogin})` }}>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent"></div>
         <div className="relative z-10 p-16 flex flex-col h-full text-white">
           <img src={Logo} alt="Logo" className="w-30 h-auto mb-4" />
           <p className="text-xl max-w-md font-medium">Organiza lo que te inspira y conéctate a través de tus colecciones</p>

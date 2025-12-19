@@ -3,17 +3,13 @@ const db = require("../config/dbconect");
 exports.searchCatalog = async (req, res) => {
   const { category, query } = req.query;
 
-  // Si no hay texto de búsqueda, devolvemos vacío
   if (!query) return res.json([]);
-
   const searchTerm = `%${query}%`;
   let sql = "";
   let params = [];
 
   try {
-    // ---------------------------------------------------------
-    // OPCIÓN A: BÚSQUEDA ESPECÍFICA (Music, Books, Games...)
-    // ---------------------------------------------------------
+  
     if (category && category !== 'General' && category !== 'Custom') {
       
       switch (category) {
@@ -50,20 +46,10 @@ exports.searchCatalog = async (req, res) => {
         default:
           return res.status(400).json({ error: "Categoría no válida" });
       }
-
-      // Ejecutamos la consulta específica y DEVOLVEMOS la respuesta aquí para terminar
       const [results] = await db.query(sql, params);
       return res.json(results);
     }
 
-    // ---------------------------------------------------------
-    // OPCIÓN B: BÚSQUEDA GENERAL / CUSTOM (Busca en todo)
-    // ---------------------------------------------------------
-    
-    // Preparamos las 5 consultas en paralelo
-    // Nota: Usamos alias (AS) para que el frontend reciba siempre 'subtitle' e 'image'
-    // sin importar si viene de autor, artista, poster o cover.
-    
     const searchMusic = db.query(
       `SELECT music_id as id, 'Music' as type, title, artist as subtitle, release_year, cover_url as image 
        FROM Catalog_Music WHERE title LIKE ? OR artist LIKE ? LIMIT 5`, 
@@ -93,13 +79,10 @@ exports.searchCatalog = async (req, res) => {
        FROM Catalog_Games WHERE title LIKE ? LIMIT 5`, 
       [searchTerm]
     );
-
-    // Ejecutamos todas a la vez
     const [music, books, movies, shows, games] = await Promise.all([
       searchMusic, searchBooks, searchMovies, searchShows, searchGames
     ]);
 
-    // Combinamos los resultados (recuerda que db.query devuelve [rows, fields], por eso tomamos el índice 0)
     const combinedResults = [
       ...music[0],
       ...books[0],

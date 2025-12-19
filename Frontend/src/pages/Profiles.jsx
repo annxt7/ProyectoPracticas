@@ -14,9 +14,11 @@ import {
 import { Link } from "react-router-dom";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
+import {useAuth} from "../context/AuthContext";
 
 const Profile = ({ isOwnProfile = true }) => {
   const [activeTab, setActiveTab] = useState("collections");
+  const {user}=useAuth();
 
   // ESTADO DE LA IMAGEN DE PERFIL
   const [profileImage, setProfileImage] = useState(
@@ -156,7 +158,7 @@ const Profile = ({ isOwnProfile = true }) => {
             <div className="space-y-3 mb-6">
               <div>
                 <h1 className="text-2xl md:text-4xl font-bold font-serif tracking-tight">
-                  Usuario_07
+                  {user.username}
                 </h1>
                 <p className="text-sm text-base-content/60 flex items-center gap-1 mt-1 font-medium">
                   <MapPin size={14} /> Madrid, ES

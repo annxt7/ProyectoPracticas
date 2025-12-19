@@ -1,17 +1,12 @@
 const db = require("../config/dbconect");
 
-// 1. Crear una nueva Colección (Esta es la que te faltaba o fallaba)
 exports.createCollection = async (req, res) => {
   const { user_id, collection_name, collection_type, collection_description, is_private } = req.body;
-
   try {
     const sql = `
       INSERT INTO Collections (user_id, collection_name, collection_type, collection_description, is_private)
       VALUES (?, ?, ?, ?, ?)
     `;
-    // Usamos is_private || false para que si no envían nada, sea pública por defecto
-    const [result] = await db.query(sql, [user_id, collection_name, collection_type, collection_description, is_private || false]);
-
     res.status(201).json({ 
         message: "Colección creada", 
         collectionId: result.insertId 
@@ -22,7 +17,6 @@ exports.createCollection = async (req, res) => {
   }
 };
 
-// 2. Obtener todas las colecciones de un usuario
 exports.getUserCollections = async (req, res) => {
     const { userId } = req.params;
     try {
@@ -35,21 +29,15 @@ exports.getUserCollections = async (req, res) => {
     }
 };
 
-// 3. Obtener el detalle de una colección y sus items
 exports.getCollectionDetails = async (req, res) => {
     const { id } = req.params; 
 
     try {
-        // A) Info de la colección
         const [collectionRows] = await db.query("SELECT * FROM Collections WHERE collection_id = ?", [id]);
-        
         if (collectionRows.length === 0) {
             return res.status(404).json({ error: "Colección no encontrada" });
         }
-
         const collection = collectionRows[0];
-
-        // B) Items dentro de la colección
         const itemsSql = `
             SELECT 
                 i.item_id, i.item_type, i.custom_description,
@@ -65,9 +53,7 @@ exports.getCollectionDetails = async (req, res) => {
             LEFT JOIN Catalog_Games g ON i.game_id = g.game_id
             WHERE i.collection_id = ?
         `;
-
         const [items] = await db.query(itemsSql, [id]);
-
         res.json({ ...collection, items });
 
     } catch (error) {
@@ -76,7 +62,6 @@ exports.getCollectionDetails = async (req, res) => {
     }
 };
 
-// 4. Añadir un item a la colección
 exports.addItemToCollection = async (req, res) => {
   const { collection_id } = req.params;
   const { 
@@ -90,8 +75,7 @@ exports.addItemToCollection = async (req, res) => {
   try {
     let sql = "";
     let params = [];
-
-    // CASO A: Item desde Catálogo
+    //Categoría predefinida
     if (reference_id && item_type !== 'Custom') {
         let colName = "";
         switch (item_type) {
@@ -102,19 +86,16 @@ exports.addItemToCollection = async (req, res) => {
             case 'Games': colName = 'game_id'; break;
             default: return res.status(400).json({ error: "Tipo inválido" });
         }
-
         sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
         params = [collection_id, item_type, reference_id];
     } 
-    // CASO B: Item Manual / Custom
+    //Item custom
     else {
         sql = `INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description) VALUES (?, ?, ?, ?, ?)`;
         params = [collection_id, item_type, custom_title, custom_subtitle, custom_description];
     }
-
     await db.query(sql, params);
     res.status(201).json({ message: "Item añadido correctamente" });
-
   } catch (error) {
     console.error("Error añadiendo item:", error);
     res.status(500).json({ error: "Error al guardar el item" });

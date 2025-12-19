@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Music, Book, Film, Gamepad2, Tv, Camera, Check, ArrowRight, Plus } from 'lucide-react';
 import api from "../services/api"; // Tu instancia de axios
+import { uploadFileToCloudinary } from '../services/upload';
 
 
 const categories = [
@@ -24,8 +25,8 @@ const OnboardingPage = () => {
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [uploadingFile,setUploadingFile]=(false)
 
-  // Función para seleccionar/deseleccionar gustos
   const toggleInterest = (id) => {
     if (selectedInterests.includes(id)) {
       setSelectedInterests(selectedInterests.filter(item => item !== id));
