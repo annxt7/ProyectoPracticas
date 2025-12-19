@@ -138,7 +138,7 @@ const onSubmit = async (data) => {
     login({
       id: user.userId,
       username: user.username,
-      avatar: user.avatarUrl,
+      avatar: user.avatar,
       email: user.email
     }, token);
 
