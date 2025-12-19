@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userController= require('../controllers/userController')
 const { registerValidator } = require("../middlewares/userValidations");
-const { verify } = require("jsonwebtoken");
+const { verifyToken } = require("jsonwebtoken");
 
 //GETS
 
