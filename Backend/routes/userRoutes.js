@@ -6,12 +6,12 @@ const { registerValidator } = require("../middlewares/userValidations");
 //GETS
 
 router.get("/test-users", userController.getUsers)
-  
 
 //POSTS
 
 router.post("/register", registerValidator, userController.createUser) 
-router.post("/google", userController.googleLogin);
+router.post('/google', userController.googleLogin);
+router.get('/check-username/:username', userController.checkUsername);
 router.put("/complete-profile", userController.completeProfile);
 
 module.exports=router

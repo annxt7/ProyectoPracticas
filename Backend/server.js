@@ -11,7 +11,37 @@ const dbconection = require("./config/dbconect");
 
 const app = express();
 // MIDDLEWARES 
-app.use(helmet());
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            useDefaults: true,
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"], 
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", "data:"],
+                connectSrc: ["'self'"],
+                fontSrc: ["'self'"],
+                objectSrc: ["'none'"],
+                frameSrc: ["'none'"],
+                upgradeInsecureRequests: [],
+            },
+        },
+        frameguard: { action: "deny" },
+        referrerPolicy: { policy: "no-referrer" },
+        hidePoweredBy: true,
+        noSniff: true,
+        xssFilter: true,
+        hsts: {
+            maxAge: 63072000,
+            includeSubDomains: true,
+            preload: true,
+        },
+        crossOriginEmbedderPolicy: true,
+        crossOriginOpenerPolicy: { policy: "same-origin" },
+        crossOriginResourcePolicy: { policy: "same-origin" },
+    })
+);
 app.use(cors()); 
 app.use(express.json());
 
