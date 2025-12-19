@@ -79,6 +79,7 @@ const onSubmit = async (data) => {
     setSuccess(null);
 
     let token = null;
+    // 1. Manejo del Captcha (Solo registro)
     if (isRegister) {
       token = window.grecaptcha.getResponse();
       if (!token) {
@@ -92,49 +93,60 @@ const onSubmit = async (data) => {
       let endpoint = isRegister ? '/users/register' : '/users/login';
       if (isForgot) endpoint = '/users/forgot-password';
 
+      // 2. Petición al Backend
+      // Nota: Aquí tus endpoints (createUser y login) siguen devolviendo los datos "planos"
+      // (userId, username, token) en la raíz del objeto, no dentro de 'user'.
+      // Por eso aquí usamos response.data.userId y NO response.data.user.userId
       const response = await api.post(endpoint, { ...data, 'g-recaptcha-response': token });
     
       if (response.data.success) {
-        login(
-          {
-            id:response.data.userId,
-            username:response.data.username,
-            avatar:response.data.avatar
-          }
-          ,response.data.token
-          );
+        
+        // 3. Login en el contexto
+        login({
+            id: response.data.userId,
+            username: response.data.username,
+            avatar: response.data.avatar // En registro manual esto será undefined, no pasa nada
+          }, 
+          response.data.token
+        );
+
+        // 4. Redirecciones CORREGIDAS
         if (isRegister) {
-          navigate('/onboarding');
+          // ¡AQUÍ ESTABA EL FALLO! 
+          // Hay que pasar el userId para que el Onboarding no nos eche
+          navigate('/onboarding', { 
+            state: { 
+              userId: response.data.userId,
+              username: response.data.username,
+              googleAvatar: null // En manual no hay foto de Google
+            } 
+          });
+          
         } else if (isLogin) {  
           navigate('/feed');
         } else {
           setSuccess("Enlace enviado con éxito.");
         }
       }
+
     } catch (err) {
+      console.error("Error submit:", err);
       setError(err.response?.data?.error || 'Error de conexión.');
-      if (isRegister) window.grecaptcha.reset();
+      if (isRegister && window.grecaptcha) window.grecaptcha.reset();
     } finally {
       setLoading(false);
     }
   };
-
  const handleGoogleSuccess = async (idToken) => {
   setLoading(true);
   setError(null);
   
   try {
-    // 1. Petición al backend
+   
     const response = await api.post('/users/google', { token: idToken });
     
     console.log("Respuesta del servidor:", response.data);
-
-    // 2. Desestructuramos la respuesta (basado en el backend que arreglamos antes)
-    // El backend devuelve: { success, token, user: { userId, username... }, isNewUser }
     const { token, user, isNewUser } = response.data;
-
-    // 3. ¡PASO CRÍTICO QUE FALTABA! -> Guardar la sesión en el Contexto
-    // Si no haces esto, las rutas protegidas no funcionarán
     login({
       id: user.userId,
       username: user.username,
@@ -150,7 +162,7 @@ const onSubmit = async (data) => {
         state: { 
           userId: user.userId, 
           username: user.username,
-          googleAvatar: user.avatarUrl 
+          googleAvatar: user.avatar 
         } 
       });
     } else {

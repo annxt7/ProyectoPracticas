@@ -164,7 +164,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// POST: Login con Google
+
 // POST: Login con Google
 exports.googleLogin = async (req, res) => {
   const { token } = req.body;
@@ -174,13 +174,11 @@ exports.googleLogin = async (req, res) => {
   }
 
   try {
-    // 1. Validar el token con Google
+  
     const googleResponse = await axios.get(
       `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`
     );
     const { email, name, picture, sub: googleId } = googleResponse.data;
-
-    // 2. Buscar usuario en la Base de Datos
     const [existingUser] = await db.query(
       "SELECT * FROM Users WHERE email = ?",
       [email]
