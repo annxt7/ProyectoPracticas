@@ -13,12 +13,12 @@ const app = express();
 // MIDDLEWARES 
 const allowedOrigins = [
     "http://localhost:5173",
+    "http://localhost:3000",
     "https://axel.informaticamajada.es"
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Permitimos peticiones sin origen (como Postman) o las que estén en la lista
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
@@ -29,7 +29,6 @@ app.use(cors({
     credentials: true
 }));
 
-// 2. Configuración de HELMET
 app.use(
     helmet({
         contentSecurityPolicy: {
@@ -38,8 +37,7 @@ app.use(
                 "default-src": ["'self'"],
                 "connect-src": [
                     "'self'", 
-                    "http://localhost:3000", 
-                    "https://axel.informaticamajada.es", // Tu dominio de producción
+                    ...allowedOrigins, 
                     "https://accounts.google.com", 
                     "https://www.googleapis.com"
                 ],
@@ -57,13 +55,13 @@ app.use(
                 "img-src": [
                     "'self'", 
                     "data:", 
-                    "https://lh3.googleusercontent.com", // Fotos de Google
+                    "https://lh3.googleusercontent.com", // Fotos de perfil de Google
                     "https://axel.informaticamajada.es"
                 ],
                 "style-src": ["'self'", "'unsafe-inline'"],
             },
         },
-        // Mantenemos la compatibilidad con el Popup de Google
+        // ARREGLA EL ERROR: "Cross-Origin-Opener-Policy would block the window.postMessage call"
         crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
         crossOriginResourcePolicy: { policy: "cross-origin" },
     })
