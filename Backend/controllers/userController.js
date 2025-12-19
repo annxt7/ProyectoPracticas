@@ -4,22 +4,24 @@ const axios = require("axios");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { response } = require("express");
+require('dotenv').config();
+
 const SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
-// GET: Obtener usuarios
-exports.getUsers = async (req, res) => {
+// 1. GET: Verificar disponibilidad de username (Para el Onboarding Paso 0)
+exports.checkUsername = async (req, res) => {
   try {
     const [rows] = await db.query(
       "SELECT user_id, username, email, avatar_url FROM Users"
     );
     res.status(200).json(rows.length > 0 ? rows : []);
   } catch (error) {
-    console.error("Error en getUsers:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("Error en checkUsername:", error);
+    res.status(500).json({ error: "Error de servidor" });
   }
 };
 
-// POST: Registrar usuario (con Captcha)
+// 2. POST: Registrar usuario manual (con Captcha)
 exports.createUser = async (req, res) => {
   const {
     username,
@@ -28,7 +30,6 @@ exports.createUser = async (req, res) => {
     "g-recaptcha-response": captchaToken,
   } = req.body;
 
-  // 1. Verificación de Captcha
   if (!captchaToken) {
     return res.status(400).json({ error: "Por favor, completa el reCAPTCHA." });
   }
@@ -42,6 +43,8 @@ exports.createUser = async (req, res) => {
       params
     );
     console.log("Respuesta de Google Captcha:", googleResp.data);
+    
+    
     if (!googleResp.data.success) {
       return res
         .status(403)
@@ -79,6 +82,8 @@ exports.createUser = async (req, res) => {
       token: token,
       username:username,
       success: true,
+      userId: result.insertId,
+      username: username // Se devuelve para saltar el Paso 0 en Onboarding
     });
   } catch (error) {
     console.error("Error en createUser:", error);
@@ -174,30 +179,45 @@ exports.googleLogin = async (req, res) => {
     );
 
     if (existingUser.length > 0) {
+      const user = existingUser[0];
+      
+      // Si el usuario ya existe, comprobamos si ya completó su perfil (ej. si ya tiene intereses)
+      // Asumimos que si no tiene intereses guardados, debe ir al onboarding
+      const [interests] = await db.query("SELECT * FROM UserInterests WHERE user_id = ?", [user.user_id]);
+      const needsOnboarding = interests.length === 0;
+
       return res.status(200).json({
-        message: "Bienvenido de nuevo con Google",
-        userId: existingUser[0].user_id,
         success: true,
+        isNewUser: needsOnboarding, 
+        userId: user.user_id,
+        username: user.username, // Enviamos el username real, ya no es null
+        avatarUrl: user.avatar_url
       });
+
     } else {
       const sql =
         "INSERT INTO Users (username, email, avatar_url, google_id) VALUES (?, ?, ?, ?)";
       const [result] = await db.query(sql, [name, email, picture, googleId]);
       return res.status(201).json({
-        message: "Cuenta creada con Google",
+        success: true,
+        isNewUser: true, 
         userId: result.insertId,
         success: true,
       });
     }
+
   } catch (error) {
-    console.error("Error con Google Login:", error);
-    res.status(401).json({ error: "El token de Google no es válido" });
+    console.error("Error en googleLogin:", error.message);
+    res.status(401).json({ 
+      success: false, 
+      error: "Fallo en la autenticación" 
+    });
   }
 };
 
-// POST: Finalizar configuración de perfil
+// 4. PUT: Finalizar configuración de perfil (Actualiza Username, Avatar e Intereses)
 exports.completeProfile = async (req, res) => {
-  const { userId, avatarUrl, interests } = req.body;
+  const { userId, username, avatarUrl, interests } = req.body;
 
   if (!userId) {
     return res.status(400).json({ error: "ID de usuario no proporcionado" });
@@ -240,6 +260,16 @@ exports.completeProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("Error en completeProfile:", error);
-    res.status(500).json({ error: "Error interno al procesar el perfil" });
+    res.status(500).json({ error: "Error al procesar el perfil" });
+  }
+};
+
+// 5. GET: Obtener usuarios (opcional para pruebas)
+exports.getUsers = async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT user_id, username, email, avatar_url FROM Users");
+    res.status(200).json(rows);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener usuarios" });
   }
 };

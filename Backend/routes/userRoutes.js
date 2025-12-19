@@ -7,7 +7,6 @@ const { verify } = require("jsonwebtoken");
 //GETS
 
 router.get("/test-users", userController.getUsers)
-  
 
 //POSTS
 

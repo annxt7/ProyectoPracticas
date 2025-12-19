@@ -119,24 +119,36 @@ const onSubmit = async (data) => {
     }
   };
 
-  const handleGoogleSuccess = async (idToken) => {
-    setLoading(true);
+ const handleGoogleSuccess = async (idToken) => {
+  setLoading(true);
   setError(null);
   try {
     const response = await api.post('/users/google', { token: idToken });
-    const { userId, isNewUser } = response.data;
+    
+    console.log("Respuesta del servidor:", response.data);
 
-    if (isNewUser) {
-      navigate('/onboarding', { state: { userId } });
+    // 1. Extraemos isNewUser, userId y TAMBIÉN username
+    const { isNewUser, userId, username } = response.data;
+
+    // 2. IMPORTANTE: Si isNewUser es undefined (porque el backend no lo envía), 
+    // puedes forzar la lógica basándote en si el mensaje dice "Cuenta creada"
+    const shouldGoToOnboarding = isNewUser || response.data.message === "Cuenta creada con Google";
+
+    if (shouldGoToOnboarding) {
+      console.log("Navegando a Onboarding con ID:", userId);
+      // Pasamos tanto el userId como el username (que será null para Google)
+      navigate('/onboarding', { state: { userId, username } });
     } else {
+      console.log("Usuario antiguo, al feed");
       navigate('/feed');
     }
   } catch (err) {
-    setError(err.response?.data?.error || 'Error Google.');
+    console.error("Error en Google Auth:", err);
+    setError(err.response?.data?.error || 'Error al conectar con Google.');
   } finally {
     setLoading(false);
   }
-  };
+};
 
   return (
     <div className="min-h-screen flex w-full bg-base-100">
