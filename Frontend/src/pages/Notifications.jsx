@@ -20,7 +20,7 @@ const Activity = () => {
     {
       id: 1,
       type: "like_collection",
-      user: { name: "Ana_Design", avatar: "https://i.pravatar.cc/150?u=1" },
+      user: { name: "Alba_Sura", avatar: "https://i.pravatar.cc/150?u=1" },
       content: "le gustó tu colección",
       target: "Minimalist Workspaces",
       image:
@@ -31,7 +31,7 @@ const Activity = () => {
     {
       id: 2,
       type: "follow",
-      user: { name: "Julian.Arch", avatar: "https://i.pravatar.cc/150?u=2" },
+      user: { name: "Vicente_Van_Coco", avatar: "https://i.pravatar.cc/150?u=2" },
       content: "empezó a seguirte",
       time: "1h",
       read: false,
@@ -40,10 +40,10 @@ const Activity = () => {
     {
       id: 3,
       type: "comment",
-      user: { name: "Luisa_V", avatar: "https://i.pravatar.cc/150?u=3" },
+      user: { name: "Knight_Queen", avatar: "https://i.pravatar.cc/150?u=3" },
       content: "comentó en",
       target: "Sci-Fi Classics",
-      commentSnippet: '"¡Increíble selección! Blade Runner es top."',
+      commentSnippet: '"¡Toma geroma pastilla de goma."',
       image:
         "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=200",
       time: "5h",
@@ -59,7 +59,7 @@ const Activity = () => {
     {
       id: 5,
       type: "like_item",
-      user: { name: "Dave_Grohl", avatar: "https://i.pravatar.cc/150?u=4" },
+      user: { name: "Pluton_es_un_planeta", avatar: "https://i.pravatar.cc/150?u=4" },
       content: "le gustó un elemento en",
       target: "Vinilos 70s",
       image:

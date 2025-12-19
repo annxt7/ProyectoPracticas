@@ -15,9 +15,9 @@ const Feed = () => {
   const activities = [
     {
       id: 1,
-      user: "sofia_art",
+      user: "wencesalao",
       avatar:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100",
+        "https://imgs.search.brave.com/EDL7iK8SSFkntK8uxkJTfgixZIjgopbJ7kpIslyzNzI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy9l/L2U0L1dlbmNlc2xh/b19WaW56b25zXzIw/MTBfc3RhbXBfb2Zf/dGhlX1BoaWxpcHBp/bmVzLmpwZw",
       action: "añadió a la colección",
       target: "Vinilos 80s",
       image:
@@ -29,7 +29,7 @@ const Feed = () => {
     },
     {
       id: 2,
-      user: "marc_design",
+      user: "xxx_gumersindo_xxx",
       avatar:
         "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=100",
       action: "creó una nueva colección",
@@ -43,9 +43,9 @@ const Feed = () => {
     },
     {
       id: 3,
-      user: "luna_reads",
+      user: "sormariahfernandha",
       avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100",
+        "https://imgs.search.brave.com/yosZpGDVm5HYPMlx2W2LP-uAfvhpklMT5PhRNA0qyvo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy83/Lzc4L1Nvcl9NYXIl/QzMlQURhX1N1JUMz/JUExcmV6X1YlQzMl/QTF6cXVlel8oMjAw/OSkuSlBH",
       action: "guardó un elemento",
       target: "Lecturas 2024",
       image:
