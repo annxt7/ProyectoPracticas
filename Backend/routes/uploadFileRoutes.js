@@ -24,7 +24,7 @@ res.json({
     success:true,
     url:req.file.path
 });
-}catch{
+}catch(error){
 res.status(500).json({success:false, error: error.message});
 }
 });

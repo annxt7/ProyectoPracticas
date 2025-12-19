@@ -1,7 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Settings,
-  Plus,
   UserPlus,
   Grid,
   Bookmark,
@@ -9,29 +8,30 @@ import {
   MapPin,
   Share2,
   X,
-  Camera, // Icono para la foto
+  Camera, 
+  Plus
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
-import {useAuth} from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api"; // <--- IMPORTANTE: Asegúrate de importar tu cliente API
 
 const Profile = ({ isOwnProfile = true }) => {
   const [activeTab, setActiveTab] = useState("collections");
-  const {user}=useAuth();
+  const { user, login } = useAuth(); // Importamos login para actualizar el contexto si hace falta
 
-  // ESTADO DE LA IMAGEN DE PERFIL
+  // Inicializamos con la foto del usuario real (o un placeholder si no tiene)
   const [profileImage, setProfileImage] = useState(
-    "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg"
+    user?.avatar || "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg"
   );
+  
+  const [isUploading, setIsUploading] = useState(false); // Estado para loading
 
-  // REFERENCIA AL INPUT INVISIBLE DE ARCHIVO
   const fileInputRef = useRef(null);
-
   const [description, setDescription] = useState(
-    "Cineasta visual y recolectora de vinilos de los 70s. Intentando organizar mi caos visual en pequeñas dosis. ☕️ & 🎬"
+    user?.bio || "Cineasta visual y recolectora de vinilos..." // Usar bio real si existe
   );
-
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState("");
 
@@ -41,32 +41,67 @@ const Profile = ({ isOwnProfile = true }) => {
     { label: "Siguiendo", value: "342" },
   ];
 
-  // Activar edición
   const handleStartEditing = () => {
     setNewDescription(description);
     setIsEditing(true);
   };
 
-  // Guardar biografía
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (newDescription.trim()) {
-      setDescription(newDescription);
-      setIsEditing(false);
+      try {
+        // Actualizar Bio en Backend
+        await api.put('/users/update-profile', { bio: newDescription });
+        setDescription(newDescription);
+        setIsEditing(false);
+      } catch (error) {
+        console.error("Error actualizando bio", error);
+      }
     }
   };
 
-  // CAMBIAR FOTO DE PERFIL
-  const handleImageChange = (e) => {
+  // === LÓGICA DE SUBIDA DE IMAGEN ===
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfileImage(imageUrl);
+    if (!file) return;
+
+    // 1. Preview inmediata para que se sienta rápido
+    const localPreview = URL.createObjectURL(file);
+    setProfileImage(localPreview);
+    setIsUploading(true);
+
+    try {
+      // 2. Preparar FormData para enviar al Backend
+      const formData = new FormData();
+      // ¡OJO! El nombre 'imagen' debe coincidir con upload.single('imagen') de tu backend
+      formData.append('imagen', file); 
+
+      // 3. Subir archivo a Cloudinary a través de TU backend
+      const uploadRes = await api.post('/files/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const cloudinaryUrl = uploadRes.data.url;
+      console.log("Imagen subida a Cloudinary:", cloudinaryUrl);
+
+      // 4. Actualizar la URL en la base de datos del usuario
+      await api.put('/users/update-profile', { 
+        avatarUrl: cloudinaryUrl 
+      });
+
+      console.log("Perfil actualizado con éxito");
+
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      alert("Hubo un error al subir la imagen");
+      // Revertir a la imagen anterior si falla (opcional)
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handlePhotoClick = () => {
-    if (isOwnProfile && fileInputRef.current) {
+    if (isOwnProfile && fileInputRef.current && !isUploading) {
       fileInputRef.current.click();
     }
   };
@@ -75,27 +110,34 @@ const Profile = ({ isOwnProfile = true }) => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      <main className=" mx-auto">
+      <main className="mx-auto">
         {/* HEADER */}
         <div className="relative">
-          {/* BANNER (Fondo) - CORREGIDO */}
+          {/* BANNER */}
           <div className="h-40 md:h-80 w-full relative bg-neutral-900 overflow-hidden">
-            {/* Imagen normal (sin opacity-50 que la dejaba gris) */}
             <img
               src="https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg"
               alt="cover"
               className="w-full h-full object-cover"
             />
-            {/* Degradado negro solo abajo para que se lea el texto, sin tapar la foto entera */}
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
           </div>
 
           <div className="px-6 relative">
             <div className="flex justify-between items-end -mt-12 mb-4">
-              {/* === FOTO DE PERFIL (ESTILO INSTAGRAM) === */}
+              
+              {/* === FOTO DE PERFIL === */}
               <div className="relative" onClick={handlePhotoClick}>
-                <div className="avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm cursor-pointer">
+                <div className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isOwnProfile ? 'cursor-pointer hover:ring-primary/50 transition-all' : ''}`}>
                   <div className="w-24 md:w-32 rounded-full overflow-hidden relative bg-base-200">
+                    
+                    {/* Spinner de carga si está subiendo */}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                        <span className="loading loading-spinner text-white"></span>
+                      </div>
+                    )}
+                    
                     <img
                       src={profileImage}
                       alt="profile"
@@ -104,7 +146,7 @@ const Profile = ({ isOwnProfile = true }) => {
                   </div>
                 </div>
 
-                {/* BOTÓN DE CÁMARA FLOTANTE (Badge) - Soluciona el problema móvil */}
+                {/* BOTÓN DE CÁMARA */}
                 {isOwnProfile && (
                   <button
                     className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white/40 hover:bg-base-200 transition-colors z-10"
@@ -114,28 +156,27 @@ const Profile = ({ isOwnProfile = true }) => {
                   </button>
                 )}
 
-                {/* Input file oculto */}
                 <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleImageChange}
                   className="hidden"
                   accept="image/*"
+                  disabled={isUploading}
                 />
               </div>
 
-              {/* Botones de Acción */}
+              {/* Botones de Acción (El resto del código sigue igual) */}
               <div className="flex gap-2 mt-2 mb-2">
                 {isOwnProfile ? (
                   <>
                     <button
-                      onClick={handleStartEditing}base-300
+                      onClick={handleStartEditing}
                       className="btn btn-sm md:btn-md py-1 btn-ghost border border-white/40 rounded-full px-4 md:px-6 hover:bg-base-200"
                     >
                       Editar Perfil
                     </button>
                     <button
-                      onClick={handleStartEditing}
                       className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40"
                     >
                       <Settings size={18} />
@@ -153,7 +194,6 @@ const Profile = ({ isOwnProfile = true }) => {
                 )}
               </div>
             </div>
-
             {/* Texto Bio */}
             <div className="space-y-3 mb-6">
               <div>

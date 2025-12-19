@@ -122,28 +122,45 @@ const onSubmit = async (data) => {
  const handleGoogleSuccess = async (idToken) => {
   setLoading(true);
   setError(null);
+  
   try {
+    // 1. Petición al backend
     const response = await api.post('/users/google', { token: idToken });
     
     console.log("Respuesta del servidor:", response.data);
 
-    // 1. Extraemos isNewUser, userId y TAMBIÉN username
-    const { isNewUser, userId, username } = response.data;
+    // 2. Desestructuramos la respuesta (basado en el backend que arreglamos antes)
+    // El backend devuelve: { success, token, user: { userId, username... }, isNewUser }
+    const { token, user, isNewUser } = response.data;
 
-    // 2. IMPORTANTE: Si isNewUser es undefined (porque el backend no lo envía), 
-    // puedes forzar la lógica basándote en si el mensaje dice "Cuenta creada"
-    const shouldGoToOnboarding = isNewUser || response.data.message === "Cuenta creada con Google";
+    // 3. ¡PASO CRÍTICO QUE FALTABA! -> Guardar la sesión en el Contexto
+    // Si no haces esto, las rutas protegidas no funcionarán
+    login({
+      id: user.userId,
+      username: user.username,
+      avatar: user.avatarUrl,
+      email: user.email
+    }, token);
 
-    if (shouldGoToOnboarding) {
-      console.log("Navegando a Onboarding con ID:", userId);
-      // Pasamos tanto el userId como el username (que será null para Google)
-      navigate('/onboarding', { state: { userId, username } });
+    // 4. Redirección inteligente
+    if (isNewUser) {
+      console.log("Usuario nuevo -> Vamos a completar perfil");
+      // Pasamos el estado para que el Onboarding sepa quién es
+      navigate('/onboarding', { 
+        state: { 
+          userId: user.userId, 
+          username: user.username,
+          googleAvatar: user.avatarUrl 
+        } 
+      });
     } else {
-      console.log("Usuario antiguo, al feed");
+      console.log("Usuario recurrente -> Al feed");
       navigate('/feed');
     }
+
   } catch (err) {
     console.error("Error en Google Auth:", err);
+    // Manejo de errores específico si el backend devuelve mensaje
     setError(err.response?.data?.error || 'Error al conectar con Google.');
   } finally {
     setLoading(false);

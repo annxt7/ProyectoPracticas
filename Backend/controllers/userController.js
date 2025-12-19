@@ -165,52 +165,82 @@ exports.login = async (req, res) => {
 };
 
 // POST: Login con Google
+// POST: Login con Google
 exports.googleLogin = async (req, res) => {
   const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ success: false, error: "No se recibió el token." });
+  }
+
   try {
+    // 1. Validar el token con Google
     const googleResponse = await axios.get(
       `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`
     );
     const { email, name, picture, sub: googleId } = googleResponse.data;
 
+    // 2. Buscar usuario en la Base de Datos
     const [existingUser] = await db.query(
       "SELECT * FROM Users WHERE email = ?",
       [email]
     );
 
-    if (existingUser.length > 0) {
-      const user = existingUser[0];
-      
-      // Si el usuario ya existe, comprobamos si ya completó su perfil (ej. si ya tiene intereses)
-      // Asumimos que si no tiene intereses guardados, debe ir al onboarding
-      const [interests] = await db.query("SELECT * FROM UserInterests WHERE user_id = ?", [user.user_id]);
-      const needsOnboarding = interests.length === 0;
+    let user;
+    let isNewUser = false;
 
-      return res.status(200).json({
-        success: true,
-        isNewUser: needsOnboarding, 
-        userId: user.user_id,
-        username: user.username, // Enviamos el username real, ya no es null
-        avatarUrl: user.avatar_url
-      });
+    if (existingUser.length > 0) {
+      // === EL USUARIO YA EXISTE ===
+      user = existingUser[0];
+      
+      // AL NO USAR COLECCIONES AÚN:
+      // Asumimos que si está en la base de datos, NO es nuevo.
+      // Si quisieras forzar el onboarding, podrías mirar si user.avatar_url es nulo, etc.
+      isNewUser = false; 
 
     } else {
-      const sql =
-        "INSERT INTO Users (username, email, avatar_url, google_id) VALUES (?, ?, ?, ?)";
+      // === USUARIO NUEVO ===
+      const sql = "INSERT INTO Users (username, email, avatar_url, google_id) VALUES (?, ?, ?, ?)";
       const [result] = await db.query(sql, [name, email, picture, googleId]);
-      return res.status(201).json({
-        success: true,
-        isNewUser: true, 
-        userId: result.insertId,
-        success: true,
-      });
+      
+      user = {
+        user_id: result.insertId,
+        username: name,
+        email: email,
+        avatar_url: picture
+      };
+      isNewUser = true; // Esto le dirá al frontend que vaya al Onboarding
     }
+
+    // 3. Generar el Token JWT (CRUCIAL para que funcione el login)
+    const appToken = jwt.sign(
+      { 
+        id: user.user_id, 
+        username: user.username 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "5h" } // El token durará 5 horas
+    );
+
+    // 4. Responder al Frontend
+    return res.status(200).json({
+      success: true,
+      message: "Login correcto",
+      token: appToken,
+      user: {
+        userId: user.user_id,
+        username: user.username,
+        avatar: user.avatar_url,
+        email: user.email
+      },
+      isNewUser: isNewUser
+    });
 
   } catch (error) {
     console.error("Error en googleLogin:", error.message);
     res.status(401).json({ 
       success: false, 
-      error: "Fallo en la autenticación" 
+      error: "Error de autenticación en el servidor" 
     });
   }
 };
