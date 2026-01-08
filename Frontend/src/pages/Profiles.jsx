@@ -8,31 +8,38 @@ import {
   MapPin,
   Share2,
   X,
-  Camera, 
+  Camera,
   Plus
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { useAuth } from "../context/AuthContext";
-import api from "../services/api"; // <--- IMPORTANTE: Asegúrate de importar tu cliente API
+import api from "../services/api"; 
 
 const Profile = ({ isOwnProfile = true }) => {
   const [activeTab, setActiveTab] = useState("collections");
-  const { user, login } = useAuth(); 
+  // AÑADIDO: 'updateUser' para guardar los cambios en el navegador al instante
+  const { user, login, updateUser } = useAuth(); 
 
-  const [profileImage, setProfileImage] = useState(
-    user?.avatar || "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg"
-  );
-  
-  const [isUploading, setIsUploading] = useState(false); 
+  // Referencias a los inputs invisibles
+  const avatarInputRef = useRef(null);
+  const bannerInputRef = useRef(null); // <--- NUEVO: Referencia para el banner
 
-  const fileInputRef = useRef(null);
+  // Estado local para spinner de carga
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Estados de texto (Bio)
   const [description, setDescription] = useState(
-    user?.bio || "Hola! Soy nuevo en Tribe. " 
+    user?.bio || "Hola! Soy nuevo en Tribe."
   );
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState("");
+
+  // Sincronizar descripción si el usuario cambia (ej: al recargar)
+  useEffect(() => {
+    if (user?.bio) setDescription(user.bio);
+  }, [user]);
 
   const stats = [
     { label: "Colecciones", value: "12" },
@@ -45,12 +52,14 @@ const Profile = ({ isOwnProfile = true }) => {
     setIsEditing(true);
   };
 
-  const handleSave = async (e) => {
+  // Guardar Bio
+  const handleSaveBio = async (e) => {
     e.preventDefault();
     if (newDescription.trim()) {
       try {
         await api.put('/users/update-profile', { bio: newDescription });
         setDescription(newDescription);
+        updateUser({ bio: newDescription }); // Actualiza el contexto global
         setIsEditing(false);
       } catch (error) {
         console.error("Error actualizando bio", error);
@@ -58,40 +67,54 @@ const Profile = ({ isOwnProfile = true }) => {
     }
   };
 
-  const handleImageChange = async (e) => {
+  // --- FUNCIÓN UNIFICADA PARA SUBIR IMÁGENES (Avatar o Banner) ---
+  const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Vista previa inmediata (opcional, pero mejora UX)
     const localPreview = URL.createObjectURL(file);
-    setProfileImage(localPreview);
+    if (type === 'avatar') {
+       // Podrías tener un estado local aquí si quisieras, pero usaremos el user del contexto
+    }
+    
     setIsUploading(true);
 
     try {
       const formData = new FormData();
       formData.append('imagen', file); 
+      
+      // 1. Subir a Cloudflare/Servidor
       const uploadRes = await api.post('/files/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      const cloudinaryUrl = uploadRes.data.url;
-      console.log("Imagen subida a Cloudinary:", cloudinaryUrl);
-      await api.put('/users/update-profile', { 
-        avatarUrl: cloudinaryUrl 
-      });
+      const cloudUrl = uploadRes.data.url;
+      console.log(`Imagen (${type}) subida:`, cloudUrl);
+
+      // 2. Preparar datos para actualizar perfil
+      // Si type es 'avatar' manda { avatarUrl: ... }, si es 'banner' manda { bannerUrl: ... }
+      const payload = type === 'avatar' 
+        ? { avatarUrl: cloudUrl } 
+        : { bannerUrl: cloudUrl };
+
+      // 3. Guardar en Base de Datos
+      await api.put('/users/update-profile', payload);
+
+      // 4. Actualizar Contexto (para que se vea el cambio sin recargar)
+      if (type === 'avatar') {
+        updateUser({ avatar: cloudUrl });
+      } else {
+        updateUser({ banner: cloudUrl });
+      }
 
       console.log("Perfil actualizado con éxito");
 
     } catch (error) {
       console.error("Error al subir la imagen:", error);
       alert("Hubo un error al subir la imagen");
-      // Revertir a la imagen anterior si falla (opcional)
     } finally {
       setIsUploading(false);
-    }
-  };
-
-  const handlePhotoClick = () => {
-    if (isOwnProfile && fileInputRef.current && !isUploading) {
-      fileInputRef.current.click();
     }
   };
 
@@ -102,25 +125,50 @@ const Profile = ({ isOwnProfile = true }) => {
       <main className="mx-auto">
         {/* HEADER */}
         <div className="relative">
-          {/* BANNER */}
-          <div className="h-40 md:h-80 w-full relative bg-neutral-900 overflow-hidden">
+          
+          {/* === BANNER === */}
+          {/* Añadido grupo 'group' para efectos hover */}
+          <div className="h-40 md:h-80 w-full relative bg-neutral-900 overflow-hidden group">
             <img
-              src="https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg"
+              // Usa el banner del usuario, o el de por defecto si es null
+              src={user?.banner || "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg"}
               alt="cover"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+
+            {/* BOTÓN CAMBIAR BANNER (Solo si es tu perfil) */}
+            {isOwnProfile && (
+              <button 
+                onClick={() => !isUploading && bannerInputRef.current.click()}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
+                title="Cambiar portada"
+              >
+                <Camera size={20} />
+              </button>
+            )}
+
+            {/* INPUT OCULTO BANNER */}
+            <input 
+              type="file" 
+              ref={bannerInputRef} 
+              onChange={(e) => handleFileUpload(e, 'banner')} 
+              className="hidden" 
+              accept="image/*"
+              disabled={isUploading}
+            />
           </div>
 
           <div className="px-6 relative">
             <div className="flex justify-between items-end -mt-12 mb-4">
               
               {/* === FOTO DE PERFIL === */}
-              <div className="relative" onClick={handlePhotoClick}>
+              {/* Usamos una función anónima para el click del avatar */}
+              <div className="relative" onClick={() => isOwnProfile && !isUploading && avatarInputRef.current.click()}>
                 <div className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isOwnProfile ? 'cursor-pointer hover:ring-primary/50 transition-all' : ''}`}>
                   <div className="w-24 md:w-32 rounded-full overflow-hidden relative bg-base-200">
                     
-                    {/* Spinner de carga si está subiendo */}
+                    {/* Spinner de carga global para la zona de fotos */}
                     {isUploading && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
                         <span className="loading loading-spinner text-white"></span>
@@ -128,34 +176,34 @@ const Profile = ({ isOwnProfile = true }) => {
                     )}
                     
                     <img
-                      src={profileImage}
+                      src={user?.avatar || "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg"}
                       alt="profile"
                       className="object-cover w-full h-full"
                     />
                   </div>
                 </div>
 
-                {/* BOTÓN DE CÁMARA */}
+                {/* BOTÓN DE CÁMARA AVATAR */}
                 {isOwnProfile && (
                   <button
-                    className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white/40 hover:bg-base-200 transition-colors z-10"
-                    title="Cambiar foto"
+                    className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white/40 hover:bg-base-200 transition-colors z-10 pointer-events-none"
                   >
                     <Camera size={16} className="md:w-5 md:h-5" />
                   </button>
                 )}
 
+                {/* INPUT OCULTO AVATAR */}
                 <input
                   type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
+                  ref={avatarInputRef}
+                  onChange={(e) => handleFileUpload(e, 'avatar')} // Pasamos 'avatar' como tipo
                   className="hidden"
                   accept="image/*"
                   disabled={isUploading}
                 />
               </div>
 
-              {/* Botones de Acción (El resto del código sigue igual) */}
+              {/* Botones de Acción */}
               <div className="flex gap-2 mt-2 mb-2">
                 {isOwnProfile ? (
                   <>
@@ -183,11 +231,12 @@ const Profile = ({ isOwnProfile = true }) => {
                 )}
               </div>
             </div>
+
             {/* Texto Bio */}
             <div className="space-y-3 mb-6">
               <div>
                 <h1 className="text-2xl md:text-4xl font-bold font-serif tracking-tight">
-                  {user.username}
+                  {user?.username}
                 </h1>
                 <p className="text-sm text-base-content/60 flex items-center gap-1 mt-1 font-medium">
                   <MapPin size={14} /> Madrid, ES
@@ -197,7 +246,7 @@ const Profile = ({ isOwnProfile = true }) => {
               {/* === ZONA DE EDICIÓN DE BIO === */}
               {isEditing ? (
                 <form
-                  onSubmit={handleSave}
+                  onSubmit={handleSaveBio}
                   className="flex flex-col md:flex-row gap-3 items-start max-w-xl animate-in fade-in duration-300"
                 >
                   <div className="w-full relative group">
