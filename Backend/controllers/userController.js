@@ -5,10 +5,14 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { response } = require("express");
 require('dotenv').config();
+//Prueba BORRAR LUEGO
+const user = users[0];
+
+console.log("ESTRUCTURA DEL USUARIO:", Object.keys(user));
 
 const SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
-// 1. GET: Verificar disponibilidad de username (Para el Onboarding Paso 0)
+// GET: Comprobar disponibilidad de username
 exports.checkUsername = async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -21,7 +25,7 @@ exports.checkUsername = async (req, res) => {
   }
 };
 
-// 2. POST: Registrar usuario manual (con Captcha)
+// POST: Registrar usuario manual (con Captcha)
 exports.createUser = async (req, res) => {
   const {
     username,
@@ -83,7 +87,7 @@ exports.createUser = async (req, res) => {
       username:username,
       success: true,
       userId: result.insertId,
-      username: username // Se devuelve para saltar el Paso 0 en Onboarding
+      username: username 
     });
   } catch (error) {
     console.error("Error en createUser:", error);
@@ -93,11 +97,10 @@ exports.createUser = async (req, res) => {
 
 //POST:Actualizar perfil
 exports.updateProfile = async (req, res) => {
-  const userId = req.user.id; // Viene del token
-  const { bio, avatarUrl } = req.body; // Recibimos bio y/o la url de la foto
+  const userId = req.user.id; 
+  const { bio, avatarUrl } = req.body; 
 
   try {
-    // MODIFICADO: Quitamos username, añadimos avatar_url
     const sql = `
       UPDATE Users 
       SET 
@@ -105,17 +108,11 @@ exports.updateProfile = async (req, res) => {
         avatar_url = COALESCE(?, avatar_url)
       WHERE user_id = ?
     `;
-
-    // IMPORTANTE: El orden aquí debe coincidir con los '?' de arriba
-    // 1º ? -> bio
-    // 2º ? -> avatarUrl
-    // 3º ? -> userId
     await db.query(sql, [bio, avatarUrl, userId]);
 
     res.json({ 
       success: true, 
       message: "Perfil actualizado correctamente",
-      // Devolvemos los datos para que el frontend actualice el Contexto
       changes: { bio, avatarUrl } 
     });
 
@@ -140,8 +137,6 @@ exports.login = async (req, res) => {
     if (!validPassword) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
-
-    //Generar el token
     const token = jwt.sign(
       {
         id: user.user_id,
@@ -158,9 +153,17 @@ exports.login = async (req, res) => {
       username: user.username,
       avatar: user.avatar_url,
     });
-  } catch {
+  }catch (error) {
     console.error("Error en login:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    
+    // --- MODO DEBUG: ACTIVADO ---
+    // Esto enviará el error técnico al navegador para que podamos leerlo.
+    // IMPORTANTE: Quita esto cuando lo arregles, es inseguro para producción.
+    res.status(500).json({ 
+        error: "Error interno del servidor", 
+        debugMessage: error.message,  // <--- Esto nos dirá qué pasa
+        debugStack: error.stack       // <--- Esto nos dirá dónde pasa
+    });
   }
 };
 
@@ -188,16 +191,10 @@ exports.googleLogin = async (req, res) => {
     let isNewUser = false;
 
     if (existingUser.length > 0) {
-      // === EL USUARIO YA EXISTE ===
-      user = existingUser[0];
-      
-      // AL NO USAR COLECCIONES AÚN:
-      // Asumimos que si está en la base de datos, NO es nuevo.
-      // Si quisieras forzar el onboarding, podrías mirar si user.avatar_url es nulo, etc.
+      user = existingUser[0]; 
       isNewUser = false; 
 
     } else {
-      // === USUARIO NUEVO ===
       const sql = "INSERT INTO Users (username, email, avatar_url, google_id) VALUES (?, ?, ?, ?)";
       const [result] = await db.query(sql, [name, email, picture, googleId]);
       
@@ -207,10 +204,8 @@ exports.googleLogin = async (req, res) => {
         email: email,
         avatar_url: picture
       };
-      isNewUser = true; // Esto le dirá al frontend que vaya al Onboarding
+      isNewUser = true; 
     }
-
-    // 3. Generar el Token JWT (CRUCIAL para que funcione el login)
     const appToken = jwt.sign(
       { 
         id: user.user_id, 
@@ -219,8 +214,6 @@ exports.googleLogin = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "5h" } // El token durará 5 horas
     );
-
-    // 4. Responder al Frontend
     return res.status(200).json({
       success: true,
       message: "Login correcto",
@@ -243,7 +236,7 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
-// 4. PUT: Finalizar configuración de perfil (Actualiza Username, Avatar e Intereses)
+// 4. PUT: Añadir intereses y foto de perfil
 exports.completeProfile = async (req, res) => {
   const { userId, username, avatarUrl, interests } = req.body;
 
@@ -292,7 +285,7 @@ exports.completeProfile = async (req, res) => {
   }
 };
 
-// 5. GET: Obtener usuarios (opcional para pruebas)
+// 5. GET: Obtener usuarios 
 exports.getUsers = async (req, res) => {
   try {
     const [rows] = await db.query("SELECT user_id, username, email, avatar_url FROM Users");
