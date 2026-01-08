@@ -2,27 +2,42 @@ const db = require("../config/dbconect");
 
 // 1. Crear una colección nueva
 exports.createCollection = async (req, res) => {
-  // Obtenemos el ID del usuario desde el token (más seguro)
-  // Si prefieres enviarlo manual, usa req.body.user_id, pero esto es mejor:
-  const user_id = req.user ? req.user.id : req.body.user_id; 
+  console.log("--- INTENTO DE CREAR COLECCIÓN ---");
   
-  const { collection_name, collection_type, collection_description, is_private } = req.body;
+  // 1. Verificar Usuario
+  if (!req.user || !req.user.id) {
+      console.error("ERROR: No hay usuario en req.user (Falta verifyToken en la ruta)");
+      return res.status(401).json({ error: "Usuario no identificado" });
+  }
+  const user_id = req.user.id;
+
+  // 2. Datos recibidos
+  // NOTA: Asegúrate de que el frontend envía 'cover_url', no 'cover' ni 'image'
+  const { collection_name, collection_type, collection_description, is_private, cover_url } = req.body;
+  
+  console.log("Usuario ID:", user_id);
+  console.log("Datos:", { collection_name, collection_type, cover_url });
 
   try {
+    // 3. Query SQL
+    // IMPORTANTE: Los nombres aquí deben ser EXACTOS a tu base de datos
     const sql = `
-      INSERT INTO Collections (user_id, collection_name, collection_type, collection_description, is_private, cover_url)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO Collections 
+      (user_id, collection_name, collection_type, collection_description, is_private, cover_url)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
     
-    // --- AQUÍ ESTABA EL ERROR: Faltaba ejecutar la query ---
+    // 4. Ejecución
     const [result] = await db.query(sql, [
       user_id, 
       collection_name, 
       collection_type, 
       collection_description, 
-      is_private || 0, // Por defecto false si no se envía
-      cover_url || null
+      is_private ? 1 : 0, // Convertimos true/false a 1/0 por seguridad
+      cover_url || null   // Si llega undefined, ponemos null
     ]);
+
+    console.log("¡ÉXITO! ID Creado:", result.insertId);
 
     res.status(201).json({ 
         success: true,
@@ -31,8 +46,9 @@ exports.createCollection = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error creando colección:", error);
-    res.status(500).json({ error: "Error al crear la colección" });
+    console.error("ERROR SQL CRÍTICO:", error);
+    // Devolvemos el mensaje de SQL para que lo veas en el navegador
+    res.status(500).json({ error: "Error de base de datos", sqlMessage: error.message });
   }
 };
 

@@ -56,45 +56,44 @@ const CreateCollection = () => {
     try {
         let finalCoverUrl = null;
 
-        // 1. SUBIR FOTO (Si el usuario seleccionó una)
+        // A. SUBIR FOTO (Si existe)
         if (formData.cover) {
             const uploadData = new FormData();
-            uploadData.append('imagen', formData.cover); // 'imagen' debe coincidir con tu middleware multer
+            uploadData.append('imagen', formData.cover);
             
+            // Subimos a Cloudflare
             const uploadRes = await api.post('/files/upload', uploadData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            finalCoverUrl = uploadRes.data.url; 
-            console.log("Foto subida a Cloudflare:", finalCoverUrl);
+            finalCoverUrl = uploadRes.data.url;
         }
 
-        // 2. CREAR COLECCIÓN EN SQL
-        // Usamos las claves que espera el backend: collection_name, cover_url, etc.
+        // B. PREPARAR DATOS PARA SQL
+        // Aquí hacemos el cambio de nombre: title -> collection_name
         const payload = {
-            collection_name: formData.title,
+            collection_name: formData.title,       // <--- IMPORTANTE
             collection_description: formData.description,
             collection_type: formData.type,
-            cover_url: finalCoverUrl, // <--- AQUÍ ENVIAMOS LA URL A LA COLUMNA CORRECTA
+            cover_url: finalCoverUrl,              // <--- IMPORTANTE
             is_private: false 
         };
 
+        // C. ENVIAR AL BACKEND
         const res = await api.post("/collections", payload);
 
-        // 3. REDIRIGIR A LA PÁGINA REAL
+        // D. REDIRIGIR
         if (res.data.success) {
-            console.log("Colección creada ID:", res.data.collectionId);
-            // Navegamos usando el ID real que nos devolvió la base de datos
             navigate(`/collection/${res.data.collectionId}`);
         }
 
     } catch (error) {
-        console.error("Error creando colección:", error);
-        alert("Hubo un error al guardar la colección.");
+        console.error("Error al crear:", error);
+        // Mostrar alerta con el mensaje real del backend si existe
+        alert("Error: " + (error.response?.data?.sqlMessage || "No se pudo crear"));
     } finally {
         setIsLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-base-100 pb-24 md:pb-10 text-base-content font-sans">
       <NavDesktop />
