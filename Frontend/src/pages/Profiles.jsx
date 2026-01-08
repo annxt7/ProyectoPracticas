@@ -10,15 +10,13 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
   const { user, updateUser } = useAuth();
   const { userId } = useParams(); // ID de la URL
-
-  // 1. LÓGICA ESTANDARIZADA
-  // El backend y AuthContext AHORA SIEMPRE usan 'userId' (no user_id)
   const myId = user?.userId;
-  
-  // Si no hay ID en la URL, soy yo. Si hay ID, es el de la URL.
-  const targetId = userId || myId;
-  
-  // Comparamos strings para seguridad
+ let targetId
+  if (userId === "me" || !userId) {
+      targetId = myId; 
+  } else {
+      targetId = userId;
+  }
   const isOwnProfile = String(targetId) === String(myId);
 
   // Estados

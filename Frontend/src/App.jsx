@@ -22,7 +22,7 @@ function App() {
         <Route path="/explorer" element={<Explorer />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/activity" element={<Activity />} />
-        <Route path="/profile/:username" element={<Profile />} />
+        <Route path="/profile/:userId" element={<Profile />} />
         <Route path="/collection/:id" element={<Collection />} />
         <Route path="/create-collection" element={<CreateCollection />} />
         <Route path="/onboarding" element={<OnboardingPage/>}/>
