@@ -159,15 +159,56 @@ const CollectionPage = () => {
     }
   };
 
-  const handleAddItemToState = (newItem) => {
-    const itemFormatted = {
-      id: Date.now(), 
-      title: newItem.title,
-      author: newItem.subtitle || newItem.author,
-      cover: newItem.cover,
-    };
-    setItems([...items, itemFormatted]);
-  };
+
+const handleAddItem = async (newItem) => {
+    try {
+        let finalCoverUrl = null;
+
+        // 1. SI ES CUSTOM Y TIENE FOTO -> SUBIR A CLOUDFLARE
+        if (newItem.isCustom && newItem.coverFile) {
+            const formData = new FormData();
+            formData.append("imagen", newItem.coverFile);
+            const uploadRes = await api.post("/files/upload", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+            finalCoverUrl = uploadRes.data.url;
+        } else if (!newItem.isCustom) {
+            // Si es de base de datos, la URL ya viene en el objeto
+            finalCoverUrl = newItem.cover;
+        }
+
+        // 2. PREPARAR DATOS PARA EL BACKEND
+        const payload = {
+            item_type: newItem.isCustom ? "Custom" : (newItem.item_type || collectionInfo.type),
+            reference_id: newItem.isCustom ? null : newItem.id, // ID del catálogo
+            
+            // Datos para items custom
+            custom_title: newItem.title,
+            custom_subtitle: newItem.subtitle, // Autor/Director/Etc
+            custom_description: newItem.description || "",
+            custom_image: finalCoverUrl // <--- La URL que acabamos de subir o null
+        };
+
+        // 3. GUARDAR EN BASE DE DATOS
+        // Asegúrate de que tu ruta en backend es: POST /collections/:id/items
+        const res = await api.post(`/collections/${collectionInfo.id}/items`, payload);
+
+        if (res.data.success) {
+            // 4. ACTUALIZAR PANTALLA (Añadimos el item a la lista visualmente)
+            const itemFormatted = {
+                id: res.data.itemId, // Usamos el ID real que nos devuelve la DB
+                title: newItem.title,
+                author: newItem.subtitle,
+                cover: newItem.isCustom ? finalCoverUrl : newItem.cover,
+            };
+            setItems((prevItems) => [...prevItems, itemFormatted]);
+        }
+
+    } catch (error) {
+        console.error("Error guardando item:", error);
+        alert("Hubo un error al guardar el item en la colección.");
+    }
+};
 
   // --- RENDER ---
 
@@ -329,7 +370,7 @@ const CollectionPage = () => {
       </main>
 
       <AddToCollectionModal isOpen={!!selectedItemForSave} item={selectedItemForSave} onClose={() => setSelectedItemForSave(null)} />
-      <AddItemModal isOpen={isAddItemOpen} onClose={() => setIsAddItemOpen(false)} collectionType={collectionInfo.type} collectionId={collectionInfo.id} onAddItem={handleAddItemToState} />
+      <AddItemModal isOpen={isAddItemOpen} onClose={() => setIsAddItemOpen(false)} collectionType={collectionInfo.type} collectionId={collectionInfo.id} onAddItem={handleAddItem} />
       <NavMobile />
     </div>
   );

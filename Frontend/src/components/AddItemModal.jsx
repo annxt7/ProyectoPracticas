@@ -109,20 +109,23 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
     onClose();
   };
 
-  const handleAddCustom = (e) => {
+ const handleAddCustom = (e) => {
     e.preventDefault();
     const newItem = {
       title: customForm.title,
       subtitle: customForm.subtitle,
-      cover: customForm.coverPreview,
-      isCustom: true,
       description: customForm.description,
+      
+      // CAMBIO AQUÍ: Enviamos el archivo original Y la preview
+      cover: customForm.coverPreview, 
+      coverFile: customForm.cover, // <--- ESTO ES LO QUE NECESITAMOS PARA SUBIR
+      
+      isCustom: true,
       item_type: "Custom" 
     };
     onAddItem(newItem);
     onClose();
   };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {

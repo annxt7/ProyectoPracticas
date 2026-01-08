@@ -131,18 +131,19 @@ exports.getCollectionDetails = async (req, res) => {
 exports.addItemToCollection = async (req, res) => {
   const { collection_id } = req.params;
   const { 
-    item_type,      
-    reference_id,   
-    custom_title,   
-    custom_subtitle,
-    custom_description 
+    item_type, 
+    reference_id, 
+    custom_title, 
+    custom_subtitle, 
+    custom_description,
+    custom_image // <--- NUEVO: Recibimos la imagen
   } = req.body;
 
   try {
     let sql = "";
     let params = [];
 
-    // CASO A: Es un item de la base de datos (Ej: Una película que ya existe en Catalog_Movies)
+    // CASO A: Item de Catálogo (Música, Cine...)
     if (reference_id && item_type !== 'Custom') {
         let colName = "";
         switch (item_type) {
@@ -153,21 +154,21 @@ exports.addItemToCollection = async (req, res) => {
             case 'Games': colName = 'game_id'; break;
             default: return res.status(400).json({ error: "Tipo inválido" });
         }
-        
         sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
         params = [collection_id, item_type, reference_id];
     } 
-    // CASO B: Es un item manual (Custom) que el usuario escribe a mano
+    // CASO B: Item Manual (Custom)
     else {
-        sql = `INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description) VALUES (?, ?, ?, ?, ?)`;
-        params = [collection_id, item_type, custom_title, custom_subtitle, custom_description];
+        // AÑADIMOS custom_image AL SQL
+        sql = `INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description, custom_image) VALUES (?, ?, ?, ?, ?, ?)`;
+        params = [collection_id, 'Custom', custom_title, custom_subtitle, custom_description || "", custom_image || null];
     }
 
-    await db.query(sql, params);
-    res.status(201).json({ success: true, message: "Item añadido correctamente" });
+    const [result] = await db.query(sql, params);
+    res.status(201).json({ success: true, itemId: result.insertId });
 
   } catch (error) {
     console.error("Error añadiendo item:", error);
-    res.status(500).json({ error: "Error al guardar el item" });
+    res.status(500).json({ error: "Error de base de datos" });
   }
 };
