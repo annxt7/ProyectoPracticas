@@ -109,6 +109,14 @@ const Profile = () => {
           <p><strong>6. Profile User Data:</strong> {profileUser ? "OK (Datos cargados)" : "NULL (Vacío)"}</p>
           {errorMsg && <p className="font-bold bg-white p-1">⚠️ ERROR: {errorMsg}</p>}
       </div>
+      {/* --- AÑADE ESTO: VAMOS A VER LAS TRIPAS DEL USUARIO --- */}
+          <div className="mt-4 border-t border-red-300 pt-2">
+             <strong>ESTO ES LO QUE TIENE "USER" POR DENTRO:</strong>
+             <pre className="text-xs bg-white p-2 mt-1 border">
+                {JSON.stringify(user, null, 2)}
+             </pre>
+          </div>
+          {/* ---------------------------------------------------- */}
       {/* =========================================== */}
 
       <main className="mx-auto">
