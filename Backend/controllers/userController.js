@@ -76,14 +76,13 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign({ id: user.user_id, username: user.username }, process.env.JWT_SECRET, { expiresIn: "5h" });
 
-    // AQUÍ OCURRE LA MAGIA DE LA NORMALIZACIÓN
     res.status(200).json({
       success: true,
       token,
-      userId: user.user_id,        // DB: user_id -> API: userId
+      userId: user.user_id,      
       username: user.username,
-      avatar: user.avatar_url,     // DB: avatar_url -> API: avatar
-      banner: user.banner_url,     // DB: banner_url -> API: banner
+      avatar: user.avatar_url,     
+      banner: user.banner_url,    
       bio: user.bio
     });
 
