@@ -149,9 +149,17 @@ exports.login = async (req, res) => {
       username: user.username,
       avatar: user.avatar_url,
     });
-  } catch (error){
+  }catch (error) {
     console.error("Error en login:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    
+    // --- MODO DEBUG: ACTIVADO ---
+    // Esto enviará el error técnico al navegador para que podamos leerlo.
+    // IMPORTANTE: Quita esto cuando lo arregles, es inseguro para producción.
+    res.status(500).json({ 
+        error: "Error interno del servidor", 
+        debugMessage: error.message,  // <--- Esto nos dirá qué pasa
+        debugStack: error.stack       // <--- Esto nos dirá dónde pasa
+    });
   }
 };
 
