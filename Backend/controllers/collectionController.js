@@ -69,17 +69,33 @@ exports.getUserCollections = async (req, res) => {
 exports.getCollectionDetails = async (req, res) => {
     const { id } = req.params; 
 
+    console.log(`--- PETICIÓN DE COLECCIÓN ID: ${id} ---`);
+
     try {
-        // A. Primero obtenemos la info de la colección (nombre, desc...)
-        const [collectionRows] = await db.query("SELECT * FROM Collections WHERE collection_id = ?", [id]);
+        // 1. Obtener datos de la colección + Datos del Dueño (JOIN)
+        // Usamos LEFT JOIN Users para sacar el nombre del creador
+        const sqlCollection = `
+            SELECT 
+                c.*, 
+                u.username AS creator_username, 
+                u.avatar_url AS creator_avatar,
+                u.user_id AS creator_id
+            FROM Collections c
+            LEFT JOIN Users u ON c.user_id = u.user_id
+            WHERE c.collection_id = ?
+        `;
+
+        const [collectionRows] = await db.query(sqlCollection, [id]);
         
         if (collectionRows.length === 0) {
-            return res.status(404).json({ error: "Colección no encontrada" });
+            console.log("Error: No existe ese ID en la tabla Collections");
+            return res.status(404).json({ error: "Colección no encontrada en la base de datos" });
         }
-        const collection = collectionRows[0];
 
-        // B. Ahora la magia: Obtenemos los items uniendo tablas
-        // COALESCE sirve para decir: "Si no hay título custom, coge el de la peli, o el del libro..."
+        const collection = collectionRows[0];
+        console.log("Colección encontrada:", collection.collection_name);
+
+        // 2. Obtener los Items
         const itemsSql = `
             SELECT 
                 i.item_id, i.item_type, i.custom_description,
@@ -98,12 +114,12 @@ exports.getCollectionDetails = async (req, res) => {
         
         const [items] = await db.query(itemsSql, [id]);
         
-        // Devolvemos todo junto
+        // Devolvemos todo mezclado
         res.json({ ...collection, items });
 
     } catch (error) {
-        console.error("Error en getCollectionDetails:", error);
-        res.status(500).json({ error: "Error al cargar los items" });
+        console.error("Error CRÍTICO en getCollectionDetails:", error);
+        res.status(500).json({ error: "Error de servidor al cargar colección" });
     }
 };
 

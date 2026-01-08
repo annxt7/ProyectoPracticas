@@ -60,7 +60,8 @@ const CollectionPage = () => {
             description: data.collection_description || "",
             type: data.collection_type,
             cover: data.cover_url || data.collection_image, // A veces se guarda con un nombre u otro
-            creatorId: data.user_id, // Para saber si soy el dueño
+            creatorId: data.creator_id, // Para saber si soy el dueño
+            creatorName: data.creator_username, // Para mostrar el nombre del creador
             stats: { items: data.items ? data.items.length : 0, likes: data.likes || 0 }
         });
 
@@ -89,7 +90,10 @@ const CollectionPage = () => {
   }, [id]);
 
   // 2. CALCULAR SI SOY EL DUEÑO
-  const isOwner = user && collectionInfo && (user.id === collectionInfo.creatorId || user.userId === collectionInfo.creatorId);
+  // Comparamos el ID del creador (BD) con el ID del usuario logueado (Contexto)
+  // Usamos user?.id o user?.userId para asegurar compatibilidad
+  const myId = user?.id || user?.userId;
+  const isOwner = user && collectionInfo && String(myId) === String(collectionInfo.creatorId);
 
   // --- FUNCIONES DE EDICIÓN ---
 
@@ -204,10 +208,11 @@ const CollectionPage = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-8">
           <div className="mb-6">
             <Link
-              to={isOwner ? "/profile/me" : "#"} // Si es otro usuario, idealmente ir a /profile/SU_ID
+              to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`} // Si es otro usuario, vamos a su perfil real
               className="inline-flex items-center gap-2 text-sm font-medium opacity-60 hover:opacity-100 hover:text-primary transition-all"
             >
-              <ArrowLeft size={16} /> Volver
+              <ArrowLeft size={16} />
+              {isOwner ? "Volver a mi perfil" : `Volver al perfil de ${collectionInfo.creatorName || "Usuario"}`}
             </Link>
           </div>
 
@@ -235,7 +240,9 @@ const CollectionPage = () => {
             <div className="flex-1 w-full space-y-5">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
-                   {/* Ojo: collectionInfo.creatorId es un ID, no un nombre. Para mostrar nombre necesitas JOIN en backend */}
+                   <span className="text-xs opacity-50 uppercase tracking-widest">
+                     Creado por {collectionInfo.creatorName || "Desconocido"}
+                   </span>
                   <span className="badge badge-outline text-xs">{collectionInfo.type}</span>
                 </div>
 
@@ -270,6 +277,7 @@ const CollectionPage = () => {
               <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-white/40">
                 <div className="flex gap-6 text-sm">
                    <div className="text-center"><span className="block font-bold text-lg">{items.length}</span><span className="opacity-60">Items</span></div>
+                   <div className="text-center"><span className="block font-bold text-lg">{collectionInfo.stats.likes}</span><span className="opacity-60">Likes</span></div>
                 </div>
 
                 <div className="flex gap-3">

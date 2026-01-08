@@ -87,7 +87,7 @@ const Profile = () => {
     try {
       await api.put("/users/update-profile", { bio: newDescription });
       updateUser({ bio: newDescription }); 
-      setIsEditing(false); // <--- AL GUARDAR, SE CIERRA EL MODO EDICIÓN
+      setIsEditing(false); 
     } catch (error) { console.error(error); }
   };
 
@@ -163,15 +163,12 @@ const Profile = () => {
                 <div className="flex gap-2 mb-2">
                     {isMe ? (
                         <>
-                            {/* Si NO estoy editando, muestro "Editar Perfil". Si SÍ, desaparece (porque salen Guardar/Cancelar abajo) */}
-                            {!isEditing ? (
+                          
+                            {!isEditing (
                                 <>
                                     <button onClick={() => { setIsEditing(true); setNewDescription(profileData?.bio || ""); }} className="btn btn-sm btn-ghost border border-white/40 rounded-full">Editar Perfil</button>
                                     <button className="btn btn-sm btn-circle btn-ghost border border-white/40"><Settings size={18}/></button>
                                 </>
-                            ) : (
-                                // Opcional: Podrías poner aquí un botón de "Cancelar Edición" rápido
-                                <button onClick={() => setIsEditing(false)} className="btn btn-sm btn-ghost text-error">Cancelar Edición</button>
                             )}
                         </>
                     ) : (
@@ -189,20 +186,15 @@ const Profile = () => {
 
                 {/* MODO EDICIÓN DE BIO */}
                 {isEditing ? (
-                    <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl animate-in slide-in-from-top-2 duration-300">
-                        <label className="text-xs font-bold uppercase opacity-50">Editar Biografía</label>
-                        <textarea 
-                            className="textarea textarea-bordered w-full h-24 focus:textarea-primary" 
-                            value={newDescription} 
-                            onChange={e=>setNewDescription(e.target.value)} 
-                            autoFocus
-                            placeholder="Escribe algo sobre ti..."
-                        />
+                    <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl">
+                        <textarea className="textarea textarea-bordered w-full h-32" value={newDescription} onChange={e => setNewDescription(e.target.value)} autoFocus/>
                         <div className="flex justify-end gap-2">
-                            <button type="submit" className="btn btn-primary btn-sm gap-2"><Check size={16}/> Guardar Cambios</button>
+                            <button type="submit" className="btn btn-primary btn-sm"><Check size={14}/></button>
+                            <button type="button" onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm"><X size={18}/></button>
                         </div>
                     </form>
-                ) : (
+                )
+ : (
                     <p className="max-w-md opacity-80 whitespace-pre-wrap">{profileData?.bio || "¡Hola! Soy nuevo en Tribe."}</p>
                 )}
 
@@ -233,7 +225,7 @@ const Profile = () => {
                 <Link to={`/collection/${col.collection_id}`} key={col.collection_id} className="card bg-base-200 shadow-sm aspect-[4/5] hover:scale-[1.02] transition-transform cursor-pointer group">
                     <figure className="relative h-full">
                         <img src={col.cover_url || `https://picsum.photos/400?random=${col.collection_id}`} className="w-full h-full object-cover" alt="cover"/>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4">
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4">
                             <h3 className="text-white font-bold leading-tight">{col.collection_name}</h3>
                             <p className="text-white/70 text-xs mt-1">{col.collection_type}</p>
                         </div>
