@@ -135,7 +135,7 @@ const Profile = ({ isOwnProfile = true }) => {
               alt="cover"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
 
             {/* BOTÓN CAMBIAR BANNER (Solo si es tu perfil) */}
             {isOwnProfile && (
