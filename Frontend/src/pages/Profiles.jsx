@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import {
   Settings,
   UserPlus,
@@ -9,57 +10,93 @@ import {
   Share2,
   X,
   Camera,
-  Plus
+  Plus,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { useAuth } from "../context/AuthContext";
-import api from "../services/api"; 
+import api from "../services/api";
 
-const Profile = ({ isOwnProfile = true }) => {
+const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
-  // AÑADIDO: 'updateUser' para guardar los cambios en el navegador al instante
-  const { user, login, updateUser } = useAuth(); 
+  const { user, updateUser } = useAuth();
+  const { userId } = useParams(); // Leemos el ID de la URL (si estamos visitando a otro)
 
-  // Referencias a los inputs invisibles
+  // 1. LÓGICA DE IDENTIDAD
+  // Si hay userId en la URL, es "otro". Si no, soy "yo".
+  // IMPORTANTE: Convertimos a string para comparar bien (a veces userId es string y user.user_id es number)
+  const targetId = userId ? userId : user?.user_id;
+  const isOwnProfile = user && String(targetId) === String(user.user_id);
+
+  // Estados de datos
+  const [profileUser, setProfileUser] = useState(null); // Datos del usuario que estamos viendo (nombre, bio...)
+  const [collections, setCollections] = useState([]);   // Sus colecciones
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Referencias (solo para cuando editas tu propio perfil)
   const avatarInputRef = useRef(null);
-  const bannerInputRef = useRef(null); // <--- NUEVO: Referencia para el banner
-
-  // Estado local para spinner de carga
+  const bannerInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  // Estados de texto (Bio)
-  const [description, setDescription] = useState(
-    user?.bio || "Hola! Soy nuevo en Tribe."
-  );
+  
+  // Edición de Bio
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState("");
 
-  // Sincronizar descripción si el usuario cambia (ej: al recargar)
+  // 2. EFECTO: CARGAR DATOS DEL PERFIL
   useEffect(() => {
-    if (user?.bio) setDescription(user.bio);
-  }, [user]);
+    const fetchProfileData = async () => {
+      setIsLoading(true);
+      try {
+        // A. Cargar colecciones del usuario objetivo
+        // Asegúrate de que tu ruta en backend es GET /collections/user/:userId
+        const colRes = await api.get(`/collections/user/${targetId}`);
+        setCollections(colRes.data);
 
-  const stats = [
-    { label: "Colecciones", value: "12" },
-    { label: "Seguidores", value: "1.4k" },
-    { label: "Siguiendo", value: "342" },
-  ];
+        // B. Cargar datos del usuario (si no soy yo)
+        // Si soy yo, ya tengo los datos en el contexto 'user', pero si visito a otro necesito sus datos
+        if (isOwnProfile) {
+            setProfileUser(user);
+            setNewDescription(user.bio || "");
+        } else {
+            // Necesitarías un endpoint tipo GET /users/:id para obtener nombre, avatar, etc de otro usuario
+            // Por ahora, si no tienes ese endpoint, usaremos datos dummy o lo que tengas
+            // TODO: Crear endpoint GET /users/:id en backend si no existe
+            // const userRes = await api.get(`/users/${targetId}`);
+            // setProfileUser(userRes.data);
+            
+            // MODO PROVISIONAL: Si no tienes endpoint de "get one user", 
+            // no podremos mostrar su nombre real todavía. 
+            // Asumiremos que es un usuario genérico para que no falle.
+            setProfileUser({ username: "Usuario " + targetId, bio: "Bio del usuario...", avatar: null, banner: null });
+        }
 
+      } catch (error) {
+        console.error("Error cargando perfil:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (targetId) {
+        fetchProfileData();
+    }
+  }, [targetId, user, isOwnProfile]);
+
+
+  // 3. FUNCIONES DE EDICIÓN (Solo funcionan si isOwnProfile es true)
   const handleStartEditing = () => {
-    setNewDescription(description);
+    setNewDescription(profileUser?.bio || "");
     setIsEditing(true);
   };
 
-  // Guardar Bio
   const handleSaveBio = async (e) => {
     e.preventDefault();
     if (newDescription.trim()) {
       try {
-        await api.put('/users/update-profile', { bio: newDescription });
-        setDescription(newDescription);
-        updateUser({ bio: newDescription }); // Actualiza el contexto global
+        await api.put("/users/update-profile", { bio: newDescription });
+        // Actualizamos localmente y en contexto
+        setProfileUser({ ...profileUser, bio: newDescription });
+        updateUser({ bio: newDescription });
         setIsEditing(false);
       } catch (error) {
         console.error("Error actualizando bio", error);
@@ -67,56 +104,38 @@ const Profile = ({ isOwnProfile = true }) => {
     }
   };
 
-  // --- FUNCIÓN UNIFICADA PARA SUBIR IMÁGENES (Avatar o Banner) ---
   const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Vista previa inmediata (opcional, pero mejora UX)
-    const localPreview = URL.createObjectURL(file);
-    if (type === 'avatar') {
-       // Podrías tener un estado local aquí si quisieras, pero usaremos el user del contexto
-    }
-    
     setIsUploading(true);
-
     try {
       const formData = new FormData();
-      formData.append('imagen', file); 
-      
-      // 1. Subir a Cloudflare/Servidor
-      const uploadRes = await api.post('/files/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      formData.append("imagen", file);
+
+      const uploadRes = await api.post("/files/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
       const cloudUrl = uploadRes.data.url;
-      console.log(`Imagen (${type}) subida:`, cloudUrl);
 
-      // 2. Preparar datos para actualizar perfil
-      // Si type es 'avatar' manda { avatarUrl: ... }, si es 'banner' manda { bannerUrl: ... }
-      const payload = type === 'avatar' 
-        ? { avatarUrl: cloudUrl } 
-        : { bannerUrl: cloudUrl };
+      const payload = type === "avatar" ? { avatarUrl: cloudUrl } : { bannerUrl: cloudUrl };
+      await api.put("/users/update-profile", payload);
 
-      // 3. Guardar en Base de Datos
-      await api.put('/users/update-profile', payload);
-
-      // 4. Actualizar Contexto (para que se vea el cambio sin recargar)
-      if (type === 'avatar') {
+      if (type === "avatar") {
         updateUser({ avatar: cloudUrl });
+        setProfileUser(prev => ({ ...prev, avatar: cloudUrl }));
       } else {
         updateUser({ banner: cloudUrl });
+        setProfileUser(prev => ({ ...prev, banner: cloudUrl }));
       }
-
-      console.log("Perfil actualizado con éxito");
-
     } catch (error) {
-      console.error("Error al subir la imagen:", error);
-      alert("Hubo un error al subir la imagen");
+      console.error("Error subiendo imagen:", error);
     } finally {
       setIsUploading(false);
     }
   };
+
+  if (!profileUser && !isLoading) return <div className="p-10 text-center">Usuario no encontrado</div>;
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
@@ -125,98 +144,62 @@ const Profile = ({ isOwnProfile = true }) => {
       <main className="mx-auto">
         {/* HEADER */}
         <div className="relative">
-          
           {/* === BANNER === */}
-    {/* === BANNER === */}
           <div className="h-40 md:h-80 w-full relative bg-neutral-900 overflow-hidden group">
             <img
-              src={user?.banner || "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg"}
+              src={profileUser?.banner || "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg"}
               alt="cover"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
 
-            {/* BOTÓN CAMBIAR BANNER (Estilo idéntico al Avatar) */}
             {isOwnProfile && (
-              <button 
+              <button
                 onClick={() => !isUploading && bannerInputRef.current.click()}
-                // CLASES CAMBIADAS: Ahora usa bg-base-100 (blanco/tema) en vez de negro transparente.
-                // Quitada la opacidad para que se vea siempre.
                 className="absolute bottom-4 right-4 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white/40 hover:bg-base-200 transition-colors z-20"
                 title="Cambiar portada"
               >
                 <Camera size={20} />
               </button>
             )}
-
-            {/* INPUT OCULTO BANNER */}
-            <input 
-              type="file" 
-              ref={bannerInputRef} 
-              onChange={(e) => handleFileUpload(e, 'banner')} 
-              className="hidden" 
-              accept="image/*"
-              disabled={isUploading}
-            />
+            <input type="file" ref={bannerInputRef} onChange={(e) => handleFileUpload(e, "banner")} className="hidden" accept="image/*" disabled={isUploading} />
           </div>
 
           <div className="px-6 relative">
             <div className="flex justify-between items-end -mt-12 mb-4">
               
-              {/* === FOTO DE PERFIL === */}
-              {/* Usamos una función anónima para el click del avatar */}
+              {/* === AVATAR === */}
               <div className="relative" onClick={() => isOwnProfile && !isUploading && avatarInputRef.current.click()}>
-                <div className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isOwnProfile ? 'cursor-pointer hover:ring-primary/50 transition-all' : ''}`}>
+                <div className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isOwnProfile ? "cursor-pointer hover:ring-primary/50" : ""}`}>
                   <div className="w-24 md:w-32 rounded-full overflow-hidden relative bg-base-200">
-                    
-                    {/* Spinner de carga global para la zona de fotos */}
                     {isUploading && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
                         <span className="loading loading-spinner text-white"></span>
                       </div>
                     )}
-                    
                     <img
-                      src={user?.avatar || "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg"}
+                      src={profileUser?.avatar || "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg"}
                       alt="profile"
                       className="object-cover w-full h-full"
                     />
                   </div>
                 </div>
-
-                {/* BOTÓN DE CÁMARA AVATAR */}
                 {isOwnProfile && (
-                  <button
-                    className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white/40 hover:bg-base-200 transition-colors z-10 pointer-events-none"
-                  >
+                  <button className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white/40 pointer-events-none">
                     <Camera size={16} className="md:w-5 md:h-5" />
                   </button>
                 )}
-
-                {/* INPUT OCULTO AVATAR */}
-                <input
-                  type="file"
-                  ref={avatarInputRef}
-                  onChange={(e) => handleFileUpload(e, 'avatar')} // Pasamos 'avatar' como tipo
-                  className="hidden"
-                  accept="image/*"
-                  disabled={isUploading}
-                />
+                <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, "avatar")} className="hidden" accept="image/*" disabled={isUploading} />
               </div>
 
-              {/* Botones de Acción */}
+              {/* === BOTONES DE ACCIÓN === */}
               <div className="flex gap-2 mt-2 mb-2">
                 {isOwnProfile ? (
                   <>
-                    <button
-                      onClick={handleStartEditing}
-                      className="btn btn-sm md:btn-md py-1 btn-ghost border border-white/40 rounded-full px-4 md:px-6 hover:bg-base-200"
-                    >
+                    <button onClick={handleStartEditing} className="btn btn-sm md:btn-md py-1 btn-ghost border border-white/40 rounded-full px-4 md:px-6 hover:bg-base-200">
                       Editar Perfil
                     </button>
-                    <button
-                      className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40"
-                    >
+                    <button className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40">
                       <Settings size={18} />
                     </button>
                   </>
@@ -233,73 +216,50 @@ const Profile = ({ isOwnProfile = true }) => {
               </div>
             </div>
 
-            {/* Texto Bio */}
+            {/* INFO USUARIO */}
             <div className="space-y-3 mb-6">
               <div>
                 <h1 className="text-2xl md:text-4xl font-bold font-serif tracking-tight">
-                  {user?.username}
+                  {profileUser?.username || "Usuario"}
                 </h1>
                 <p className="text-sm text-base-content/60 flex items-center gap-1 mt-1 font-medium">
                   <MapPin size={14} /> Madrid, ES
                 </p>
               </div>
 
-              {/* === ZONA DE EDICIÓN DE BIO === */}
+              {/* BIO */}
               {isEditing ? (
-                <form
-                  onSubmit={handleSaveBio}
-                  className="flex flex-col md:flex-row gap-3 items-start max-w-xl animate-in fade-in duration-300"
-                >
+                <form onSubmit={handleSaveBio} className="flex flex-col md:flex-row gap-3 items-start max-w-xl">
                   <div className="w-full relative group">
                     <textarea
-                      className="w-full bg-base-200/60 text-base-content text-base p-4 rounded-xl outline-none focus:bg-base-100 focus:ring-2 focus:ring-primary transition-all resize-none shadow-inner h-32"
+                      className="w-full bg-base-200/60 text-base-content p-4 rounded-xl outline-none focus:bg-base-100 focus:ring-2 focus:ring-primary h-32 resize-none"
                       value={newDescription}
                       onChange={(e) => setNewDescription(e.target.value)}
-                      placeholder="Cuéntanos sobre ti..."
                       autoFocus
                     />
-                    <div className="inline-flex gap-1 mt-2 items-center justify-between w-full">
-                      <div className="text-xs text-right mt-1 opacity-40 px-1 font-medium">
-                        {newDescription.length}/200
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          className="btn btn-primary btn-sm btn-square rounded-lg shadow-lg hover:scale-105 transition-transform"
-                          disabled={!newDescription.trim()}
-                        >
-                          <Check size={14} strokeWidth={3} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsEditing(false)}
-                          className="btn btn-ghost btn-sm btn-square rounded-lg hover:bg-base-200"
-                        >
-                          <X size={18} />
-                        </button>
-                      </div>
+                    <div className="flex justify-end gap-2 mt-2">
+                       <button type="submit" className="btn btn-primary btn-sm btn-square"><Check size={14}/></button>
+                       <button type="button" onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm btn-square"><X size={18}/></button>
                     </div>
                   </div>
                 </form>
               ) : (
                 <p className="max-w-md text-base leading-relaxed opacity-80 whitespace-pre-wrap">
-                  {description}
+                  {profileUser?.bio || "Sin biografía."}
                 </p>
               )}
 
-              {/* Stats Row */}
+              {/* Stats */}
               <div className="flex gap-6 py-4 mt-4">
-                {stats.map((stat, idx) => (
-                  <div
-                    key={idx}
-                    className="flex flex-col md:flex-row md:gap-2 items-center md:items-baseline group cursor-pointer hover:opacity-80 transition-opacity"
-                  >
-                    <span className="font-bold text-lg">{stat.value}</span>
-                    <span className="text-xs md:text-sm opacity-60 uppercase tracking-wide font-medium">
-                      {stat.label}
-                    </span>
-                  </div>
-                ))}
+                 <div className="flex flex-col md:flex-row gap-1 items-baseline">
+                    <span className="font-bold text-lg">{collections.length}</span>
+                    <span className="text-xs uppercase opacity-60 font-bold">Colecciones</span>
+                 </div>
+                 {/* Aquí podrías poner stats reales de seguidores si los tuvieras en DB */}
+                 <div className="flex flex-col md:flex-row gap-1 items-baseline opacity-50">
+                    <span className="font-bold text-lg">0</span>
+                    <span className="text-xs uppercase opacity-60 font-bold">Seguidores</span>
+                 </div>
               </div>
             </div>
           </div>
@@ -308,65 +268,61 @@ const Profile = ({ isOwnProfile = true }) => {
         {/* TABS */}
         <div className="border-t border-white/40 mt-4 sticky top-16 bg-base-100/95 backdrop-blur-sm z-30">
           <div className="flex justify-center gap-4 md:gap-12">
-            <button
-              onClick={() => setActiveTab("collections")}
-              className={`flex items-center gap-2 py-4 border-b-2 px-4 text-sm font-bold tracking-wide transition-all ${
-                activeTab === "collections"
-                  ? "border-primary text-base-content"
-                  : "border-transparent text-base-content/40 hover:text-base-content/70"
-              }`}
-            >
-              <Grid size={18} /> MIS COLECCIONES
+            <button onClick={() => setActiveTab("collections")} className={`flex items-center gap-2 py-4 border-b-2 px-4 text-sm font-bold tracking-wide transition-all ${activeTab === "collections" ? "border-primary text-base-content" : "border-transparent text-base-content/40 hover:text-base-content/70"}`}>
+              <Grid size={18} /> COLECCIONES
             </button>
-            <button
-              onClick={() => setActiveTab("saved")}
-              className={`flex items-center gap-2 py-4 border-b-2 px-4 text-sm font-bold tracking-wide transition-all ${
-                activeTab === "saved"
-                  ? "border-primary text-base-content"
-                  : "border-transparent text-base-content/40 hover:text-base-content/70"
-              }`}
-            >
+            <button onClick={() => setActiveTab("saved")} className={`flex items-center gap-2 py-4 border-b-2 px-4 text-sm font-bold tracking-wide transition-all ${activeTab === "saved" ? "border-primary text-base-content" : "border-transparent text-base-content/40 hover:text-base-content/70"}`}>
               <Bookmark size={18} /> GUARDADO
             </button>
           </div>
         </div>
 
-        {/* GRID */}
+        {/* GRID DE COLECCIONES (REAL) */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 md:px-6 min-h-[300px]">
+          
+          {/* Botón Nueva Colección (Solo si soy yo) */}
           {isOwnProfile && activeTab === "collections" && (
-            <div className="aspect-4/5 bg-base-100 border-2 border-dashed border-base-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-base-200/50 hover:border-primary/50 transition-all group">
-              <Link to={"/create-collection"} className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white group-hover:scale-110 transition-all duration-300">
+            <Link to="/create-collection" className="aspect-4/5 bg-base-100 border-2 border-dashed border-base-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-base-200/50 hover:border-primary/50 transition-all group">
+              <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white group-hover:scale-110 transition-all duration-300">
                 <Plus size={24} />
-              </Link>
+              </div>
               <span className="text-xs font-bold uppercase tracking-wider opacity-50 group-hover:opacity-100">
-                Nueva Colección
+                Nueva
               </span>
-            </div>
+            </Link>
           )}
 
-          {[1, 2, 3, 4, 5].map((item) => (
+          {/* Listado de Colecciones Reales */}
+          {isLoading ? (
+             <div className="col-span-full text-center py-10 opacity-50">Cargando...</div>
+          ) : collections.map((col) => (
             <Link
-              to={`/collection/${item}`}
-              key={item}
+              to={`/collection/${col.collection_id}`}
+              key={col.collection_id}
               className="group cursor-pointer block"
             >
               <div className="card bg-base-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl overflow-hidden aspect-4/5 relative">
+                {/* Usamos cover_url de la DB, o una random si no tiene */}
                 <img
-                  src={`https://picsum.photos/400?random=${item + 10}`}
-                  alt="Collection"
+                  src={col.cover_url || `https://picsum.photos/400?random=${col.collection_id}`}
+                  alt={col.collection_name}
                   className="w-full h-full object-cover transition duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-90 flex flex-col justify-end p-5">
                   <p className="text-white font-serif font-bold truncate text-lg transform translate-y-1 group-hover:translate-y-0 transition-transform">
-                    Retro Vibes
+                    {col.collection_name}
                   </p>
                   <p className="text-white/70 text-xs font-medium uppercase tracking-wider mt-1">
-                    24 items
+                    {col.collection_type}
                   </p>
                 </div>
               </div>
             </Link>
           ))}
+          
+          {!isLoading && collections.length === 0 && !isOwnProfile && (
+              <div className="col-span-full text-center py-10 opacity-50">Este usuario no tiene colecciones públicas.</div>
+          )}
         </div>
       </main>
 

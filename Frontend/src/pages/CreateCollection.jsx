@@ -12,10 +12,12 @@ import {
 } from "lucide-react";
 import NavDesktop from "../components/NavDesktop";
 import NavMobile from "../components/NavMobile";
+import api from "../services/api"; // Asegúrate de importar tu cliente API configurado
 
 const CreateCollection = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -47,13 +49,50 @@ const CreateCollection = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const fakeNewId = Date.now(); 
-    // Redirigimos pasando los datos al state
-    navigate(`/collection/${fakeNewId}`, { 
-      state: { newCollectionData: formData } 
-    });
+    setIsLoading(true);
+
+    try {
+        let finalCoverUrl = null;
+
+        // 1. SUBIR FOTO (Si el usuario seleccionó una)
+        if (formData.cover) {
+            const uploadData = new FormData();
+            uploadData.append('imagen', formData.cover); // 'imagen' debe coincidir con tu middleware multer
+            
+            const uploadRes = await api.post('/files/upload', uploadData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            finalCoverUrl = uploadRes.data.url; 
+            console.log("Foto subida a Cloudflare:", finalCoverUrl);
+        }
+
+        // 2. CREAR COLECCIÓN EN SQL
+        // Usamos las claves que espera el backend: collection_name, cover_url, etc.
+        const payload = {
+            collection_name: formData.title,
+            collection_description: formData.description,
+            collection_type: formData.type,
+            cover_url: finalCoverUrl, // <--- AQUÍ ENVIAMOS LA URL A LA COLUMNA CORRECTA
+            is_private: false 
+        };
+
+        const res = await api.post("/collections", payload);
+
+        // 3. REDIRIGIR A LA PÁGINA REAL
+        if (res.data.success) {
+            console.log("Colección creada ID:", res.data.collectionId);
+            // Navegamos usando el ID real que nos devolvió la base de datos
+            navigate(`/collection/${res.data.collectionId}`);
+        }
+
+    } catch (error) {
+        console.error("Error creando colección:", error);
+        alert("Hubo un error al guardar la colección.");
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -71,8 +110,7 @@ const CreateCollection = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-             
-             {/* VISTA PREVIA IZQUIERDA */}
+             {/* VISTA PREVIA (IZQUIERDA) - SIN CAMBIOS */}
              <div className="hidden lg:block sticky top-24">
                 <div className="mockup-window border border-base-300 bg-base-200/50 p-8">
                     <div className="flex justify-center">
@@ -96,9 +134,8 @@ const CreateCollection = () => {
                 </div>
             </div>
 
-            {/* FORMULARIO DERECHA */}
+            {/* FORMULARIO (DERECHA) */}
             <form onSubmit={handleSubmit} className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-                
                  {/* 1. PORTADA */}
                  <div className="space-y-3">
                     <label className="text-sm font-bold opacity-70 uppercase tracking-wider">Portada</label>
@@ -143,8 +180,10 @@ const CreateCollection = () => {
                 </div>
                 
                  <div className="pt-4 flex items-center justify-end gap-4">
-                     <button type="button" onClick={() => navigate(-1)} className="btn btn-ghost">Cancelar</button>
-                     <button type="submit" className="btn btn-primary px-8 rounded-full" disabled={!formData.title}>Crear Colección</button>
+                     <button type="button" onClick={() => navigate(-1)} className="btn btn-ghost" disabled={isLoading}>Cancelar</button>
+                     <button type="submit" className="btn btn-primary px-8 rounded-full" disabled={!formData.title || isLoading}>
+                        {isLoading ? <span className="loading loading-spinner"></span> : "Crear Colección"}
+                     </button>
                 </div>
             </form>
 
