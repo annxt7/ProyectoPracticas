@@ -5,6 +5,10 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { response } = require("express");
 require('dotenv').config();
+//Prueba BORRAR LUEGO
+const user = users[0];
+
+console.log("ESTRUCTURA DEL USUARIO:", Object.keys(user));
 
 const SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
