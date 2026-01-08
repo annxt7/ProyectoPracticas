@@ -172,3 +172,24 @@ exports.addItemToCollection = async (req, res) => {
     res.status(500).json({ error: "Error de base de datos" });
   }
 };
+// ... tus otras funciones ...
+
+// 4. Borrar un item
+exports.deleteItem = async (req, res) => {
+    const { itemId } = req.params;
+
+    try {
+        // Ejecutamos el borrado
+        const [result] = await db.query("DELETE FROM Items WHERE item_id = ?", [itemId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Item no encontrado" });
+        }
+
+        res.json({ success: true, message: "Item eliminado correctamente" });
+
+    } catch (error) {
+        console.error("Error borrando item:", error);
+        res.status(500).json({ error: "Error de base de datos al borrar" });
+    }
+};

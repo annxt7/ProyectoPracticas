@@ -151,7 +151,8 @@ const CollectionPage = () => {
   const handleDelete = async (itemId) => {
     if (window.confirm("¿Eliminar de la colección?")) {
       try {
-          // TODO: Llamada API real -> await api.delete(`/items/${itemId}`);
+        
+          await api.delete(`/collections/items/${itemId}`);
           setItems(items.filter((i) => i.id !== itemId));
       } catch (error) {
           console.error("Error borrando item:", error);
@@ -163,8 +164,6 @@ const CollectionPage = () => {
 const handleAddItem = async (newItem) => {
     try {
         let finalCoverUrl = null;
-
-        // 1. SI ES CUSTOM Y TIENE FOTO -> SUBIR A CLOUDFLARE
         if (newItem.isCustom && newItem.coverFile) {
             const formData = new FormData();
             formData.append("imagen", newItem.coverFile);
