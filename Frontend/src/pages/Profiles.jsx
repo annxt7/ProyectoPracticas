@@ -19,18 +19,17 @@ import api from "../services/api"; // <--- IMPORTANTE: Asegúrate de importar tu
 
 const Profile = ({ isOwnProfile = true }) => {
   const [activeTab, setActiveTab] = useState("collections");
-  const { user, login } = useAuth(); // Importamos login para actualizar el contexto si hace falta
+  const { user, login } = useAuth(); 
 
-  // Inicializamos con la foto del usuario real (o un placeholder si no tiene)
   const [profileImage, setProfileImage] = useState(
     user?.avatar || "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg"
   );
   
-  const [isUploading, setIsUploading] = useState(false); // Estado para loading
+  const [isUploading, setIsUploading] = useState(false); 
 
   const fileInputRef = useRef(null);
   const [description, setDescription] = useState(
-    user?.bio || "Cineasta visual y recolectora de vinilos..." // Usar bio real si existe
+    user?.bio || "Hola! Soy nuevo en Tribe. " 
   );
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState("");
@@ -50,7 +49,6 @@ const Profile = ({ isOwnProfile = true }) => {
     e.preventDefault();
     if (newDescription.trim()) {
       try {
-        // Actualizar Bio en Backend
         await api.put('/users/update-profile', { bio: newDescription });
         setDescription(newDescription);
         setIsEditing(false);
@@ -60,31 +58,22 @@ const Profile = ({ isOwnProfile = true }) => {
     }
   };
 
-  // === LÓGICA DE SUBIDA DE IMAGEN ===
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // 1. Preview inmediata para que se sienta rápido
     const localPreview = URL.createObjectURL(file);
     setProfileImage(localPreview);
     setIsUploading(true);
 
     try {
-      // 2. Preparar FormData para enviar al Backend
       const formData = new FormData();
-      // ¡OJO! El nombre 'imagen' debe coincidir con upload.single('imagen') de tu backend
       formData.append('imagen', file); 
-
-      // 3. Subir archivo a Cloudinary a través de TU backend
       const uploadRes = await api.post('/files/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       const cloudinaryUrl = uploadRes.data.url;
       console.log("Imagen subida a Cloudinary:", cloudinaryUrl);
-
-      // 4. Actualizar la URL en la base de datos del usuario
       await api.put('/users/update-profile', { 
         avatarUrl: cloudinaryUrl 
       });
