@@ -72,11 +72,11 @@ exports.getCollectionDetails = async (req, res) => {
     console.log(`--- PETICIÓN DE COLECCIÓN ID: ${id} ---`);
 
     try {
-        // 1. Obtener datos de la colección + Datos del Dueño (JOIN)
-        // Usamos LEFT JOIN Users para sacar el nombre del creador
         const sqlCollection = `
             SELECT 
-                c.*, 
+                c.collection_id, c.collection_name, c.collection_description, 
+                c.collection_type, c.cover_url, c.likes, c.created_at,
+                c.user_id, -- Necesario para comparar con el usuario logueado
                 u.username AS creator_username, 
                 u.avatar_url AS creator_avatar,
                 u.user_id AS creator_id
@@ -96,13 +96,16 @@ exports.getCollectionDetails = async (req, res) => {
         console.log("Colección encontrada:", collection.collection_name);
 
         // 2. Obtener los Items
+        // ¡OJO! Aquí he quitado 'i.created_at' porque tu tabla Items NO lo tiene.
         const itemsSql = `
             SELECT 
                 i.item_id, i.item_type, i.custom_description,
+                -- COALESCE busca el primer valor no nulo (Prioridad: Custom -> Catalogo)
                 COALESCE(i.custom_title, m.title, b.title, mov.title, s.title, g.title) AS display_title,
                 COALESCE(i.custom_subtitle, m.artist, b.author, mov.director, g.developer, 'Varios') AS display_subtitle,
-                COALESCE(m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image,
-                i.created_at
+                COALESCE(m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image
+                
+                -- ELIMINADO: i.created_at (No existe en tu tabla Items)
             FROM Items i
             LEFT JOIN Catalog_Music m ON i.music_id = m.music_id
             LEFT JOIN Catalog_Books b ON i.book_id = b.book_id
@@ -114,12 +117,13 @@ exports.getCollectionDetails = async (req, res) => {
         
         const [items] = await db.query(itemsSql, [id]);
         
-        // Devolvemos todo mezclado
+        // Devolvemos todo junto
         res.json({ ...collection, items });
 
     } catch (error) {
         console.error("Error CRÍTICO en getCollectionDetails:", error);
-        res.status(500).json({ error: "Error de servidor al cargar colección" });
+        // Enviamos el mensaje exacto de SQL para debuggear si vuelve a fallar
+        res.status(500).json({ error: "Error de base de datos", details: error.message });
     }
 };
 
