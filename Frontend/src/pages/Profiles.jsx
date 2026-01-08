@@ -127,21 +127,22 @@ const Profile = ({ isOwnProfile = true }) => {
         <div className="relative">
           
           {/* === BANNER === */}
-          {/* Añadido grupo 'group' para efectos hover */}
+    {/* === BANNER === */}
           <div className="h-40 md:h-80 w-full relative bg-neutral-900 overflow-hidden group">
             <img
-              // Usa el banner del usuario, o el de por defecto si es null
               src={user?.banner || "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg"}
               alt="cover"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
-            {/* BOTÓN CAMBIAR BANNER (Solo si es tu perfil) */}
+            {/* BOTÓN CAMBIAR BANNER (Estilo idéntico al Avatar) */}
             {isOwnProfile && (
               <button 
                 onClick={() => !isUploading && bannerInputRef.current.click()}
-                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
+                // CLASES CAMBIADAS: Ahora usa bg-base-100 (blanco/tema) en vez de negro transparente.
+                // Quitada la opacidad para que se vea siempre.
+                className="absolute bottom-4 right-4 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-white/40 hover:bg-base-200 transition-colors z-20"
                 title="Cambiar portada"
               >
                 <Camera size={20} />

@@ -96,11 +96,19 @@ exports.createUser = async (req, res) => {
 };
 
 // PUT: Actualizar perfil (MODIFICADO PARA BANNER)
+
 exports.updateProfile = async (req, res) => {
-  // 1. Usamos req.user.id gracias al verifyToken
+  // 1. Verificar que el usuario está autenticado
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ error: "Usuario no autenticado" });
+  }
+
   const userId = req.user.id;
-  // 2. Recibimos URLs (texto), no archivos
+  
+  // 2. Extraer datos. Si no se envían, serán 'undefined'
   const { bio, avatarUrl, bannerUrl } = req.body;
+
+  console.log(`[UpdateProfile] User: ${userId} - Datos:`, req.body);
 
   try {
     const sql = `
@@ -111,23 +119,29 @@ exports.updateProfile = async (req, res) => {
         banner_url = COALESCE(?, banner_url)
       WHERE user_id = ?
     `;
-    
-    // IMPORTANTE: El orden de variables coincide con los '?'
-    await db.query(sql, [bio, avatarUrl, bannerUrl, userId]);
 
-    // 3. Devolvemos los datos actualizados para que el frontend actualice el contexto
-    res.json({
-      success: true,
-      message: "Perfil actualizado correctamente",
-      user: { 
-        bio, 
-        avatar: avatarUrl, 
-        banner: bannerUrl 
-      },
+    // Lógica ternaria: Si el dato existe, úsalo. Si es undefined, manda null (para que COALESCE use el valor viejo).
+    const valBio = bio !== undefined ? bio : null;
+    const valAvatar = avatarUrl !== undefined ? avatarUrl : null;
+    const valBanner = bannerUrl !== undefined ? bannerUrl : null;
+
+    const [result] = await db.query(sql, [valBio, valAvatar, valBanner, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    // 4. Éxito
+    res.json({ 
+      success: true, 
+      message: "Perfil actualizado", 
+      user: { bio, avatar: avatarUrl, banner: bannerUrl } // Devolvemos para confirmar
     });
+
   } catch (error) {
-    console.error("Error updateProfile:", error);
-    res.status(500).json({ error: "Error al actualizar el perfil" });
+    console.error("Error CRÍTICO en updateProfile:", error);
+    // Devuelve el mensaje real del error para que lo veas en la consola del navegador (Network tab)
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 };
 
