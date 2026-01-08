@@ -7,11 +7,12 @@ require("dotenv").config();
 const SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const DEFAULT_BANNER = "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
 
-// GET: Comprobar disponibilidad de username
+// GET: Comprobar disponibilidad (Devuelve userId)
 exports.checkUsername = async (req, res) => {
   try {
+    // Usamos 'AS' en SQL para renombrar directamente
     const [rows] = await db.query(
-      "SELECT user_id, username, email, avatar_url FROM Users"
+      "SELECT user_id AS userId, username, email, avatar_url AS avatar FROM Users"
     );
     res.status(200).json(rows.length > 0 ? rows : []);
   } catch (error) {
@@ -20,168 +21,70 @@ exports.checkUsername = async (req, res) => {
   }
 };
 
-// POST: Registrar usuario manual (con Captcha)
+// POST: Registrar usuario manual
 exports.createUser = async (req, res) => {
-  const {
-    username,
-    email,
-    password,
-    "g-recaptcha-response": captchaToken,
-  } = req.body;
+  const { username, email, password, "g-recaptcha-response": captchaToken } = req.body;
 
-  if (!captchaToken) {
-    return res.status(400).json({ error: "Por favor, completa el reCAPTCHA." });
-  }
+  if (!captchaToken) return res.status(400).json({ error: "Captcha requerido" });
 
   try {
-    // Verificar Captcha con Google
     const params = new URLSearchParams();
     params.append("secret", SECRET_KEY);
     params.append("response", captchaToken);
+    const googleResp = await axios.post("https://www.google.com/recaptcha/api/siteverify", params);
 
-    const googleResp = await axios.post(
-      "https://www.google.com/recaptcha/api/siteverify",
-      params
-    );
+    if (!googleResp.data.success) return res.status(403).json({ error: "Captcha fallido" });
+    if (!username || !email || !password) return res.status(400).json({ error: "Faltan datos" });
 
-    if (!googleResp.data.success) {
-      return res
-        .status(403)
-        .json({ error: "La verificación de seguridad ha fallado." });
-    }
+    const [existing] = await db.query("SELECT email FROM Users WHERE email = ? OR username = ?", [email, username]);
+    if (existing.length > 0) return res.status(409).json({ error: "Usuario o email ya existen" });
 
-    if (!username || !email || !password) {
-      return res.status(400).json({
-        error: "Faltan campos obligatorios: username, email o password",
-      });
-    }
-
-    // Verificar si ya existe
-    const checkSql =
-      "SELECT username, email FROM Users WHERE email = ? OR username = ?";
-    const [existingUsers] = await db.query(checkSql, [email, username]);
-
-    if (existingUsers.length > 0) {
-      const existingUser = existingUsers[0];
-      const detail =
-        existingUser.email === email
-          ? "El email ya está registrado"
-          : "El nombre de usuario ya está en uso";
-      return res.status(409).json({ error: "Conflicto", details: detail });
-    }
-
-    // Crear usuario
     const passwordHash = await bcrypt.hash(password, 10);
     const sql = "INSERT INTO Users (username, email, password_hash, banner_url) VALUES (?, ?, ?, ?)";
     const [result] = await db.query(sql, [username, email, passwordHash, DEFAULT_BANNER]);
 
-    const token = jwt.sign(
-      { id: result.insertId, username: username },
-      process.env.JWT_SECRET,
-      { expiresIn: "5h" }
-    );
+    const token = jwt.sign({ id: result.insertId, username }, process.env.JWT_SECRET, { expiresIn: "5h" });
 
     res.status(201).json({
       success: true,
-      message: "¡Usuario creado con éxito!",
-      userId: result.insertId,
-      username: username,
-      token: token,
-      banner: DEFAULT_BANNER 
+      token,
+      userId: result.insertId, // ESTÁNDAR: userId
+      username,
+      avatar: null,            // ESTÁNDAR: avatar
+      banner: DEFAULT_BANNER   // ESTÁNDAR: banner
     });
   } catch (error) {
-    console.error("Error en createUser:", error);
-    res.status(500).json({ error: "Hubo un error en el servidor." });
+    console.error("Error createUser:", error);
+    res.status(500).json({ error: "Error de servidor" });
   }
 };
 
-// PUT: Actualizar perfil (MODIFICADO PARA BANNER)
-
-exports.updateProfile = async (req, res) => {
-  // 1. Verificar que el usuario está autenticado
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({ error: "Usuario no autenticado" });
-  }
-
-  const userId = req.user.id;
-  
-  // 2. Extraer datos. Si no se envían, serán 'undefined'
-  const { bio, avatarUrl, bannerUrl } = req.body;
-
-  console.log(`[UpdateProfile] User: ${userId} - Datos:`, req.body);
-
-  try {
-    const sql = `
-      UPDATE Users 
-      SET 
-        bio = COALESCE(?, bio),
-        avatar_url = COALESCE(?, avatar_url),
-        banner_url = COALESCE(?, banner_url)
-      WHERE user_id = ?
-    `;
-
-    // Lógica ternaria: Si el dato existe, úsalo. Si es undefined, manda null (para que COALESCE use el valor viejo).
-    const valBio = bio !== undefined ? bio : null;
-    const valAvatar = avatarUrl !== undefined ? avatarUrl : null;
-    const valBanner = bannerUrl !== undefined ? bannerUrl : null;
-
-    const [result] = await db.query(sql, [valBio, valAvatar, valBanner, userId]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
-    // 4. Éxito
-    res.json({ 
-      success: true, 
-      message: "Perfil actualizado", 
-      user: { bio, avatar: avatarUrl, banner: bannerUrl } // Devolvemos para confirmar
-    });
-
-  } catch (error) {
-    console.error("Error CRÍTICO en updateProfile:", error);
-    // Devuelve el mensaje real del error para que lo veas en la consola del navegador (Network tab)
-    res.status(500).json({ error: "Error interno del servidor", details: error.message });
-  }
-};
-
-// POST: LOGIN (CORREGIDO PARA DEVOLVER BANNER)
+// POST: Login (Normalizado)
 exports.login = async (req, res) => {
   const { identifier, password } = req.body;
   if (!identifier || !password) return res.status(400).json({ error: "Faltan datos" });
 
   try {
-    const sql = "SELECT * FROM Users WHERE email=? OR username=?";
-    const [users] = await db.query(sql, [identifier, identifier]);
-
+    const [users] = await db.query("SELECT * FROM Users WHERE email=? OR username=?", [identifier, identifier]);
     if (users.length === 0) return res.status(401).json({ error: "Credenciales inválidas" });
 
     const user = users[0];
+    if (!user.password_hash) return res.status(400).json({ error: "Usa Google Login" });
 
-    if (!user.password_hash) {
-        return res.status(400).json({ 
-            error: "Cuenta de Google. Inicia sesión con Google." 
-        });
-    }
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) return res.status(401).json({ error: "Contraseña incorrecta" });
 
-    const validPassword = await bcrypt.compare(password, user.password_hash);
-    if (!validPassword) return res.status(401).json({ error: "Contraseña incorrecta" });
+    const token = jwt.sign({ id: user.user_id, username: user.username }, process.env.JWT_SECRET, { expiresIn: "5h" });
 
-    const token = jwt.sign(
-      { id: user.user_id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: "5h" }
-    );
-
+    // AQUÍ OCURRE LA MAGIA DE LA NORMALIZACIÓN
     res.status(200).json({
       success: true,
-      message: "Login exitoso",
-      token: token,
-      userId: user.user_id,
+      token,
+      userId: user.user_id,        // DB: user_id -> API: userId
       username: user.username,
-      avatar: user.avatar_url,
-      banner: user.banner_url, 
-      bio: user.bio 
+      avatar: user.avatar_url,     // DB: avatar_url -> API: avatar
+      banner: user.banner_url,     // DB: banner_url -> API: banner
+      bio: user.bio
     });
 
   } catch (error) {
@@ -190,7 +93,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// POST: Google Login 
+// POST: Google Login (Normalizado)
 exports.googleLogin = async (req, res) => {
   const { token } = req.body;
   if (!token) return res.status(400).json({ error: "No token" });
@@ -199,45 +102,32 @@ exports.googleLogin = async (req, res) => {
     const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
     const { email, name, picture, sub: googleId } = googleResponse.data;
     
-    const [existingUser] = await db.query("SELECT * FROM Users WHERE email = ?", [email]);
+    const [existing] = await db.query("SELECT * FROM Users WHERE email = ?", [email]);
+    let user, isNewUser = false;
 
-    let user;
-    let isNewUser = false;
-
-    if (existingUser.length > 0) {
-      user = existingUser[0];
-      isNewUser = false;
+    if (existing.length > 0) {
+      user = existing[0];
     } else {
-      const sql =
-        "INSERT INTO Users (username, email, avatar_url, google_id, banner_url) VALUES (?, ?, ?, ?, ?)";
-        
-      // Pasamos DEFAULT_BANNER al final
+      const sql = "INSERT INTO Users (username, email, avatar_url, google_id, banner_url) VALUES (?, ?, ?, ?, ?)";
       const [result] = await db.query(sql, [name, email, picture, googleId, DEFAULT_BANNER]);
-
-      user = {
-        user_id: result.insertId,
-        username: name,
-        email: email,
-        avatar_url: picture,
-        banner_url: DEFAULT_BANNER, // <--- Asignamos la constante aquí
-      };
+      user = { user_id: result.insertId, username: name, email, avatar_url: picture, banner_url: DEFAULT_BANNER, bio: null };
       isNewUser = true;
     }
 
     const appToken = jwt.sign({ id: user.user_id, username: user.username }, process.env.JWT_SECRET, { expiresIn: "5h" });
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       token: appToken,
+      isNewUser,
       user: {
-        userId: user.user_id,
+        userId: user.user_id,      // ESTÁNDAR
         username: user.username,
-        avatar: user.avatar_url,
-        banner: user.banner_url, // <--- AÑADIDO
-        email: user.email,
-        bio: user.bio
-      },
-      isNewUser: isNewUser,
+        avatar: user.avatar_url,   // ESTÁNDAR
+        banner: user.banner_url,   // ESTÁNDAR
+        bio: user.bio,
+        email: user.email
+      }
     });
   } catch (error) {
     console.error("Error Google:", error);
@@ -245,77 +135,96 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
-// ... (completeProfile y getUsers se quedan igual) ...
-exports.completeProfile = async (req, res) => {
-    // Pega aquí tu función completeProfile original
-    // Es correcta.
-    const { userId, avatarUrl, interests } = req.body;
-    // ...
-    res.status(200).json({ success: true });
-};
-
-exports.getUsers = async (req, res) => {
-    const [rows] = await db.query("SELECT user_id, username, email, avatar_url FROM Users");
-    res.status(200).json(rows);
-};
-// PUT: Añadir intereses y foto de perfil (Gateway post-registro)
-exports.completeProfile = async (req, res) => {
-  const { userId, username, avatarUrl, interests } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: "ID de usuario no proporcionado" });
-  }
+// PUT: Update Profile (Normalizado)
+exports.updateProfile = async (req, res) => {
+  if (!req.user || !req.user.id) return res.status(401).json({ error: "No autorizado" });
+  
+  const userId = req.user.id;
+  const { bio, avatarUrl, bannerUrl } = req.body; // El frontend envía avatarUrl/bannerUrl (nombres de variable)
 
   try {
-    if (avatarUrl) {
-      await db.query("UPDATE Users SET avatar_url = ? WHERE user_id = ?", [
-        avatarUrl,
-        userId,
-      ]);
-    }
-    if (interests && interests.length > 0) {
-      for (const category of interests) {
-        const name =
-          category === "Music"
-            ? "Mi Música"
-            : category === "Books"
-            ? "Mis Libros"
-            : category === "Movies"
-            ? "Mis Pelis"
-            : category === "Games"
-            ? "Mis Juegos"
-            : "Mis Series";
-        
-        const sql = `
-          INSERT INTO Collections (user_id, collection_type, collection_name, collection_description) 
-          VALUES (?, ?, ?, ?)
-        `;
-        await db.query(sql, [
-          userId,
-          category,
-          name,
-          `Colección automática de ${category}`,
-        ]);
-      }
-    }
-    res.status(200).json({
-      success: true,
-      message: "¡Perfil completado y colecciones creadas!",
+    let fields = [], values = [];
+    // Mapeamos lo que llega del front a las columnas de la DB
+    if (bio !== undefined) { fields.push("bio = ?"); values.push(bio); }
+    if (avatarUrl !== undefined) { fields.push("avatar_url = ?"); values.push(avatarUrl); }
+    if (bannerUrl !== undefined) { fields.push("banner_url = ?"); values.push(bannerUrl); }
+
+    if (fields.length === 0) return res.status(400).json({ error: "Nada que actualizar" });
+
+    values.push(userId);
+    await db.query(`UPDATE Users SET ${fields.join(", ")} WHERE user_id = ?`, values);
+
+    // Devolvemos nombres ESTÁNDAR al front
+    res.json({ 
+      success: true, 
+      user: { 
+        bio, 
+        avatar: avatarUrl, // Devolvemos 'avatar', no avatarUrl
+        banner: bannerUrl  // Devolvemos 'banner', no bannerUrl
+      } 
     });
   } catch (error) {
-    console.error("Error en completeProfile:", error);
-    res.status(500).json({ error: "Error al procesar el perfil" });
+    console.error("Error update:", error);
+    res.status(500).json({ error: "Error al actualizar" });
   }
 };
 
-// GET: Obtener usuarios
+// GET: Feed de Usuarios (Normalizado)
+exports.getUserFeed = async (req, res) => {
+    const myId = req.user.id;
+    try {
+      // Usamos 'AS' para que salga directo como queremos
+      const sql = `
+        SELECT 
+            user_id AS userId, 
+            username, 
+            bio, 
+            avatar_url AS avatar, 
+            banner_url AS banner 
+        FROM Users 
+        WHERE user_id != ? 
+        ORDER BY RAND() LIMIT 10
+      `;
+      const [rows] = await db.query(sql, [myId]);
+      res.status(200).json(rows);
+    } catch (error) {
+      res.status(500).json({ error: "Error feed" });
+    }
+};
+
+// GET: Colecciones
+exports.getUserCollections = async (req, res) => {
+    const userId = req.params.userId || req.user.id;
+    try {
+      const [rows] = await db.query("SELECT * FROM Collections WHERE user_id = ?", [userId]);
+      res.status(200).json(rows);
+    } catch (error) {
+      res.status(500).json({ error: "Error colecciones" });
+    }
+};
+
+// PUT: Complete Profile (Onboarding)
+exports.completeProfile = async (req, res) => {
+    const { userId, avatarUrl, interests } = req.body;
+    try {
+      if (avatarUrl) await db.query("UPDATE Users SET avatar_url = ? WHERE user_id = ?", [avatarUrl, userId]);
+      
+      if (interests?.length > 0) {
+        for (const cat of interests) {
+            await db.query("INSERT INTO Collections (user_id, collection_type, collection_name, cover_url) VALUES (?, ?, ?, ?)", 
+            [userId, cat, `Mis ${cat}`, null]);
+        }
+      }
+      res.status(200).json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Error onboarding" });
+    }
+};
+
+// GET: Get Users (Genérico)
 exports.getUsers = async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      "SELECT user_id, username, email, avatar_url FROM Users"
-    );
-    res.status(200).json(rows);
-  } catch (error) {
-    res.status(500).json({ error: "Error al obtener usuarios" });
-  }
+    try {
+        const [rows] = await db.query("SELECT user_id AS userId, username, avatar_url AS avatar FROM Users");
+        res.json(rows);
+    } catch (e) { res.status(500).json({ error: "Error" }); }
 };
