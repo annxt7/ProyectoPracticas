@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const collectionController = require("../controllers/collectionController");
-const { verifyToken } = require("../middleware/authMiddleware"); 
+const { verifyToken } = require("../middlewares/authMiddleware"); 
 
 // POST 
 router.post("/", verifyToken, collectionController.createCollection);
