@@ -97,51 +97,77 @@ exports.createUser = async (req, res) => {
 
 // PUT: Actualizar perfil (MODIFICADO PARA BANNER)
 
+// userController.js - Reemplaza SOLAMENTE la función updateProfile
+
 exports.updateProfile = async (req, res) => {
-  // 1. Verificar que el usuario está autenticado
+  // 1. Verificación de seguridad
   if (!req.user || !req.user.id) {
-    return res.status(401).json({ error: "Usuario no autenticado" });
+    return res.status(401).json({ error: "Usuario no autenticado (Token inválido)" });
   }
 
   const userId = req.user.id;
-  
-  // 2. Extraer datos. Si no se envían, serán 'undefined'
   const { bio, avatarUrl, bannerUrl } = req.body;
 
-  console.log(`[UpdateProfile] User: ${userId} - Datos:`, req.body);
+  console.log("--- INTENTO DE UPDATE ---");
+  console.log("Usuario ID:", userId);
+  console.log("Datos recibidos:", req.body);
 
   try {
-    const sql = `
-      UPDATE Users 
-      SET 
-        bio = COALESCE(?, bio),
-        avatar_url = COALESCE(?, avatar_url),
-        banner_url = COALESCE(?, banner_url)
-      WHERE user_id = ?
-    `;
+    // 2. CONSTRUCCIÓN DINÁMICA DE LA SQL
+    // Esto evita errores si algún campo es undefined
+    let fieldsToUpdate = [];
+    let valuesToUpdate = [];
 
-    // Lógica ternaria: Si el dato existe, úsalo. Si es undefined, manda null (para que COALESCE use el valor viejo).
-    const valBio = bio !== undefined ? bio : null;
-    const valAvatar = avatarUrl !== undefined ? avatarUrl : null;
-    const valBanner = bannerUrl !== undefined ? bannerUrl : null;
+    // Solo añadimos a la SQL los campos que vienen en el body
+    if (bio !== undefined) {
+      fieldsToUpdate.push("bio = ?");
+      valuesToUpdate.push(bio);
+    }
+    if (avatarUrl !== undefined) {
+      fieldsToUpdate.push("avatar_url = ?");
+      valuesToUpdate.push(avatarUrl);
+    }
+    if (bannerUrl !== undefined) {
+      fieldsToUpdate.push("banner_url = ?");
+      valuesToUpdate.push(bannerUrl);
+    }
 
-    const [result] = await db.query(sql, [valBio, valAvatar, valBanner, userId]);
+    // Si no hay nada que actualizar, devolvemos error (así no hacemos llamada a la BD)
+    if (fieldsToUpdate.length === 0) {
+      return res.status(400).json({ error: "No se enviaron datos para actualizar" });
+    }
+
+    // Añadimos el ID al final de los valores (para el WHERE)
+    valuesToUpdate.push(userId);
+
+    // Unimos las partes de la SQL
+    const sql = `UPDATE Users SET ${fieldsToUpdate.join(", ")} WHERE user_id = ?`;
+
+    console.log("SQL Generada:", sql);
+    console.log("Valores:", valuesToUpdate);
+
+    // 3. Ejecutar consulta
+    const [result] = await db.query(sql, valuesToUpdate);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      return res.status(404).json({ error: "Usuario no encontrado en la base de datos" });
     }
 
     // 4. Éxito
-    res.json({ 
-      success: true, 
-      message: "Perfil actualizado", 
-      user: { bio, avatar: avatarUrl, banner: bannerUrl } // Devolvemos para confirmar
+    res.json({
+      success: true,
+      message: "Perfil actualizado correctamente",
+      user: { bio, avatar: avatarUrl, banner: bannerUrl }
     });
 
   } catch (error) {
-    console.error("Error CRÍTICO en updateProfile:", error);
-    // Devuelve el mensaje real del error para que lo veas en la consola del navegador (Network tab)
-    res.status(500).json({ error: "Error interno del servidor", details: error.message });
+    console.error("ERROR CRÍTICO SQL:", error);
+    // IMPORTANTE: Esto enviará el error exacto al navegador para que lo leas
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      sqlMessage: error.sqlMessage || error.message,
+      code: error.code 
+    });
   }
 };
 
