@@ -17,7 +17,7 @@ const Feed = () => {
       id: 1,
       user: "wencesalao",
       avatar:
-        "https://imgs.search.brave.com/EDL7iK8SSFkntK8uxkJTfgixZIjgopbJ7kpIslyzNzI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy9l/L2U0L1dlbmNlc2xh/b19WaW56b25zXzIw/MTBfc3RhbXBfb2Zf/dGhlX1BoaWxpcHBp/bmVzLmpwZw",
+        "https://img.freepik.com/foto-gratis/hombre-sonriente-pulgar-arriba_1187-5818.jpg?semt=ais_hybrid&w=740&q=80",
       action: "añadió a la colección",
       target: "Vinilos 80s",
       image:
@@ -45,7 +45,7 @@ const Feed = () => {
       id: 3,
       user: "sormariahfernandha",
       avatar:
-        "https://imgs.search.brave.com/yosZpGDVm5HYPMlx2W2LP-uAfvhpklMT5PhRNA0qyvo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy83/Lzc4L1Nvcl9NYXIl/QzMlQURhX1N1JUMz/JUExcmV6X1YlQzMl/QTF6cXVlel8oMjAw/OSkuSlBH",
+        "https://st2.depositphotos.com/3889193/6856/i/450/depositphotos_68565683-stock-photo-cheerful-woman-with-raised-fists.jpg",
       action: "guardó un elemento",
       target: "Lecturas 2024",
       image:
