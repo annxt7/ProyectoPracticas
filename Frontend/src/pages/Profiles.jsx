@@ -19,12 +19,10 @@ import api from "../services/api";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
-  const { user, updateUser } = useAuth(); // Datos de la sesión (Contexto)
-  const { userId } = useParams();         // Datos de la URL
+  const { user, updateUser } = useAuth(); 
+  const { userId } = useParams();         
 
-  // --- 1. GUARDIA DE SEGURIDAD (EL FIX) ---
-  // Si la URL dice "me" pero el usuario aún no ha cargado en el contexto,
-  // mostramos un spinner y DETENEMOS todo lo demás.
+  // 1. GUARDIA DE SEGURIDAD
   if (userId === "me" && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-100">
@@ -33,13 +31,12 @@ const Profile = () => {
     );
   }
 
-  // --- 2. CALCULAR ID REAL ---
-  // Si userId es "me" o undefined, usamos user.id. Si es un número, usamos ese.
+  // 2. CALCULAR ID REAL
   const isMe = userId === "me" || !userId || String(userId) === String(user?.id);
   const targetId = isMe ? user?.id : userId;
 
   // Estados
-  const [profileData, setProfileData] = useState(isMe ? user : null); // Datos a mostrar
+  const [profileData, setProfileData] = useState(isMe ? user : null); 
   const [collections, setCollections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -47,10 +44,10 @@ const Profile = () => {
   const avatarInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // <--- ESTADO CLAVE PARA LAS CÁMARAS
   const [newDescription, setNewDescription] = useState("");
 
-  // Sincronizar datos si soy yo
+  // Sincronizar datos
   useEffect(() => {
     if (isMe && user) {
         setProfileData(user);
@@ -58,22 +55,16 @@ const Profile = () => {
     }
   }, [user, isMe]);
 
-  // --- 3. CARGAR COLECCIONES Y PERFIL AJENO ---
+  // Cargar datos externos
   useEffect(() => {
     const fetchData = async () => {
-      if (!targetId) return; // Si no hay ID, no hacemos nada
-      
+      if (!targetId) return; 
       setIsLoading(true);
       try {
-        // A. Cargar Colecciones (Usamos el ID numérico)
         const res = await api.get(`/collections/user/${targetId}`);
         setCollections(res.data);
 
-        // B. Si visitamos a OTRO, cargar sus datos básicos
-        // (Nota: Si tu backend aún no tiene GET /users/:id, esto fallará para otros, 
-        // pero funcionará para TI porque ya tienes 'user' en el contexto)
         if (!isMe) {
-             // Simulamos datos de otro usuario por ahora
              setProfileData({
                  username: "Usuario " + targetId,
                  bio: "Perfil público",
@@ -87,17 +78,16 @@ const Profile = () => {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, [targetId, isMe]);
 
-  // --- HANDLERS (Edición y Subida) ---
+  // HANDLERS
   const handleSaveBio = async (e) => {
     e.preventDefault();
     try {
       await api.put("/users/update-profile", { bio: newDescription });
-      updateUser({ bio: newDescription }); // Actualizar contexto
-      setIsEditing(false);
+      updateUser({ bio: newDescription }); 
+      setIsEditing(false); // <--- AL GUARDAR, SE CIERRA EL MODO EDICIÓN
     } catch (error) { console.error(error); }
   };
 
@@ -108,17 +98,16 @@ const Profile = () => {
     try {
       const fd = new FormData();
       fd.append("imagen", file);
-      const res = await api.post("/files/upload", fd); // Subir a Cloudflare
+      const res = await api.post("/files/upload", fd); 
       
       const payload = type === "avatar" ? { avatarUrl: res.data.url } : { bannerUrl: res.data.url };
-      await api.put("/users/update-profile", payload); // Guardar en SQL
+      await api.put("/users/update-profile", payload); 
 
       updateUser(type === "avatar" ? { avatar: res.data.url } : { banner: res.data.url });
     } catch (error) { console.error(error); } 
     finally { setIsUploading(false); }
   };
 
-  // Helper para imágenes (asegura que no rompa si es null)
   const getImg = (url, fallback) => url ? url : fallback;
   const DEFAULT_AVATAR = "https://i.pinimg.com/736x/b8/b3/12/b8b312949b0c78751f6aa82849120bc9.jpg";
   const DEFAULT_BANNER = "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
@@ -137,8 +126,9 @@ const Profile = () => {
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent"></div>
             
-            {isMe && (
-                <button onClick={() => !isUploading && bannerInputRef.current.click()} className="absolute bottom-4 right-4 bg-base-100 p-2 rounded-full shadow-md z-20 hover:bg-base-200 cursor-pointer">
+            {/* CÁMARA BANNER: Solo si es mi perfil Y estoy editando */}
+            {isMe && isEditing && (
+                <button onClick={() => !isUploading && bannerInputRef.current.click()} className="absolute bottom-4 right-4 bg-base-100 p-2 rounded-full shadow-md z-20 hover:bg-base-200 cursor-pointer animate-in fade-in zoom-in duration-300">
                     {isUploading ? <span className="loading loading-spinner loading-xs"/> : <Camera size={20} />}
                 </button>
             )}
@@ -147,27 +137,42 @@ const Profile = () => {
 
         <div className="px-6 relative">
             <div className="flex justify-between items-end -mt-12 mb-4">
+                
                 {/* AVATAR */}
-                <div className="relative" onClick={() => isMe && !isUploading && avatarInputRef.current.click()}>
-                    <div className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isMe ? "cursor-pointer hover:ring-primary" : ""}`}>
+                <div className="relative">
+                    <div 
+                        // Solo permitimos clic en el avatar si estamos editando
+                        onClick={() => isMe && isEditing && !isUploading && avatarInputRef.current.click()} 
+                        className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""}`}
+                    >
                         <div className="w-24 md:w-32 rounded-full overflow-hidden bg-base-200">
                             <img src={getImg(profileData?.avatar, DEFAULT_AVATAR)} className="object-cover w-full h-full" alt="avatar"/>
                         </div>
                     </div>
-                    {isMe && !isUploading && (
-                        <div className="absolute bottom-1 right-1 bg-base-100 p-1.5 rounded-full shadow-md pointer-events-none">
+
+                    {/* CÁMARA AVATAR: Solo si es mi perfil Y estoy editando */}
+                    {isMe && isEditing && !isUploading && (
+                        <div className="absolute bottom-1 right-1 bg-base-100 p-1.5 rounded-full shadow-md pointer-events-none animate-in fade-in zoom-in duration-300">
                             <Camera size={16}/>
                         </div>
                     )}
                     <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, "avatar")} className="hidden" accept="image/*"/>
                 </div>
 
-                {/* BOTONES */}
+                {/* BOTONES DE ACCIÓN */}
                 <div className="flex gap-2 mb-2">
                     {isMe ? (
                         <>
-                            <button onClick={() => { setIsEditing(true); setNewDescription(profileData?.bio || ""); }} className="btn btn-sm btn-ghost border border-white/40 rounded-full">Editar Perfil</button>
-                            <button className="btn btn-sm btn-circle btn-ghost border border-white/40"><Settings size={18}/></button>
+                            {/* Si NO estoy editando, muestro "Editar Perfil". Si SÍ, desaparece (porque salen Guardar/Cancelar abajo) */}
+                            {!isEditing ? (
+                                <>
+                                    <button onClick={() => { setIsEditing(true); setNewDescription(profileData?.bio || ""); }} className="btn btn-sm btn-ghost border border-white/40 rounded-full">Editar Perfil</button>
+                                    <button className="btn btn-sm btn-circle btn-ghost border border-white/40"><Settings size={18}/></button>
+                                </>
+                            ) : (
+                                // Opcional: Podrías poner aquí un botón de "Cancelar Edición" rápido
+                                <button onClick={() => setIsEditing(false)} className="btn btn-sm btn-ghost text-error">Cancelar Edición</button>
+                            )}
                         </>
                     ) : (
                         <button className="btn btn-primary btn-sm rounded-full px-6 gap-2"><UserPlus size={16}/> Seguir</button>
@@ -182,12 +187,19 @@ const Profile = () => {
                     <p className="text-sm opacity-60 flex items-center gap-1 mt-1"><MapPin size={14}/> Madrid, ES</p>
                 </div>
 
+                {/* MODO EDICIÓN DE BIO */}
                 {isEditing ? (
-                    <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl">
-                        <textarea className="textarea textarea-bordered w-full h-24" value={newDescription} onChange={e=>setNewDescription(e.target.value)} autoFocus/>
+                    <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl animate-in slide-in-from-top-2 duration-300">
+                        <label className="text-xs font-bold uppercase opacity-50">Editar Biografía</label>
+                        <textarea 
+                            className="textarea textarea-bordered w-full h-24 focus:textarea-primary" 
+                            value={newDescription} 
+                            onChange={e=>setNewDescription(e.target.value)} 
+                            autoFocus
+                            placeholder="Escribe algo sobre ti..."
+                        />
                         <div className="flex justify-end gap-2">
-                            <button type="submit" className="btn btn-primary btn-sm"><Check size={16}/></button>
-                            <button type="button" onClick={()=>setIsEditing(false)} className="btn btn-ghost btn-sm"><X size={16}/></button>
+                            <button type="submit" className="btn btn-primary btn-sm gap-2"><Check size={16}/> Guardar Cambios</button>
                         </div>
                     </form>
                 ) : (
