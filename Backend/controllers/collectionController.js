@@ -95,13 +95,9 @@ exports.getCollectionDetails = async (req, res) => {
                 i.item_id, 
                 i.item_type, 
                 i.custom_description,
-                
                 COALESCE(i.custom_title, m.title, b.title, mov.title, s.title, g.title) AS display_title,
-                
                 COALESCE(i.custom_subtitle, m.artist, b.author, mov.director, g.developer, 'Varios') AS display_subtitle,
-                
-                COALESCE(i.custom_image, m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image,
-
+                COALESCE(i.custom_image, m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image
             FROM Items i
             LEFT JOIN Catalog_Music m ON i.music_id = m.music_id
             LEFT JOIN Catalog_Books b ON i.book_id = b.book_id
@@ -112,11 +108,13 @@ exports.getCollectionDetails = async (req, res) => {
         `;
         
         const [items] = await db.query(itemsSql, [id]);
+        
         res.json({ ...collection, items });
 
     } catch (error) {
         console.error("Error cargando colección:", error);
-        res.status(500).json({ error: "Error de servidor" });
+        // Esto te mostrará el error real en la respuesta si vuelve a fallar
+        res.status(500).json({ error: "Error de servidor", details: error.message });
     }
 };
 
