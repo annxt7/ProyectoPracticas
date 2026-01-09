@@ -1,47 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   X,
-  UserPlus,
-  ChevronRight,
   TrendingUp,
   Hash,
   Sparkles
 } from "lucide-react";
-import NavMobile from "../components/NavMobile";  
+import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 
 const Explorer = () => {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("cuentas");
+  const [users, setUsers] = useState([]);
+  const [collections, setCollections] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // --- DATOS SIMULADOS (Mantengo tus arrays originales) ---
-  const users = [
-    { id: 1, name: "Ana Analog", handle: "@ana_films", bio: "Cineasta & 35mm", isFollowing: false, img: "https://i.pravatar.cc/150?u=1" },
-    { id: 2, name: "Retro Dave", handle: "@dave_collects", bio: "Vinilos y Consolas", isFollowing: true, img: "https://i.pravatar.cc/150?u=2" },
-    { id: 3, name: "Sofia Books", handle: "@sofia_reads", bio: "Bibliófila empedernida", isFollowing: false, img: "https://i.pravatar.cc/150?u=3" },
-    { id: 4, name: "Minimalist", handle: "@mini_arch", bio: "Less is more", isFollowing: false, img: "https://i.pravatar.cc/150?u=4" },
-    { id: 5, name: "Techno Vibes", handle: "@tech_music", bio: "Solo vinilos electrónicos", isFollowing: false, img: "https://i.pravatar.cc/150?u=5" },
-    { id: 6, name: "Bruja Lola", handle: "@bruja_lola", bio: "Magia potagia", isFollowing: false, img: "https://www.impulsivos.es/images/productos/100489.jpg" },
-  ];
+  // Petición al Backend con Debounce
+  useEffect(() => {
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Detectamos si estamos en local o en tu dominio de producción
+      const baseUrl = window.location.hostname === "localhost" 
+        ? "http://localhost:3000" 
+        : "https://axel.informaticamajada.es";
 
-  const collections = [
-    { id: 1, title: "Star Wars Vintage", items: 42, author: "@luke_sky", cover: "https://picsum.photos/400?random=1" },
-    { id: 2, title: "Cámaras Leica", items: 12, author: "@ana_films", cover: "https://picsum.photos/400?random=2" },
-    { id: 3, title: "Libros de Terror", items: 156, author: "@stephen_fan", cover: "https://picsum.photos/400?random=3" },
-    { id: 4, title: "Carteles Bauhaus", items: 23, author: "@design_daily", cover: "https://picsum.photos/400?random=4" },
-    { id: 5, title: "Sneakers 90s", items: 89, author: "@jordan_head", cover: "https://picsum.photos/400?random=5" },
-    { id: 6, title: "Vinilos 80s", items: 123, author: "@vinilos_80s", cover: "https://picsum.photos/400?random=6" },
-  ];
+      const res = await fetch(`${baseUrl}/api/search?query=${encodeURIComponent(query)}`, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
 
-  const filteredUsers = users.filter(u => u.name.toLowerCase().includes(query.toLowerCase()) || u.handle.includes(query.toLowerCase()));
-  const filteredCollections = collections.filter(c => c.title.toLowerCase().includes(query.toLowerCase()));
+      // Si el servidor responde con algo que no es JSON (como tu "API funcionando")
+      // este check evitará el error de SyntaxError
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new TypeError("El servidor no devolvió JSON. Revisa la ruta en el Backend.");
+      }
+
+      const data = await res.json();
+      setUsers(data.users || []);
+      setCollections(data.collections || []);
+    } catch (err) {
+      console.error("Error en la carga:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const timeoutId = setTimeout(fetchData, 300);
+  return () => clearTimeout(timeoutId);
+}, [query]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER DE BÚSQUEDA (Centrado y Sticky) */}
+      {/* HEADER DE BÚSQUEDA */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -77,10 +93,10 @@ const Explorer = () => {
         </div>
       </div>
 
-      {/* LAYOUT DE TRES COLUMNAS */}
+      {/* LAYOUT PRINCIPAL */}
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-10">
         
-        {/* IZQUIERDA: CATEGORÍAS / TRENDS */}
+        {/* IZQUIERDA: TENDENCIAS */}
         <aside className="hidden lg:block">
           <div className="sticky top-48 space-y-8">
             <div>
@@ -98,23 +114,32 @@ const Explorer = () => {
           </div>
         </aside>
 
-        {/* CENTRO: RESULTADOS (Grid de 2 columnas para Cuentas) */}
+        {/* CENTRO: RESULTADOS REALES */}
         <main>
+          {loading && <div className="text-center py-4 opacity-50 text-xs">Buscando...</div>}
+
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+              {users.length > 0 ? (
+                users.map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="avatar">
-                        <div className="w-12 h-12 rounded-full ring-2 ring-white/5">
-                          <img src={user.img} alt={user.name} />
+                        <div className="w-12 h-12 rounded-full ring-2 ring-white/5 bg-white/10">
+                          <img 
+                          src={user.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`} 
+                          alt={user.name} 
+                          className="w-12 h-12 rounded-full object-cover"
+                          onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }} // Segunda capa de seguridad
+                          />
                         </div>
                       </div>
                       <div className="min-w-0">
                         <h3 className="font-bold text-sm text-white truncate">{user.name}</h3>
                         <p className="text-[10px] opacity-40 leading-none">{user.handle}</p>
-                        <p className="text-xs opacity-60 mt-2 truncate max-w-[140px] italic">"{user.bio}"</p>
+                        <p className="text-xs opacity-60 mt-2 truncate max-w-[140px] italic">
+                          {user.bio ? `"${user.bio}"` : ""}
+                        </p>
                       </div>
                     </div>
                     <button className={`btn btn-xs rounded-full px-4 ${user.isFollowing ? 'btn-ghost border-white/10' : 'btn-primary'}`}>
@@ -122,28 +147,32 @@ const Explorer = () => {
                     </button>
                   </div>
                 ))
-              ) : (
-                <div className="col-span-full text-center py-20 opacity-20 italic">No se encontraron resultados</div>
+              ) : !loading && (
+                <div className="col-span-full text-center py-20 opacity-20 italic">No hay resultados para tu búsqueda</div>
               )}
             </div>
           )}
 
           {activeTab === "colecciones" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {filteredCollections.map((col) => (
-                <div key={col.id} className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all group cursor-pointer">
-                  <div className="aspect-video overflow-hidden">
-                    <img src={col.cover} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-white text-lg">{col.title}</h3>
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="text-[10px] opacity-40 uppercase tracking-widest">{col.items} objetos</span>
-                      <span className="text-xs font-medium text-primary">{col.author}</span>
+              {collections.length > 0 ? (
+                collections.map((col) => (
+                  <div key={col.id} className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all group cursor-pointer">
+                    <div className="aspect-video overflow-hidden bg-white/5">
+                      <img src={col.cover || 'https://via.placeholder.com/400'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-bold text-white text-lg">{col.title}</h3>
+                      <div className="flex items-center justify-between mt-4">
+                        <span className="text-[10px] opacity-40 uppercase tracking-widest">{col.items} objetos</span>
+                        <span className="text-xs font-medium text-primary">{col.author}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : !loading && (
+                <div className="col-span-full text-center py-20 opacity-20 italic">No hay colecciones que coincidan</div>
+              )}
             </div>
           )}
         </main>
@@ -155,17 +184,7 @@ const Explorer = () => {
               <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-4 flex items-center gap-2 text-primary">
                 <Sparkles size={12} /> Recomendado
               </h4>
-              <p className="text-xs opacity-60 mb-6 leading-relaxed">Basado en tus colecciones de vinilos y cine.</p>
-              <div className="space-y-4">
-                {/* Aquí podrías mapear mini-colecciones o perfiles pro */}
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white/5 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-white truncate">Colección: Jazz 50s</p>
-                    <p className="text-[10px] opacity-40">Por @blue_note</p>
-                  </div>
-                </div>
-              </div>
+              <p className="text-xs opacity-60 mb-6 leading-relaxed">Descubre nuevas tribus basadas en tus gustos.</p>
             </div>
           </div>
         </aside>
