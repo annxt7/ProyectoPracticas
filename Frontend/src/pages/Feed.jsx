@@ -11,7 +11,6 @@ import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";  
 
 const Feed = () => {
-  // Datos simulados del Feed
   const activities = [
     {
       id: 1,
