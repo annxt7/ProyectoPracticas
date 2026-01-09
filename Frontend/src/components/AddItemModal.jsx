@@ -26,27 +26,18 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Estado para el formulario manual
   const [customForm, setCustomForm] = useState(INITIAL_FORM_STATE);
   const fileInputRef = useRef(null);
 
-  // --- EFECTO DE BÚSQUEDA CORREGIDO ---
   useEffect(() => {
-    // 1. Validaciones iniciales: Si no buscamos o hay poco texto, limpiamos y salimos.
     if (mode !== "search" || searchTerm.length < 2) {
       setSearchResults([]);
       return;
     }
-
-    // 2. Definimos el Debounce (Espera)
     const delayDebounceFn = setTimeout(async () => {
       setLoading(true);
       try {
-        // TRUCO: Si la colección es Custom, pedimos 'General'
         const categoryToSend = collectionType === "Custom" ? "General" : collectionType;
-
-        // 
-        // Hacemos la llamada dentro de una función asíncrona interna
         const response = await api.get("/catalog/search", {
           params: { 
             category: categoryToSend, 
@@ -115,11 +106,8 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
       title: customForm.title,
       subtitle: customForm.subtitle,
       description: customForm.description,
-      
-      // CAMBIO AQUÍ: Enviamos el archivo original Y la preview
       cover: customForm.coverPreview, 
-      coverFile: customForm.cover, // <--- ESTO ES LO QUE NECESITAMOS PARA SUBIR
-      
+      coverFile: customForm.cover, 
       isCustom: true,
       item_type: "Custom" 
     };
@@ -146,7 +134,6 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
 
       <div className="relative bg-base-100 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
-        {/* HEADER */}
         <div className="p-4 border-b border-base-200 flex justify-between items-center bg-base-100">
           <h3 className="font-bold text-lg flex items-center gap-2">
             {mode === "search" ? <Database size={18} /> : <PenTool size={18} />}
@@ -159,7 +146,6 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
           </button>
         </div>
 
-        {/* TABS DE MODO */}
         <div className="flex border-b border-base-200">
             <button
               onClick={() => setMode("search")}
@@ -182,11 +168,8 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
               Crear Manualmente
             </button>
         </div>
-
-        {/* CONTENIDO SCROLLABLE */}
         <div className="overflow-y-auto p-4 flex-1">
           
-          {/* === MODO BUSCADOR === */}
           {mode === "search" && (
             <div className="space-y-4">
               <div className="relative">
@@ -202,16 +185,13 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   autoFocus
-                />
-                
+                />     
                 {loading && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         <Loader2 className="animate-spin text-primary" size={20} />
                     </div>
                 )}
               </div>
-
-              {/* Resultados */}
               <div className="space-y-2">
                 {searchResults.map((item) => (
                   <div
@@ -219,8 +199,6 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
                     className="flex items-center gap-3 p-2 hover:bg-base-200 rounded-xl transition-colors group cursor-pointer border border-transparent hover:border-base-300"
                     onClick={() => handleAddFromDB(item)}
                   >
-                    {/*  */}
-                    {/* Imagen con Componente Seguro */}
                     <div className="w-12 h-16 rounded-md overflow-hidden bg-base-300 flex-none relative">
                         <ItemCover src={item.cover} title={item.title} />
                     </div>
