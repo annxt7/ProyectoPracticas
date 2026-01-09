@@ -1,16 +1,10 @@
 const db = require('../config/dbconect');
 const logger = require('../config/logger'); // Importamos el logger de Winston
 
-/**
- * Busca usuarios y colecciones basándose en un término de búsqueda.
- * Si no hay término, devuelve los resultados generales (populares o recientes).
- */
+
 exports.searchTribe = async (req, res, next) => {
-    // Extraemos el parámetro de búsqueda de la URL (?query=...)
+  
     const { query } = req.query;
-    
-    // Sanitización básica: si no hay query, usamos '%' para SQL
-    // Si hay query, lo envolvemos en '%' para que busque coincidencias parciales
     const searchTerm = query ? `%${query}%` : '%'; 
 
     try {
