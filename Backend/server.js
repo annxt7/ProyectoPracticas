@@ -1,75 +1,53 @@
 require("dotenv").config();
 const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
-const userRoutes = require('./routes/userRoutes');
-const collectionRoutes = require ('./routes/collectionRoutes');
-const uploadRoutes= require ('./routes/uploadFileRoutes.js')
-const catalogRoutes = require ('./routes/catalogRoutes');
-const port = process.env.PORT || 3000; // Fallback por si .env falla
+const applySecurity = require("./middlewares"); 
 const dbconection = require("./config/dbconect");
+const requestLogger = require("./middlewares/logMiddleware"); 
+const logger = require("./config/logger");
+
+// Importación de Rutas
+const userRoutes = require('./routes/userRoutes');
+const collectionRoutes = require('./routes/collectionRoutes');
+const uploadRoutes = require('./routes/uploadFileRoutes');
+const catalogRoutes = require('./routes/catalogRoutes');
+const searchRoutes = require('./routes/searchRoutes');
 
 const app = express();
+const port = process.env.PORT || 3000;
 
-// 1. CONFIGURACIÓN DE CORS
-const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://axel.informaticamajada.es" // Tu dominio de producción
-];
+// 1. APLICAR SEGURIDAD MODULAR
+// Esto ejecuta CORS, Helmet, Rate Limit y HPP desde sus propios archivos
+applySecurity(app);
 
-app.use(cors({
-    origin: function (origin, callback) {
-        // Permitir solicitudes sin origen (como Postman o Server-to-Server)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-}));
+// 2. MIDDLEWARES DE PARSEO
+app.use(express.json({ limit: '10kb' })); 
+app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
 
-// 2. PARSEO DE JSON (IMPORTANTE para el error 401)
-// Debe ir ANTES de las rutas para poder leer req.body
-app.use(express.json()); 
-
-// 3. SEGURIDAD Y CABECERAS (HELMET)
-app.use(
-    helmet({
-        contentSecurityPolicy: {
-            useDefaults: false,
-            directives: {
-                "default-src": ["'self'"],
-                "connect-src": ["'self'", ...allowedOrigins, "https://accounts.google.com", "https://www.googleapis.com"],
-                "script-src": ["'self'", "https://accounts.google.com", "https://apis.google.com", "'unsafe-inline'", "https://axel.informaticamajada.es"],
-                "frame-src": ["'self'", "https://accounts.google.com", "https://axel.informaticamajada.es"],
-                "img-src": ["'self'", "data:", "https://lh3.googleusercontent.com", "https://axel.informaticamajada.es"],
-                "style-src": ["'self'", "'unsafe-inline'"],
-            },
-        },
-        crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
-    })
-);
-
-// Middleware de respaldo para forzar cabeceras si Helmet falla en algún navegador
-app.use((req, res, next) => {
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-    next();
-});
-
-// 4. RUTAS
+// 3. REGISTRO DE RUTAS API
 app.use('/api/users', userRoutes);
 app.use('/api/collections', collectionRoutes); 
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/files', uploadRoutes);
+app.use('/api/search', searchRoutes);
 
-app.get("/", (req, res) => {
-  res.send("API funcionando 🚀");
+// 4. RUTA DE SALUD (Health Check)
+app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", message: "Servidor seguro y funcionando 🚀" });
 });
 
+// 5. MANEJO DE RUTAS NO ENCONTRADAS (404)
+app.use((req, res) => {
+    res.status(404).json({ error: "La ruta solicitada no existe." });
+});
+
+// ARRANQUE DEL SERVIDOR
 app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
+    console.log(`-------------------------------------------`);
+    console.log(`✅ Servidor Tribe corriendo en: http://localhost:${port}`);
+    console.log(`🛡️  Seguridad modular activada`);
+    console.log(`-------------------------------------------`);
 });
+
+logger.info("Prueba: Winston está funcionando y creando archivos");
+logger.error("Prueba: Este es un error de prueba para el archivo separado");
