@@ -5,7 +5,6 @@ import {
   Plus,
   Share2,
   Settings,
-  Heart,
   BookmarkPlus,
   Trash2,
   Camera,
@@ -14,7 +13,7 @@ import {
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
-import ItemCover from "../components/ItemCover.jsx";
+import ItemCover from "../components/ItemCover"; // Asegúrate de que la ruta sea correcta
 import AddToCollectionModal from "../components/AddToCollectionModal";
 import AddItemModal from "../components/AddItemModal";
 import api from "../services/api.js";
@@ -49,12 +48,13 @@ const CollectionPage = () => {
       try {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
+        
         setCollectionInfo({
           id: data.collection_id,
           title: data.collection_name,
           description: data.collection_description || "",
           type: data.collection_type,
-          cover: data.cover_url || data.collection_image,
+          cover: data.cover_url || data.collection_image, // Si es null, ItemCover mostrará degradado
           creatorId: data.creator_id,
           creatorName: data.creator_username,
           stats: { items: data.items ? data.items.length : 0, likes: data.likes || 0 },
@@ -65,7 +65,8 @@ const CollectionPage = () => {
             id: item.item_id,
             title: item.display_title || item.custom_title || "Sin título",
             author: item.display_subtitle || item.custom_subtitle || "Desconocido",
-            cover: item.display_image || "https://via.placeholder.com/300x450?text=No+Image",
+            // CAMBIO 1: Pasamos null en vez de placeholder para que active el degradado
+            cover: item.display_image || null, 
             year: "",
           }));
           setItems(mappedItems);
@@ -85,7 +86,6 @@ const CollectionPage = () => {
 
   const isOwner = user && collectionInfo && String(user.id || user.userId) === String(collectionInfo.creatorId);
 
-
   const handleStartEditing = () => {
     setEditForm({
       title: collectionInfo.title,
@@ -104,6 +104,7 @@ const CollectionPage = () => {
     const file = e.target.files[0];
     if (file) {
       setFileToUpload(file);
+      // Creamos una URL temporal para ver la foto al instante
       setEditForm({ ...editForm, cover: URL.createObjectURL(file) });
     }
   };
@@ -112,6 +113,8 @@ const CollectionPage = () => {
     setIsUploading(true);
     try {
       let finalCoverUrl = collectionInfo.cover;
+      
+      // Si hay archivo nuevo, lo subimos
       if (fileToUpload) {
         const formData = new FormData();
         formData.append("imagen", fileToUpload);
@@ -120,18 +123,15 @@ const CollectionPage = () => {
         });
         finalCoverUrl = uploadRes.data.url;
       }
-
-      // 2. Preparar datos para Backend (Nombres de BD)
+      
       const payload = {
         collection_name: editForm.title,
         collection_description: editForm.description,
         cover_url: finalCoverUrl,
       };
 
-      // 3. Actualizar en Base de Datos (PUT)
       await api.put(`/collections/${collectionInfo.id}`, payload);
 
-      // 4. Actualizar Estado Local
       setCollectionInfo((prev) => ({
         ...prev,
         title: editForm.title,
@@ -148,6 +148,7 @@ const CollectionPage = () => {
       setIsUploading(false);
     }
   };
+
   const handleDelete = async (itemId) => {
     if (window.confirm("¿Eliminar de la colección?")) {
       try {
@@ -205,9 +206,10 @@ const CollectionPage = () => {
 
       {/* HEADER / PORTADA */}
       <div className="relative bg-base-100">
+        {/* Fondo borroso (Background) */}
         <div className="absolute inset-0 h-80 overflow-hidden -z-10 opacity-30">
           <img
-            src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/800")}
+            src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/800?text=_")}
             className="w-full h-full object-cover blur-3xl transition-all duration-500"
             alt=""
           />
@@ -225,13 +227,15 @@ const CollectionPage = () => {
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* FOTO PORTADA */}
+            
+            {/* --- FOTO PORTADA PRINCIPAL --- */}
             <div className="flex-none w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/80 bg-base-200 relative group">
-              <img
-                src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/400?text=Sin+Portada")}
-                alt="Cover"
+              <ItemCover 
+                src={isEditing ? editForm.cover : collectionInfo.cover}
+                title={isEditing ? editForm.title : collectionInfo.title}
                 className="w-full h-full object-cover"
               />
+              
               {isEditing && (
                 <div onClick={() => fileInputRef.current.click()} className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
                   <Camera className="text-white mb-2" size={32} />
@@ -320,12 +324,14 @@ const CollectionPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
             {items.map((item) => (
               <div key={item.id} className="group relative flex flex-col gap-2">
-                <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-md">
-                  {item.cover ? (
-                    <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <ItemCover title={item.title} />
-                  )}
+                <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-md">
+                  {/* CAMBIO 3: Usar ItemCover también aquí para el Grid */}
+                  <ItemCover 
+                    src={item.cover} 
+                    title={item.title} 
+                    className="w-full h-full object-cover" 
+                  />
+                  
                   <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     {isOwner ? (
                       <button onClick={() => handleDelete(item.id)} className="btn btn-square btn-sm btn-error text-white border-none"><Trash2 size={16} /></button>
@@ -340,8 +346,9 @@ const CollectionPage = () => {
                 </div>
               </div>
             ))}
+            
             {isOwner && (
-              <div onClick={() => setIsAddItemOpen(true)} className="aspect-2/3 rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group">
+              <div onClick={() => setIsAddItemOpen(true)} className="aspect-[2/3] rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group">
                 <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors"><Plus size={24} /></div>
                 <span className="text-xs font-bold uppercase mt-2 opacity-40 group-hover:opacity-100">Añadir</span>
               </div>

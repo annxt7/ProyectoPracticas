@@ -17,9 +17,6 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
   const { user, updateUser } = useAuth();
   const { userId } = useParams();
-
-  // --- 1. LÓGICA DE IDENTIDAD ---
-  // Si estoy cargando "mi perfil" pero el usuario aún no cargó en el contexto
   if (userId === "me" && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-100">
@@ -27,24 +24,17 @@ const Profile = () => {
       </div>
     );
   }
-
-  // Determinar si soy yo y cuál es el ID objetivo
   const isMe = userId === "me" || !userId || String(userId) === String(user?.id);
   const targetId = isMe ? user?.id : userId;
-
-  // Estados
   const [profileData, setProfileData] = useState(isMe ? user : null);
   const [collections, setCollections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Edición
   const avatarInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState("");
 
-  // Helpers de imágenes por defecto
   const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&color=fff&name=User";
   const DEFAULT_BANNER = "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
   const getImg = (url, fallback) => (url ? url : fallback);
@@ -66,8 +56,6 @@ const Profile = () => {
           // 1. Cargar colecciones (Coincide con tu collectionRoutes.js)
           api.get(`/collections/user/${targetId}`)
         ];
-
-        // 2. Si es otro usuario, cargar su info pública (Coincide con userController.getUserById)
         if (!isMe) {
           promises.push(api.get(`/users/${targetId}`));
         }
@@ -95,7 +83,7 @@ const Profile = () => {
     fetchData();
   }, [targetId, isMe]);
 
-  // --- HANDLERS ---
+
   const handleSaveBio = async (e) => {
     e.preventDefault();
     try {
@@ -250,7 +238,7 @@ const Profile = () => {
               </form>
             ) : (
               <p className="max-w-md text-base opacity-80 whitespace-pre-wrap leading-relaxed">
-                {profileData?.bio || "Sin descripción."}
+                {profileData?.bio || "Hola!, soy nuevo en Tribe."}
               </p>
             )}
 
