@@ -13,7 +13,7 @@ router.delete("/:collectionId", verifyToken, collectionController.deleteCollecti
 router.put("/:id", verifyToken, collectionController.updateCollection);
 
 // GET 
-router.get("/user/:userId", collectionController.getUserCollections);
-router.get("/:id", collectionController.getCollectionDetails);
+router.get("/user/:userId",verifyToken, collectionController.getUserCollections);
+router.get("/:id",verifyToken, collectionController.getCollectionDetails);
 
 module.exports = router;
