@@ -209,6 +209,7 @@ const CollectionPage = () => {
         {/* Fondo borroso (Background) */}
         <div className="absolute inset-0 h-80 overflow-hidden -z-10 opacity-30">
           <img
+            
             src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/800?text=_")}
             className="w-full h-full object-cover blur-3xl transition-all duration-500"
             alt=""

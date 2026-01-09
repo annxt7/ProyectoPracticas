@@ -7,7 +7,7 @@ import {
   X,
   Camera,
   Plus,
-  Trash2, // 1. IMPORTAMOS EL ICONO
+  Trash2, 
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
@@ -29,7 +29,8 @@ const Profile = () => {
     );
   }
 
-  const isMe = userId === "me" || !userId || String(userId) === String(user?.id);
+  const isMe =
+    userId === "me" || !userId || String(userId) === String(user?.id);
   const targetId = isMe ? user?.id : userId;
 
   const [profileData, setProfileData] = useState(isMe ? user : null);
@@ -43,8 +44,10 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState("");
 
-  const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&color=fff&name=User";
-  const DEFAULT_BANNER = "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
+  const DEFAULT_AVATAR =
+    "https://ui-avatars.com/api/?background=random&color=fff&name=User";
+  const DEFAULT_BANNER =
+    "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
   const getImg = (url, fallback) => (url ? url : fallback);
 
   useEffect(() => {
@@ -60,9 +63,7 @@ const Profile = () => {
       setIsLoading(true);
 
       try {
-        const promises = [
-          api.get(`/collections/user/${targetId}`)
-        ];
+        const promises = [api.get(`/collections/user/${targetId}`)];
 
         if (!isMe) {
           promises.push(api.get(`/users/${targetId}`));
@@ -79,7 +80,7 @@ const Profile = () => {
             username: data.username,
             bio: data.bio,
             avatar: data.avatar,
-            banner: data.banner
+            banner: data.banner,
           });
         }
       } catch (error) {
@@ -113,10 +114,15 @@ const Profile = () => {
       fd.append("imagen", file);
       const res = await api.post("/files/upload", fd);
 
-      const payload = type === "avatar" ? { avatarUrl: res.data.url } : { bannerUrl: res.data.url };
+      const payload =
+        type === "avatar"
+          ? { avatarUrl: res.data.url }
+          : { bannerUrl: res.data.url };
       await api.put("/users/update-profile", payload);
 
-      updateUser(type === "avatar" ? { avatar: res.data.url } : { banner: res.data.url });
+      updateUser(
+        type === "avatar" ? { avatar: res.data.url } : { banner: res.data.url }
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -126,18 +132,15 @@ const Profile = () => {
 
   // 2. NUEVA FUNCIÓN PARA BORRAR COLECCIÓN
   const handleDeleteCollection = async (e, collectionId) => {
-    // CRUCIAL: Detenemos la navegación del Link
-    e.preventDefault(); 
+    e.preventDefault();
     e.stopPropagation();
-
-    if (!window.confirm("¿Estás seguro de que quieres borrar esta colección?")) return;
-
+    if (!window.confirm("¿Estás seguro de que quieres borrar esta colección?"))
+      return;
     try {
-      // Llamada a la API (ruta configurada previamente)
       await api.delete(`/collections/${collectionId}`);
-      
-      // Actualizamos el estado local quitando la colección borrada
-      setCollections((prev) => prev.filter((c) => c.collection_id !== collectionId));
+      setCollections((prev) =>
+        prev.filter((c) => c.collection_id !== collectionId)
+      );
     } catch (error) {
       console.error("Error al borrar:", error);
       alert("No se pudo borrar la colección");
@@ -156,7 +159,6 @@ const Profile = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
       <main className="mx-auto">
-
         {/* HEADER: Banner + Avatar */}
         <div className="relative h-40 md:h-80 w-full bg-neutral-900 overflow-hidden group">
           <img
@@ -172,10 +174,20 @@ const Profile = () => {
               onClick={() => !isUploading && bannerInputRef.current.click()}
               className="absolute bottom-4 right-4 bg-base-100 p-2 rounded-full shadow-md z-20 hover:bg-base-200 cursor-pointer transition-all"
             >
-              {isUploading ? <span className="loading loading-spinner loading-xs" /> : <Camera size={20} />}
+              {isUploading ? (
+                <span className="loading loading-spinner loading-xs" />
+              ) : (
+                <Camera size={20} />
+              )}
             </button>
           )}
-          <input type="file" ref={bannerInputRef} onChange={(e) => handleFileUpload(e, "banner")} className="hidden" accept="image/*" />
+          <input
+            type="file"
+            ref={bannerInputRef}
+            onChange={(e) => handleFileUpload(e, "banner")}
+            className="hidden"
+            accept="image/*"
+          />
         </div>
 
         <div className="px-6 relative">
@@ -183,9 +195,15 @@ const Profile = () => {
             <div className="relative">
               {/* Avatar */}
               <div
-                onClick={() => isMe && isEditing && !isUploading && avatarInputRef.current.click()}
-                className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""
-                  }`}
+                onClick={() =>
+                  isMe &&
+                  isEditing &&
+                  !isUploading &&
+                  avatarInputRef.current.click()
+                }
+                className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${
+                  isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""
+                }`}
               >
                 <div className="w-24 md:w-32 rounded-full overflow-hidden bg-base-200">
                   <img
@@ -202,7 +220,13 @@ const Profile = () => {
                   <Camera size={16} />
                 </div>
               )}
-              <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, "avatar")} className="hidden" accept="image/*" />
+              <input
+                type="file"
+                ref={avatarInputRef}
+                onChange={(e) => handleFileUpload(e, "avatar")}
+                className="hidden"
+                accept="image/*"
+              />
             </div>
 
             {/* Botones de Acción */}
@@ -211,7 +235,10 @@ const Profile = () => {
                 <>
                   {!isEditing && (
                     <button
-                      onClick={() => { setIsEditing(true); setNewDescription(profileData?.bio || ""); }}
+                      onClick={() => {
+                        setIsEditing(true);
+                        setNewDescription(profileData?.bio || "");
+                      }}
                       className="btn btn-sm md:btn-md btn-ghost border border-white/40 rounded-full"
                     >
                       Editar Perfil
@@ -243,7 +270,10 @@ const Profile = () => {
             </div>
 
             {isEditing ? (
-              <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl">
+              <form
+                onSubmit={handleSaveBio}
+                className="flex flex-col gap-2 max-w-xl"
+              >
                 <textarea
                   className="textarea textarea-bordered w-full h-32 text-base focus:textarea-primary"
                   value={newDescription}
@@ -252,7 +282,10 @@ const Profile = () => {
                   placeholder="Escribe algo sobre ti..."
                 />
                 <div className="flex justify-end gap-2">
-                  <button type="submit" className="btn btn-primary btn-sm btn-square">
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-sm btn-square"
+                  >
                     <Check size={18} />
                   </button>
                   <button
@@ -273,7 +306,9 @@ const Profile = () => {
             <div className="flex gap-6 py-4 mt-4">
               <div className="flex gap-1 items-baseline">
                 <span className="font-bold text-lg">{collections.length}</span>
-                <span className="text-xs uppercase opacity-60 font-bold">Colecciones</span>
+                <span className="text-xs uppercase opacity-60 font-bold">
+                  Colecciones
+                </span>
               </div>
             </div>
           </div>
@@ -283,16 +318,22 @@ const Profile = () => {
         <div className="border-t border-white/10 mt-4 sticky top-16 bg-base-100/95 z-30 flex justify-center gap-12 backdrop-blur-md">
           <button
             onClick={() => setActiveTab("collections")}
-            className={`py-4 border-b-2 px-4 text-sm font-bold ${activeTab === "collections" ? "border-primary text-primary" : "border-transparent opacity-50"
-              }`}
+            className={`py-4 border-b-2 px-4 text-sm font-bold ${
+              activeTab === "collections"
+                ? "border-primary text-primary"
+                : "border-transparent opacity-50"
+            }`}
           >
             COLECCIONES
           </button>
           {isMe && (
             <button
               onClick={() => setActiveTab("saved")}
-              className={`py-4 border-b-2 px-4 text-sm font-bold ${activeTab === "saved" ? "border-primary text-primary" : "border-transparent opacity-50"
-                }`}
+              className={`py-4 border-b-2 px-4 text-sm font-bold ${
+                activeTab === "saved"
+                  ? "border-primary text-primary"
+                  : "border-transparent opacity-50"
+              }`}
             >
               GUARDADO
             </button>
@@ -311,36 +352,49 @@ const Profile = () => {
             </Link>
           )}
 
-          {activeTab === "collections" && collections.map((col) => (
-            <Link
-              to={`/collection/${col.collection_id}`}
-              key={col.collection_id}
-              className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform cursor-pointer group"
-            >
-              {/* OJO: Aquí podrías usar <ItemCover src={col.cover_url} title={col.collection_name} /> si quisieras usar el componente que arreglamos antes */}
-              <img
-                src={col.cover_url || `https://ui-avatars.com/api/?name=${col.collection_name}&background=random`}
-                className="w-full h-full object-cover"
-                alt="cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
-                <h3 className="text-white font-bold leading-tight">{col.collection_name}</h3>
-                <p className="text-white/70 text-xs mt-1 capitalize">{col.collection_type}</p>
-              </div>
+          {activeTab === "collections" &&
+            collections.map((col) => (
+              <Link
+                to={`/collection/${col.collection_id}`}
+                key={col.collection_id}
+                className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform cursor-pointer group"
+              >
+                {/* OJO: Aquí podrías usar <ItemCover src={col.cover_url} title={col.collection_name} /> si quisieras usar el componente que arreglamos antes */}
+                <img
+                  src={
+                    col.cover_url ||
+                    `https://ui-avatars.com/api/?name=${col.collection_name}&background=random`
+                  }
+                  className="w-full h-full object-cover"
+                  alt="cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
+                  <h3 className="text-white font-bold leading-tight">
+                    {col.collection_name}
+                  </h3>
+                  <p className="text-white/70 text-xs mt-1 capitalize">
+                    {col.collection_type}
+                  </p>
+                </div>
 
-              {isMe && (
-                <button
-                  onClick={(e) => handleDeleteCollection(e, col.collection_id)}
-                  className="btn btn-square btn-sm btn-error text-white border-none"
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
-            </Link>
-          ))}
+                {isMe && (
+                  <button
+                    onClick={(e) =>
+                      handleDeleteCollection(e, col.collection_id)
+                    }
+                    className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full shadow-lg z-20 hover:bg-red-700 transition-all hover:scale-110"
+                    title="Borrar colección"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </Link>
+            ))}
 
           {activeTab === "collections" && collections.length === 0 && !isMe && (
-            <div className="col-span-full text-center py-10 opacity-40">Este usuario no tiene colecciones públicas.</div>
+            <div className="col-span-full text-center py-10 opacity-40">
+              Este usuario no tiene colecciones públicas.
+            </div>
           )}
         </div>
       </main>
