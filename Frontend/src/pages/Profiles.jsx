@@ -124,8 +124,6 @@ const Profile = () => {
                 alt="banner"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent"></div>
-            
-            {/* CÁMARA BANNER: Solo sale si estoy editando (isEditing = true) */}
             {isMe && isEditing && (
                 <button onClick={() => !isUploading && bannerInputRef.current.click()} className="absolute bottom-4 right-4 bg-base-100 p-2 rounded-full shadow-md z-20 hover:bg-base-200 cursor-pointer animate-in fade-in zoom-in duration-300">
                     {isUploading ? <span className="loading loading-spinner loading-xs"/> : <Camera size={20} />}
@@ -136,8 +134,6 @@ const Profile = () => {
 
         <div className="px-6 relative">
             <div className="flex justify-between items-end -mt-12 mb-4">
-                
-                {/* AVATAR */}
                 <div className="relative">
                     <div 
                         // Solo deja hacer click si estoy editando
@@ -157,8 +153,6 @@ const Profile = () => {
                     )}
                     <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, "avatar")} className="hidden" accept="image/*"/>
                 </div>
-
-                {/* BOTONES PRINCIPALES */}
                 <div className="flex gap-2 mb-2">
                     {isMe ? (
                         <>
@@ -185,8 +179,6 @@ const Profile = () => {
                     <h1 className="text-2xl md:text-4xl font-bold font-serif">{profileData?.username || "Cargando..."}</h1>
                     <p className="text-sm opacity-60 flex items-center gap-1 mt-1"><MapPin size={14}/> Madrid, ES</p>
                 </div>
-
-                {/* --- AQUÍ ESTÁ EL ESTILO QUE QUERÍAS --- */}
                 {isEditing ? (
                     <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl animate-in slide-in-from-top-2 duration-300">
                         <textarea 
@@ -212,8 +204,6 @@ const Profile = () => {
                         {profileData?.bio || "¡Hola! Soy nuevo en Tribe."}
                     </p>
                 )}
-                {/* -------------------------------------- */}
-
                 <div className="flex gap-6 py-4 mt-4">
                     <div className="flex gap-1 items-baseline">
                         <span className="font-bold text-lg">{collections.length}</span>
@@ -231,17 +221,17 @@ const Profile = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 min-h-[300px] max-w-6xl mx-auto">
             {isMe && activeTab === "collections" && (
-                <Link to="/create-collection" className="aspect-[4/5] border-2 border-dashed border-base-300 rounded-2xl flex flex-col items-center justify-center hover:border-primary/50 hover:bg-base-200/50 transition-all opacity-60 hover:opacity-100 cursor-pointer">
+                <Link to="/create-collection" className="aspect-4/5 border-2 border-dashed border-base-300 rounded-2xl flex flex-col items-center justify-center hover:border-primary/50 hover:bg-base-200/50 transition-all opacity-60 hover:opacity-100 cursor-pointer">
                     <Plus size={32} />
                     <span className="text-xs font-bold mt-2 uppercase">Nueva</span>
                 </Link>
             )}
             
             {collections.map(col => (
-                <Link to={`/collection/${col.collection_id}`} key={col.collection_id} className="card bg-base-200 shadow-sm aspect-[4/5] hover:scale-[1.02] transition-transform cursor-pointer group">
+                <Link to={`/collection/${col.collection_id}`} key={col.collection_id} className="card bg-base-200 shadow-sm aspect-4/5 hover:scale-[1.02] transition-transform cursor-pointer group">
                     <figure className="relative h-full">
                         <img src={col.cover_url || `https://picsum.photos/400?random=${col.collection_id}`} className="w-full h-full object-cover" alt="cover"/>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4">
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4">
                             <h3 className="text-white font-bold leading-tight">{col.collection_name}</h3>
                             <p className="text-white/70 text-xs mt-1">{col.collection_type}</p>
                         </div>
@@ -249,7 +239,6 @@ const Profile = () => {
                 </Link>
             ))}
         </div>
-
       </main>
       <NavMobile />
     </div>

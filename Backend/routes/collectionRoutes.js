@@ -8,6 +8,9 @@ router.post("/", verifyToken, collectionController.createCollection);
 router.post("/:collection_id/items", verifyToken, collectionController.addItemToCollection);
 router.delete("/items/:itemId", verifyToken, collectionController.deleteItem);
 
+//PUT
+router.put("/:id", verifyToken, collectionController.updateCollection);
+
 // GET 
 router.get("/user/:userId", collectionController.getUserCollections);
 router.get("/:id", collectionController.getCollectionDetails);

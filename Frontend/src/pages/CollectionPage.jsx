@@ -15,25 +15,24 @@ import {
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import ItemCover from "../components/ItemCover.jsx";
-import { uploadFileToCloudinary } from "../services/upload.js";
 import AddToCollectionModal from "../components/AddToCollectionModal";
 import AddItemModal from "../components/AddItemModal";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
 
 const CollectionPage = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  // Estados
+  // Estados de datos
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [collectionInfo, setCollectionInfo] = useState(null);
   const [items, setItems] = useState([]);
 
-  // Edición
+  // Estados de interfaz
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [fileToUpload, setFileToUpload] = useState(null);
@@ -43,40 +42,36 @@ const CollectionPage = () => {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedItemForSave, setSelectedItemForSave] = useState(null);
 
-  // --- 1. CARGA DE DATOS (AQUÍ ESTABA EL ERROR) ---
+  // 1. CARGAR DATOS
   useEffect(() => {
     const fetchCollection = async () => {
       setLoading(true);
       try {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
-
-        // A. Info Colección
         setCollectionInfo({
-            id: data.collection_id,
-            title: data.collection_name,
-            description: data.collection_description || "",
-            type: data.collection_type,
-            cover: data.cover_url || data.collection_image, 
-            creatorId: data.creator_id,
-            creatorName: data.creator_username,
-            stats: { items: data.items ? data.items.length : 0, likes: data.likes || 0 }
+          id: data.collection_id,
+          title: data.collection_name,
+          description: data.collection_description || "",
+          type: data.collection_type,
+          cover: data.cover_url || data.collection_image,
+          creatorId: data.creator_id,
+          creatorName: data.creator_username,
+          stats: { items: data.items ? data.items.length : 0, likes: data.likes || 0 },
         });
 
-        // B. Items (RESTAURADO: Aquí definimos mappedItems antes de usarlo)
         if (data.items && Array.isArray(data.items)) {
-            const mappedItems = data.items.map(item => ({
-                id: item.item_id,
-                title: item.display_title || item.custom_title || "Sin título",
-                author: item.display_subtitle || item.custom_subtitle || "Desconocido",
-                cover: item.display_image || "https://via.placeholder.com/300x450?text=No+Image",
-                year: "",
-            }));
-            setItems(mappedItems);
+          const mappedItems = data.items.map((item) => ({
+            id: item.item_id,
+            title: item.display_title || item.custom_title || "Sin título",
+            author: item.display_subtitle || item.custom_subtitle || "Desconocido",
+            cover: item.display_image || "https://via.placeholder.com/300x450?text=No+Image",
+            year: "",
+          }));
+          setItems(mappedItems);
         } else {
-            setItems([]);
+          setItems([]);
         }
-
       } catch (err) {
         console.error("Error cargando colección:", err);
         setError("No se pudo cargar la colección.");
@@ -88,11 +83,8 @@ const CollectionPage = () => {
     if (id) fetchCollection();
   }, [id]);
 
-  // 2. Verificar dueño
-  // Aseguramos conversión a String para evitar errores de tipo (número vs texto)
   const isOwner = user && collectionInfo && String(user.id || user.userId) === String(collectionInfo.creatorId);
 
-  // --- HANDLERS ---
 
   const handleStartEditing = () => {
     setEditForm({
@@ -112,8 +104,7 @@ const CollectionPage = () => {
     const file = e.target.files[0];
     if (file) {
       setFileToUpload(file);
-      const previewUrl = URL.createObjectURL(file);
-      setEditForm({ ...editForm, cover: previewUrl });
+      setEditForm({ ...editForm, cover: URL.createObjectURL(file) });
     }
   };
 
@@ -121,95 +112,89 @@ const CollectionPage = () => {
     setIsUploading(true);
     try {
       let finalCoverUrl = collectionInfo.cover;
-      
       if (fileToUpload) {
         const formData = new FormData();
         formData.append("imagen", fileToUpload);
-        const uploadRes = await api.post("/files/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
+        const uploadRes = await api.post("/files/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         finalCoverUrl = uploadRes.data.url;
       }
 
-      // TODO: Aquí deberías llamar a api.put(`/collections/${id}`, ...)
-      
-      setCollectionInfo({
-        ...collectionInfo,
+      // 2. Preparar datos para Backend (Nombres de BD)
+      const payload = {
+        collection_name: editForm.title,
+        collection_description: editForm.description,
+        cover_url: finalCoverUrl,
+      };
+
+      // 3. Actualizar en Base de Datos (PUT)
+      await api.put(`/collections/${collectionInfo.id}`, payload);
+
+      // 4. Actualizar Estado Local
+      setCollectionInfo((prev) => ({
+        ...prev,
         title: editForm.title,
         description: editForm.description,
         cover: finalCoverUrl,
-      });
+      }));
 
       setIsEditing(false);
       setFileToUpload(null);
     } catch (error) {
       console.error("Error al guardar:", error);
-      alert("Error al guardar cambios");
+      alert("Error al actualizar la colección.");
     } finally {
       setIsUploading(false);
     }
   };
-
   const handleDelete = async (itemId) => {
     if (window.confirm("¿Eliminar de la colección?")) {
       try {
-        
-          await api.delete(`/collections/items/${itemId}`);
-          setItems(items.filter((i) => i.id !== itemId));
+        await api.delete(`/collections/items/${itemId}`);
+        setItems((prev) => prev.filter((i) => i.id !== itemId));
       } catch (error) {
-          console.error("Error borrando item:", error);
+        console.error("Error borrando item:", error);
       }
     }
   };
 
-
-const handleAddItem = async (newItem) => {
+  const handleAddItem = async (newItem) => {
     try {
-        let finalCoverUrl = null;
-        if (newItem.isCustom && newItem.coverFile) {
-            const formData = new FormData();
-            formData.append("imagen", newItem.coverFile);
-            const uploadRes = await api.post("/files/upload", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
-            finalCoverUrl = uploadRes.data.url;
-        } else if (!newItem.isCustom) {
-            // Si es de base de datos, la URL ya viene en el objeto
-            finalCoverUrl = newItem.cover;
-        }
+      let finalCoverUrl = newItem.cover;
+      if (newItem.isCustom && newItem.coverFile) {
+        const formData = new FormData();
+        formData.append("imagen", newItem.coverFile);
+        const uploadRes = await api.post("/files/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        finalCoverUrl = uploadRes.data.url;
+      }
+      const payload = {
+        item_type: newItem.isCustom ? "Custom" : newItem.item_type || collectionInfo.type,
+        reference_id: newItem.isCustom ? null : newItem.reference_id,
+        custom_title: newItem.title,
+        custom_subtitle: newItem.subtitle,
+        custom_description: newItem.description || "",
+        custom_image: finalCoverUrl,
+      };
 
-        // 2. PREPARAR DATOS PARA EL BACKEND
-        const payload = {
-            item_type: newItem.isCustom ? "Custom" : (newItem.item_type || collectionInfo.type),
-            reference_id: newItem.isCustom ? null : newItem.id, // ID del catálogo
-            
-            // Datos para items custom
-            custom_title: newItem.title,
-            custom_subtitle: newItem.subtitle, // Autor/Director/Etc
-            custom_description: newItem.description || "",
-            custom_image: finalCoverUrl // <--- La URL que acabamos de subir o null
+      const res = await api.post(`/collections/${collectionInfo.id}/items`, payload);
+
+      if (res.data.success) {
+        const itemFormatted = {
+          id: res.data.itemId,
+          title: newItem.title,
+          author: newItem.subtitle,
+          cover: finalCoverUrl,
         };
-
-        // 3. GUARDAR EN BASE DE DATOS
-        // Asegúrate de que tu ruta en backend es: POST /collections/:id/items
-        const res = await api.post(`/collections/${collectionInfo.id}/items`, payload);
-
-        if (res.data.success) {
-            // 4. ACTUALIZAR PANTALLA (Añadimos el item a la lista visualmente)
-            const itemFormatted = {
-                id: res.data.itemId, // Usamos el ID real que nos devuelve la DB
-                title: newItem.title,
-                author: newItem.subtitle,
-                cover: newItem.isCustom ? finalCoverUrl : newItem.cover,
-            };
-            setItems((prevItems) => [...prevItems, itemFormatted]);
-        }
-
+        setItems((prev) => [...prev, itemFormatted]);
+      }
     } catch (error) {
-        console.error("Error guardando item:", error);
-        alert("Hubo un error al guardar el item en la colección.");
+      console.error("Error guardando item:", error);
+      alert("Error al guardar item.");
     }
-};
-
-  // --- RENDER ---
+  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><span className="loading loading-spinner loading-lg"></span></div>;
   if (error || !collectionInfo) return <div className="min-h-screen flex items-center justify-center flex-col gap-4"><h1>Colección no encontrada</h1><Link to="/feed" className="btn">Volver al inicio</Link></div>;
@@ -217,9 +202,9 @@ const handleAddItem = async (newItem) => {
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
-      
+
+      {/* HEADER / PORTADA */}
       <div className="relative bg-base-100">
-        {/* Fondo */}
         <div className="absolute inset-0 h-80 overflow-hidden -z-10 opacity-30">
           <img
             src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/800")}
@@ -232,7 +217,7 @@ const handleAddItem = async (newItem) => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-8">
           <div className="mb-6">
             <Link
-              to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`} 
+              to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`}
               className="inline-flex items-center gap-2 text-sm font-medium opacity-60 hover:opacity-100 hover:text-primary transition-all"
             >
               <ArrowLeft size={16} /> {isOwner ? "Volver a mi perfil" : `Volver al perfil de ${collectionInfo.creatorName || "Usuario"}`}
@@ -240,7 +225,7 @@ const handleAddItem = async (newItem) => {
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* PORTADA */}
+            {/* FOTO PORTADA */}
             <div className="flex-none w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/80 bg-base-200 relative group">
               <img
                 src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/400?text=Sin+Portada")}
@@ -256,12 +241,12 @@ const handleAddItem = async (newItem) => {
               <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
             </div>
 
-            {/* INFO */}
+            {/* INFO Y FORMULARIO */}
             <div className="flex-1 w-full space-y-5">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
-                   <span className="text-xs opacity-50 uppercase tracking-widest">Creado por {collectionInfo.creatorName || "Desconocido"}</span>
-                   <span className="badge badge-outline text-xs">{collectionInfo.type}</span>
+                  <span className="text-xs opacity-50 uppercase tracking-widest">Creado por {collectionInfo.creatorName || "Desconocido"}</span>
+                  <span className="badge badge-outline text-xs">{collectionInfo.type}</span>
                 </div>
 
                 {isEditing ? (
@@ -287,11 +272,10 @@ const handleAddItem = async (newItem) => {
                 <p className="text-lg opacity-80 leading-relaxed max-w-2xl border-l-4 border-white/40 pl-4 whitespace-pre-wrap">{collectionInfo.description || "Sin descripción."}</p>
               )}
 
-              {/* BOTONES */}
               <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-white/40">
                 <div className="flex gap-6 text-sm">
-                   <div className="text-center"><span className="block font-bold text-lg">{items.length}</span><span className="opacity-60">Items</span></div>
-                   <div className="text-center"><span className="block font-bold text-lg">{collectionInfo.stats.likes}</span><span className="opacity-60">Likes</span></div>
+                  <div className="text-center"><span className="block font-bold text-lg">{items.length}</span><span className="opacity-60">Items</span></div>
+                  <div className="text-center"><span className="block font-bold text-lg">{collectionInfo.stats.likes}</span><span className="opacity-60">Likes</span></div>
                 </div>
 
                 <div className="flex gap-3">
@@ -312,7 +296,7 @@ const handleAddItem = async (newItem) => {
                       )}
                     </>
                   ) : (
-                     <button className="btn btn-primary btn-sm gap-2 rounded-full"><BookmarkPlus size={18} /> Guardar Colección</button>
+                    <button className="btn btn-primary btn-sm gap-2 rounded-full"><BookmarkPlus size={18} /> Guardar Colección</button>
                   )}
                   {!isEditing && <button className="btn btn-square btn-ghost btn-sm rounded-full"><Share2 size={18} /></button>}
                 </div>
@@ -322,54 +306,57 @@ const handleAddItem = async (newItem) => {
         </div>
       </div>
 
-      {/* ITEMS */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-8">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           Contenido <span className="text-xs font-normal opacity-50 bg-base-200 px-2 py-1 rounded-full">{items.length}</span>
         </h2>
 
         {items.length === 0 ? (
-             <div className="text-center py-20 opacity-50 border-2 border-dashed rounded-xl">
-                 <p>Esta colección está vacía.</p>
-                 {isOwner && <button onClick={() => setIsAddItemOpen(true)} className="btn btn-link text-primary">¡Añade algo!</button>}
-             </div>
+          <div className="text-center py-20 opacity-50 border-2 border-dashed rounded-xl">
+            <p>Esta colección está vacía.</p>
+            {isOwner && <button onClick={() => setIsAddItemOpen(true)} className="btn btn-link text-primary">¡Añade algo!</button>}
+          </div>
         ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
             {items.map((item) => (
-                <div key={item.id} className="group relative flex flex-col gap-2">
-                    <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-md">
-                        {item.cover ? (
-                            <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
-                        ) : (
-                             <ItemCover title={item.title} />
-                        )}
-                        <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isOwner ? (
-                            <button onClick={() => handleDelete(item.id)} className="btn btn-square btn-sm btn-error text-white border-none"><Trash2 size={16} /></button>
-                        ) : (
-                            <button onClick={() => setSelectedItemForSave(item)} className="btn btn-square btn-sm btn-white text-primary border-none"><Plus size={18} /></button>
-                        )}
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-sm leading-tight truncate pr-2 group-hover:text-primary transition-colors cursor-pointer" title={item.title}>{item.title}</h3>
-                        <p className="text-xs opacity-60 truncate">{item.author}</p>
-                    </div>
+              <div key={item.id} className="group relative flex flex-col gap-2">
+                <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-md">
+                  {item.cover ? (
+                    <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <ItemCover title={item.title} />
+                  )}
+                  <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {isOwner ? (
+                      <button onClick={() => handleDelete(item.id)} className="btn btn-square btn-sm btn-error text-white border-none"><Trash2 size={16} /></button>
+                    ) : (
+                      <button onClick={() => setSelectedItemForSave(item)} className="btn btn-square btn-sm btn-white text-primary border-none"><Plus size={18} /></button>
+                    )}
+                  </div>
                 </div>
+                <div>
+                  <h3 className="font-bold text-sm leading-tight truncate pr-2 group-hover:text-primary transition-colors cursor-pointer" title={item.title}>{item.title}</h3>
+                  <p className="text-xs opacity-60 truncate">{item.author}</p>
+                </div>
+              </div>
             ))}
-             {/* Add Button */}
             {isOwner && (
-                <div onClick={() => setIsAddItemOpen(true)} className="aspect-2/3 rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group">
+              <div onClick={() => setIsAddItemOpen(true)} className="aspect-2/3 rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group">
                 <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors"><Plus size={24} /></div>
                 <span className="text-xs font-bold uppercase mt-2 opacity-40 group-hover:opacity-100">Añadir</span>
-                </div>
+              </div>
             )}
-            </div>
+          </div>
         )}
       </main>
 
       <AddToCollectionModal isOpen={!!selectedItemForSave} item={selectedItemForSave} onClose={() => setSelectedItemForSave(null)} />
-      <AddItemModal isOpen={isAddItemOpen} onClose={() => setIsAddItemOpen(false)} collectionType={collectionInfo.type} collectionId={collectionInfo.id} onAddItem={handleAddItem} />
+      <AddItemModal 
+        isOpen={isAddItemOpen} 
+        onClose={() => setIsAddItemOpen(false)} 
+        collectionType={collectionInfo.type} 
+        onAddItem={handleAddItem} 
+      />
       <NavMobile />
     </div>
   );

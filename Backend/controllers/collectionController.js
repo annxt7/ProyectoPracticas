@@ -136,34 +136,34 @@ exports.addItemToCollection = async (req, res) => {
     custom_title, 
     custom_subtitle, 
     custom_description,
-    custom_image // <--- NUEVO: Recibimos la imagen
+    custom_image
   } = req.body;
+
+  const columnMap = {
+    'Music': 'music_id',
+    'Books': 'book_id',
+    'Movies': 'movie_id',
+    'Shows': 'show_id',
+    'Games': 'game_id'
+  };
 
   try {
     let sql = "";
     let params = [];
 
-    // CASO A: Item de Catálogo (Música, Cine...)
     if (reference_id && item_type !== 'Custom') {
-        let colName = "";
-        switch (item_type) {
-            case 'Music': colName = 'music_id'; break;
-            case 'Books': colName = 'book_id'; break;
-            case 'Movies': colName = 'movie_id'; break;
-            case 'Shows': colName = 'show_id'; break;
-            case 'Games': colName = 'game_id'; break;
-            default: return res.status(400).json({ error: "Tipo inválido" });
+        
+        const colName = columnMap[item_type];
+        if (!colName) {
+            return res.status(400).json({ error: "Tipo de item inválido" });
         }
         sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
         params = [collection_id, item_type, reference_id];
     } 
-    // CASO B: Item Manual (Custom)
     else {
-        // AÑADIMOS custom_image AL SQL
         sql = `INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description, custom_image) VALUES (?, ?, ?, ?, ?, ?)`;
         params = [collection_id, 'Custom', custom_title, custom_subtitle, custom_description || "", custom_image || null];
     }
-
     const [result] = await db.query(sql, params);
     res.status(201).json({ success: true, itemId: result.insertId });
 
@@ -172,14 +172,12 @@ exports.addItemToCollection = async (req, res) => {
     res.status(500).json({ error: "Error de base de datos" });
   }
 };
-// ... tus otras funciones ...
 
-// 4. Borrar un item
+// 5. Borrar un item
 exports.deleteItem = async (req, res) => {
     const { itemId } = req.params;
 
     try {
-        // Ejecutamos el borrado
         const [result] = await db.query("DELETE FROM Items WHERE item_id = ?", [itemId]);
 
         if (result.affectedRows === 0) {
@@ -191,5 +189,45 @@ exports.deleteItem = async (req, res) => {
     } catch (error) {
         console.error("Error borrando item:", error);
         res.status(500).json({ error: "Error de base de datos al borrar" });
+    }
+};
+
+// 6. Actualizar una colección existente
+exports.updateCollection = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id; 
+    const { collection_name, collection_description, cover_url } = req.body;
+
+    console.log(`--- ACTUALIZANDO COLECCIÓN ${id} ---`);
+
+    try {
+        // Preparamos la query dinámica
+        // Solo actualizamos lo que nos envíen
+        const sql = `
+            UPDATE Collections 
+            SET 
+                collection_name = ?, 
+                collection_description = ?,
+                cover_url = COALESCE(?, cover_url) -- Si cover_url es null, mantenemos la vieja
+            WHERE collection_id = ? AND user_id = ?
+        `;
+
+        const [result] = await db.query(sql, [
+            collection_name, 
+            collection_description, 
+            cover_url || null, 
+            id, 
+            userId
+        ]);
+
+        if (result.affectedRows === 0) {
+            return res.status(403).json({ error: "No tienes permiso o la colección no existe" });
+        }
+
+        res.json({ success: true, message: "Colección actualizada" });
+
+    } catch (error) {
+        console.error("Error actualizando colección:", error);
+        res.status(500).json({ error: "Error de servidor" });
     }
 };
