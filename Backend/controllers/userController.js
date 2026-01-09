@@ -168,11 +168,10 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// GET: Feed de Usuarios (Normalizado)
+// GET: Feed de Usuarios 
 exports.getUserFeed = async (req, res) => {
     const myId = req.user.id;
     try {
-      // Usamos 'AS' para que salga directo como queremos
       const sql = `
         SELECT 
             user_id AS userId, 
@@ -219,7 +218,35 @@ exports.completeProfile = async (req, res) => {
       res.status(500).json({ error: "Error onboarding" });
     }
 };
+//GET: Get User by ID (Genérico)
+exports.getUserById = async (req, res) => {
+  const { id } = req.params;
 
+  try {
+    const sql = `
+      SELECT 
+        user_id AS id, 
+        username, 
+        email, 
+        bio, 
+        avatar_url AS avatar, 
+        banner_url AS banner 
+      FROM Users 
+      WHERE user_id = ?
+    `;
+
+    const [rows] = await db.query(sql, [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    res.json(rows[0]);
+
+  } catch (error) {
+    console.error("Error getUserById:", error);
+    res.status(500).json({ error: "Error al obtener perfil" });
+  }
+};
 // GET: Get Users (Genérico)
 exports.getUsers = async (req, res) => {
     try {

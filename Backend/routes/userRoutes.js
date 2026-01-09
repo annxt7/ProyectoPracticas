@@ -7,6 +7,7 @@ const { verifyToken } = require("../middlewares/authMiddleware");
 //GETS
 
 router.get("/test-users", userController.getUsers)
+router.get("/:id", userController.getUserById);
 
 //POSTS
 
