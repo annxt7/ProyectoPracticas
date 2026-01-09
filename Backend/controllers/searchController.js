@@ -67,13 +67,19 @@ exports.searchTribe = async (req, res, next) => {
 
 exports.getSuggestedUsers = async (req, res) => {
     try {
-        const [suggested] = await db.query(`
-            SELECT user_id AS id, username AS name, 
-            CONCAT('@', username) AS handle, avatar_url AS img 
-            FROM Users ORDER BY RAND() LIMIT 3
+        // Obtenemos 3 usuarios al azar que no sean el actual (opcional)
+        const [rows] = await db.query(`
+            SELECT 
+                user_id AS id, 
+                username AS name, 
+                CONCAT('@', username) AS handle, 
+                avatar_url AS img 
+            FROM Users 
+            ORDER BY RAND() 
+            LIMIT 3
         `);
-        res.json(suggested);
+        res.json(rows);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Error al obtener sugerencias reales" });
     }
 };
