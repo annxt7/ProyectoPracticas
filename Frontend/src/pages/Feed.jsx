@@ -7,7 +7,7 @@ import MiniUserCard from "../components/MiniUserCard.jsx";
 import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";  
 import api from "../services/api.js";
-import {useAuth} from "../contexts/AuthContext.jsx";
+
 
 const Feed = () => {
   // --- NUEVA LÓGICA PARA SUGERENCIAS ---
