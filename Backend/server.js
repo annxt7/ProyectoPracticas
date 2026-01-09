@@ -48,6 +48,3 @@ app.listen(port, () => {
     console.log(`🛡️  Seguridad modular activada`);
     console.log(`-------------------------------------------`);
 });
-
-logger.info("Prueba: Winston está funcionando y creando archivos");
-logger.error("Prueba: Este es un error de prueba para el archivo separado");
