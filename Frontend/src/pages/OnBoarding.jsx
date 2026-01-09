@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Music, Book, Film, Gamepad2, Tv, Camera, Check, ArrowRight, Plus } from 'lucide-react';
 import api from "../services/api"; 
 import { uploadFileToCloudinary } from '../services/upload'; 
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext'; // Importamos el contexto
 
 const categories = [
   { id: 'Music', label: 'Música', icon: <Music size={32} /> },
@@ -14,31 +14,28 @@ const categories = [
 ];
 
 const OnboardingPage = () => {
-  const { login, user } = useAuth();
+  const { login, user } = useAuth(); // Accedemos al usuario global
   const location = useLocation();
   const navigate = useNavigate();
   
-  const userId = location.state?.userId;
-  const username = location.state?.username || ''; 
-  const googleAvatar = location.state?.googleAvatar || null; // Ojo: en AuthScreen lo llamamos googleAvatar en el state
+  // LOGICA ROBUSTA PARA OBTENER EL ID:
+  // 1. Intentamos leer de location.state (si viene de redirección directa)
+  // 2. Si fallas (F5), intentamos leer del usuario en contexto (si ya se hizo login previo)
+  const userId = location.state?.userId || user?.id;
+  const username = location.state?.username || user?.username || ''; 
+  const googleAvatar = location.state?.googleAvatar || user?.avatar || null; 
 
   const [step, setStep] = useState(1); 
   const [selectedInterests, setSelectedInterests] = useState([]);
   
-  // CORREGIDO AQUÍ: Inicializamos con la foto de Google si existe
   const [imagePreview, setImagePreview] = useState(googleAvatar); 
   const [loading, setLoading] = useState(false);
-  
-  // ---------------------------------------------------------
-  // 1. CORRECCIÓN DEL ERROR "false is not iterable"
-  // ---------------------------------------------------------
   const [uploadingFile, setUploadingFile] = useState(false); 
 
-
+  // Verificamos si realmente tenemos un usuario
   useEffect(() => {
-    // Si recargas la página, location.state se pierde. 
-    // Es buena práctica redirigir al login si no hay ID.
     if (!userId) {
+      // Si no hay ID ni en state ni en contexto, no deberían estar aquí
       navigate('/login');
     }
   }, [userId, navigate]);
@@ -51,21 +48,14 @@ const OnboardingPage = () => {
     }
   };
 
-  // ---------------------------------------------------------
-  // 2. MEJORA: Subida real a Cloudinary
-  // ---------------------------------------------------------
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // 1. Mostrar preview inmediato
-      setImagePreview(URL.createObjectURL(file));
-      
-      // 2. Subir a la nube
+      setImagePreview(URL.createObjectURL(file)); // Preview local rápido
       setUploadingFile(true);
       try {
         const urlCloudinary = await uploadFileToCloudinary(file);
-        // 3. Actualizamos el estado con la URL REAL de internet
-        setImagePreview(urlCloudinary); 
+        setImagePreview(urlCloudinary); // URL Real
       } catch (error) {
         console.error("Error subiendo imagen:", error);
         alert("Error al subir la imagen");
@@ -77,32 +67,51 @@ const OnboardingPage = () => {
 
   const handleFinish = async () => {
     setLoading(true);
+    
+    // 1. OBTENER TOKEN: Usamos 'tribe_token' que es la clave que usas en AuthContext
+    const storedToken = localStorage.getItem('tribe_token'); 
+    
+    if (!storedToken) {
+        alert("Error de sesión. Por favor, inicia sesión de nuevo.");
+        navigate('/login');
+        return;
+    }
+
     try {
-      // 1. Guardar en Base de Datos (Esto ya lo hacías bien)
+      // 2. ENVIAR DATOS AL BACKEND
+      // IMPORTANTE: Pasamos el token en headers explícitamente para evitar el 401
       await api.put('/users/complete-profile', {
         userId: userId,
         username: username,
         avatarUrl: imagePreview, 
         interests: selectedInterests
+      }, {
+        headers: {
+            'Authorization': `Bearer ${storedToken}`
+        }
       });
       
-      // 2. ¡EL PASO QUE FALTABA! Actualizar la memoria de la App (Contexto)
-      // Recuperamos el token actual del localStorage para no perder la sesión
-      const currentToken = localStorage.getItem('token'); 
-      
-      // Actualizamos los datos del usuario en el contexto
+      // 3. ACTUALIZAR ESTADO GLOBAL (CONTEXTO)
+      // Fusionamos los datos viejos con la nueva foto y el hecho de que completó el perfil
       login({
-        ...user, // Mantenemos los datos viejos (email, id...)
+        ...user, 
+        id: userId,
         username: username,
-        avatar: imagePreview // ¡Ponemos la foto NUEVA!
-      }, currentToken);
+        avatar: imagePreview,
+        // Si tuvieras un campo 'onboardingCompleted', aquí lo pondrías a true
+      }, storedToken);
 
-      // 3. Ahora sí, nos vamos
-      navigate('/profile/me'); // O /feed
+      // 4. AL FIN, AL FEED
+      navigate('/profile/me'); 
 
     } catch (error) {
       console.error("Error al completar perfil:", error);
-      alert("No pudimos guardar tus preferencias. Inténtalo de nuevo.");
+      if (error.response && error.response.status === 401) {
+          alert("Tu sesión ha expirado. Identifícate de nuevo.");
+          navigate('/login');
+      } else {
+          alert("No pudimos guardar tus preferencias. Inténtalo de nuevo.");
+      }
     } finally {
       setLoading(false);
     }
@@ -117,15 +126,14 @@ const OnboardingPage = () => {
           <li className={`step ${step >= 2 ? 'step-primary' : ''}`}>Tus Gustos</li>
         </ul>
 
-        {/* PASO 1: FOTO DE PERFIL */}
+        {/* PASO 1: FOTO */}
         {step === 1 && (
           <div className="text-center space-y-6 animate-in fade-in duration-500">
             <h2 className="text-3xl font-bold font-serif">¡Bienvenido, {username}!</h2>
             <p className="opacity-70">Personaliza tu perfil antes de empezar.</p>
             
             <div className="relative inline-block">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary bg-base-300 shadow-lg relative">
-                {/* Loader de subida */}
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary bg-base-300 shadow-lg relative mx-auto">
                 {uploadingFile && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
                     <span className="loading loading-spinner text-white"></span>
@@ -140,7 +148,7 @@ const OnboardingPage = () => {
                   </div>
                 )}
               </div>
-              <label className={`absolute bottom-0 right-0 btn btn-circle btn-primary btn-sm shadow-md ${uploadingFile ? 'btn-disabled' : ''}`}>
+              <label className={`absolute bottom-0 right-0 btn btn-circle btn-primary btn-sm shadow-md cursor-pointer ${uploadingFile ? 'btn-disabled' : ''}`}>
                 <Plus size={16} />
                 <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" disabled={uploadingFile} />
               </label>
@@ -150,7 +158,7 @@ const OnboardingPage = () => {
               <button 
                 className="btn btn-primary flex-1 rounded-full" 
                 onClick={() => setStep(2)}
-                disabled={uploadingFile} // No dejar avanzar si está subiendo
+                disabled={uploadingFile} 
               >
                 {uploadingFile ? 'Subiendo...' : <>Siguiente <ArrowRight size={18} /></>}
               </button>

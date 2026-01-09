@@ -1,26 +1,28 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate } from 'react-router-dom';
+
 import GoogleSignIn from '../components/GoogleSignIn';
 import fotoLogin from '../assets/foto-login.jpg';
 import Logo from '../assets/LogoClaro.png';
 import api from "../services/api";
-import {useAuth} from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext'; // Importamos el contexto
+
 const SITE_KEY = '6LdZWC0sAAAAAEuorDFJYAuZWVbR_zGL-FTmgHHh';
 
-// 1. Esquemas de validación
+// --- ESQUEMAS DE VALIDACIÓN (ZOD) ---
 const loginSchema = z.object({
   identifier: z.string().min(3, "Mínimo 3 caracteres").max(50).trim(),
   password: z.string().min(1, "La contraseña es requerida"),
 });
+
 const forgotPasswordSchema = z.object({
   email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
 });
+
 const registerSchema = z.object({
   username: z.string().min(4, "Mínimo 4 caracteres").max(20).regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guiones bajos").trim(),
   email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
@@ -36,19 +38,19 @@ const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
-
 const AuthScreen = ({ type = 'login' }) => {
-  const navigate= useNavigate();
+  const navigate = useNavigate();
+  const { login } = useAuth(); // Usamos la función login del contexto
+  
   const isLogin = type === 'login';
   const isForgot = type === 'forgot';
   const isRegister = type === 'register';
-  const {login}= useAuth()
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const recaptchaRef = useRef(null);
 
-  // Seleccionar esquema según el tipo
   const currentSchema = isForgot ? forgotPasswordSchema : (isLogin ? loginSchema : registerSchema);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -61,6 +63,7 @@ const AuthScreen = ({ type = 'login' }) => {
     setSuccess(null);
   }, [type, reset]);
 
+  // Carga de reCAPTCHA solo en registro
   useEffect(() => {
     if (isRegister && typeof window.grecaptcha !== 'undefined' && recaptchaRef.current) {
       if (recaptchaRef.current.children.length === 0) {
@@ -73,17 +76,19 @@ const AuthScreen = ({ type = 'login' }) => {
     }
   }, [isRegister]);
 
-const onSubmit = async (data) => {
+  const onSubmit = async (data) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
-    let token = null;
-    // 1. Manejo del Captcha (Solo registro)
+    let captchaToken = null;
+    
     if (isRegister) {
-      token = window.grecaptcha.getResponse();
-      if (!token) {
-        setError("Por favor, marca la casilla de reCAPTCHA.");
+      if (window.grecaptcha) {
+          captchaToken = window.grecaptcha.getResponse();
+      }
+      if (!captchaToken) {
+        setError("Por favor, completa el reCAPTCHA.");
         setLoading(false);
         return;
       }
@@ -93,170 +98,187 @@ const onSubmit = async (data) => {
       let endpoint = isRegister ? '/users/register' : '/users/login';
       if (isForgot) endpoint = '/users/forgot-password';
 
-      // 2. Petición al Backend
-      // Nota: Aquí tus endpoints (createUser y login) siguen devolviendo los datos "planos"
-      // (userId, username, token) en la raíz del objeto, no dentro de 'user'.
-      // Por eso aquí usamos response.data.userId y NO response.data.user.userId
-      const response = await api.post(endpoint, { ...data, 'g-recaptcha-response': token });
+      const payload = { ...data };
+      if (isRegister) payload['g-recaptcha-response'] = captchaToken;
+
+      const response = await api.post(endpoint, payload);
     
       if (response.data.success) {
         
-        // 3. Login en el contexto
-        login({
-            id: response.data.userId,
-            username: response.data.username,
-            avatar: response.data.avatar // En registro manual esto será undefined, no pasa nada
-          }, 
-          response.data.token
-        );
+        // CASO 1: RECUPERAR CONTRASEÑA
+        if (isForgot) {
+          setSuccess("Enlace enviado con éxito. Revisa tu correo.");
+          setLoading(false);
+          return;
+        }
 
-        // 4. Redirecciones CORREGIDAS
+        // CASO 2: LOGIN O REGISTRO EXITOSO
+        // Aquí construimos el objeto de usuario consistente
+        const userData = {
+            id: response.data.userId, // Asegúrate de que el backend devuelve 'userId'
+            username: response.data.username,
+            avatar: response.data.avatar,
+            email: data.email // A veces es útil tenerlo
+        };
+
+        // ¡CRUCIAL! Guardamos sesión en Contexto y LocalStorage AHORA
+        login(userData, response.data.token);
+
+        // Redirección
         if (isRegister) {
-          // ¡AQUÍ ESTABA EL FALLO! 
-          // Hay que pasar el userId para que el Onboarding no nos eche
+          // Vamos al onboarding. Como ya hicimos login, el usuario ya existe en el contexto,
+          // pero pasamos el state por si acaso queremos usar datos inmediatos.
           navigate('/onboarding', { 
             state: { 
               userId: response.data.userId,
               username: response.data.username,
-              googleAvatar: null // En manual no hay foto de Google
+              googleAvatar: null 
             } 
           });
-          
-        } else if (isLogin) {  
-          navigate('/feed');
         } else {
-          setSuccess("Enlace enviado con éxito.");
+          // Login normal
+          navigate('/feed');
         }
       }
 
     } catch (err) {
       console.error("Error submit:", err);
-      setError(err.response?.data?.error || 'Error de conexión.');
+      setError(err.response?.data?.error || 'Error de conexión o credenciales inválidas.');
       if (isRegister && window.grecaptcha) window.grecaptcha.reset();
+    } finally {
+      if (!isForgot) setLoading(false); // En forgot dejamos el loading o mensaje de éxito
+    }
+  };
+
+  const handleGoogleSuccess = async (idToken) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await api.post('/users/google', { token: idToken });
+      const { token, user, isNewUser } = response.data;
+      
+      // Mapeamos los datos para que coincidan con la estructura de tu app
+      const userData = {
+        id: user.userId,
+        username: user.username,
+        avatar: user.avatar,
+        email: user.email
+      };
+
+      // Guardamos sesión
+      login(userData, token);
+
+      if (isNewUser) {
+        navigate('/onboarding', { 
+          state: { 
+            userId: user.userId, 
+            username: user.username,
+            googleAvatar: user.avatar 
+          } 
+        });
+      } else {
+        navigate('/feed');
+      }
+
+    } catch (err) {
+      console.error("Error en Google Auth:", err);
+      setError(err.response?.data?.error || 'Error al conectar con Google.');
     } finally {
       setLoading(false);
     }
   };
- const handleGoogleSuccess = async (idToken) => {
-  setLoading(true);
-  setError(null);
-  
-  try {
-   
-    const response = await api.post('/users/google', { token: idToken });
-    
-    console.log("Respuesta del servidor:", response.data);
-    const { token, user, isNewUser } = response.data;
-    login({
-      id: user.userId,
-      username: user.username,
-      avatar: user.avatar,
-      email: user.email
-    }, token);
-
-    // 4. Redirección inteligente
-    if (isNewUser) {
-      console.log("Usuario nuevo -> Vamos a completar perfil");
-      // Pasamos el estado para que el Onboarding sepa quién es
-      navigate('/onboarding', { 
-        state: { 
-          userId: user.userId, 
-          username: user.username,
-          googleAvatar: user.avatar 
-        } 
-      });
-    } else {
-      console.log("Usuario recurrente -> Al feed");
-      navigate('/feed');
-    }
-
-  } catch (err) {
-    console.error("Error en Google Auth:", err);
-    // Manejo de errores específico si el backend devuelve mensaje
-    setError(err.response?.data?.error || 'Error al conectar con Google.');
-  } finally {
-    setLoading(false);
-  }
-};
 
   return (
     <div className="min-h-screen flex w-full bg-base-100">
-      {/* SECCIÓN IZQUIERDA */}
+      {/* SECCIÓN IZQUIERDA (IMAGEN) */}
       <div className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative" style={{ backgroundImage: `url(${fotoLogin})` }}>
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent"></div>
-        <div className="relative z-10 p-16 flex flex-col h-full text-white">
-          <img src={Logo} alt="Logo" className="w-30 h-auto mb-4" />
-          <p className="text-xl max-w-md font-medium">Organiza lo que te inspira y conéctate a través de tus colecciones</p>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="relative z-10 p-16 flex flex-col h-full text-white justify-end pb-24">
+          <img src={Logo} alt="Logo" className="w-32 h-auto mb-6" />
+          <h1 className="text-4xl font-bold mb-4">Tribe</h1>
+          <p className="text-xl max-w-md font-medium text-gray-200">Organiza lo que te inspira y conéctate a través de tus colecciones.</p>
         </div>
       </div>
 
-      {/* SECCIÓN DERECHA */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative">
+      {/* SECCIÓN DERECHA (FORMULARIO) */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative overflow-y-auto">
         <Link to="/" className="absolute top-8 left-8 btn btn-ghost btn-sm gap-2 text-base-content/60">← Inicio</Link>
 
-        <div className="w-full max-w-md space-y-10">
-          <h2 className="text-4xl font-extrabold tracking-tight font-serif">
-            {isForgot ? 'Recuperar acceso' : isLogin ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
-          </h2>
+        <div className="w-full max-w-md space-y-8 mt-10 lg:mt-0">
+          <div className="text-center lg:text-left">
+            <h2 className="text-4xl font-extrabold tracking-tight font-serif text-base-content">
+              {isForgot ? 'Recuperar acceso' : isLogin ? 'Bienvenido de nuevo' : 'Únete a Tribe'}
+            </h2>
+            <p className="mt-2 text-base-content/60">
+              {isRegister && "Empieza a crear tu primera colección hoy."}
+            </p>
+          </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            {/* INPUTS SEGÚN EL TIPO */}
             {isForgot && (
-              <div>
-                <label className="label text-sm font-bold">Correo electrónico</label>
-                <input {...register("email")} type="text" placeholder="tu@email.com" className={`input input-bordered w-full ${errors.email ? 'border-error' : ''}`} />
-                {errors.email && <p className="text-error text-xs mt-1">{errors.email.message}</p>}
+              <div className="form-control">
+                <label className="label"><span className="label-text font-bold">Correo electrónico</span></label>
+                <input {...register("email")} type="email" placeholder="tu@email.com" className={`input input-bordered w-full ${errors.email ? 'input-error' : ''}`} />
+                {errors.email && <span className="text-error text-xs mt-1 block">{errors.email.message}</span>}
               </div>
             )}
 
             {isRegister && (
               <>
-                <div>
-                  <label className="label text-sm font-bold">Nombre de usuario</label>
-                  <input {...register("username")} type="text" placeholder="ej. pixel_collector" className={`input input-bordered w-full ${errors.username ? 'border-error' : ''}`} />
-                  {errors.username && <p className="text-error text-xs mt-1">{errors.username.message}</p>}
+                <div className="form-control">
+                  <label className="label"><span className="label-text font-bold">Nombre de usuario</span></label>
+                  <input {...register("username")} type="text" placeholder="ej. pixel_collector" className={`input input-bordered w-full ${errors.username ? 'input-error' : ''}`} />
+                  {errors.username && <span className="text-error text-xs mt-1 block">{errors.username.message}</span>}
                 </div>
-                <div>
-                  <label className="label text-sm font-bold">Correo electrónico</label>
-                  <input {...register("email")} type="text" placeholder="hola@ejemplo.com" className={`input input-bordered w-full ${errors.email ? 'border-error' : ''}`} />
-                  {errors.email && <p className="text-error text-xs mt-1">{errors.email.message}</p>}
+                <div className="form-control">
+                  <label className="label"><span className="label-text font-bold">Correo electrónico</span></label>
+                  <input {...register("email")} type="email" placeholder="hola@ejemplo.com" className={`input input-bordered w-full ${errors.email ? 'input-error' : ''}`} />
+                  {errors.email && <span className="text-error text-xs mt-1 block">{errors.email.message}</span>}
                 </div>
               </>
             )}
 
             {isLogin && (
-              <div>
-                <label className="label text-sm font-bold">Usuario o Correo</label>
-                <input {...register("identifier")} type="text" placeholder="hola@ejemplo.com" className={`input input-bordered w-full ${errors.identifier ? 'border-error' : ''}`} />
-                {errors.identifier && <p className="text-error text-xs mt-1">{errors.identifier.message}</p>}
+              <div className="form-control">
+                <label className="label"><span className="label-text font-bold">Usuario o Correo</span></label>
+                <input {...register("identifier")} type="text" placeholder="usuario o email" className={`input input-bordered w-full ${errors.identifier ? 'input-error' : ''}`} />
+                {errors.identifier && <span className="text-error text-xs mt-1 block">{errors.identifier.message}</span>}
               </div>
             )}
 
             {(isLogin || isRegister) && (
-              <div>
-                <div className="flex justify-between mt-2 pb-4">
-                  <label className="label text-sm font-bold">Contraseña</label>
-                  {isLogin && <Link to="/forgot-password" className="text-sm text-primary hover:underline">¿Olvidaste tu contraseña?</Link>}
+              <div className="form-control">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="label"><span className="label-text font-bold">Contraseña</span></label>
+                  {isLogin && <Link to="/forgot-password" className="text-xs text-primary hover:underline">¿Olvidaste tu contraseña?</Link>}
                 </div>
-                <input {...register("password")} type="password" placeholder="••••••••" className={`input input-bordered w-full ${errors.password ? 'border-error' : ''}`} />
-                {errors.password && <p className="text-error text-xs mt-1">{errors.password.message}</p>}
+                <input {...register("password")} type="password" placeholder="••••••••" className={`input input-bordered w-full ${errors.password ? 'input-error' : ''}`} />
+                {errors.password && <span className="text-error text-xs mt-1 block">{errors.password.message}</span>}
               </div>
             )}
 
             {isRegister && (
-              <div>
-                <label className="label text-sm font-bold">Repetir contraseña</label>
-                <input {...register("confirmPassword")} type="password" placeholder="••••••••" className={`input input-bordered w-full ${errors.confirmPassword ? 'border-error' : ''}`} />
-                {errors.confirmPassword && <p className="text-error text-xs mt-1">{errors.confirmPassword.message}</p>}
-                <div className="mt-4 flex justify-center"><div ref={recaptchaRef} data-sitekey={SITE_KEY} data-theme='dark'></div></div>
+              <div className="form-control">
+                <label className="label"><span className="label-text font-bold">Repetir contraseña</span></label>
+                <input {...register("confirmPassword")} type="password" placeholder="••••••••" className={`input input-bordered w-full ${errors.confirmPassword ? 'input-error' : ''}`} />
+                {errors.confirmPassword && <span className="text-error text-xs mt-1 block">{errors.confirmPassword.message}</span>}
+                
+                <div className="mt-6 flex justify-center">
+                    <div ref={recaptchaRef} className="g-recaptcha" data-theme="dark"></div>
+                </div>
               </div>
             )}
 
-            {error && <div className="text-error text-center font-medium">{error}</div>}
-            {success && <div className="text-success text-center font-medium">{success}</div>}
+            {/* MENSAJES DE ERROR / ÉXITO */}
+            {error && <div className="alert alert-error text-sm py-2 rounded-lg">{error}</div>}
+            {success && <div className="alert alert-success text-sm py-2 rounded-lg">{success}</div>}
 
-            <button type="submit" className="btn btn-primary w-full text-lg rounded-full" disabled={loading}>
+            <button type="submit" className="btn btn-primary w-full text-lg rounded-full mt-4" disabled={loading}>
               <span className="flex items-center gap-2">
-                {loading ? 'Procesando...' : isForgot ? 'Enviar enlace' : isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                {loading ? <span className="loading loading-spinner"></span> : null}
+                {isForgot ? 'Enviar enlace' : isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
                 {!loading && <ArrowRight size={20} />}
               </span>
             </button>
@@ -264,12 +286,14 @@ const onSubmit = async (data) => {
 
           {!isForgot && (
             <>
-              <div className="relative"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-base-300"></div></div><div className="relative flex justify-center text-sm"><span className="px-2 bg-base-100 text-base-content/50">O continúa con</span></div></div>
-              <div className="flex justify-center"><GoogleSignIn onGoogleSuccess={handleGoogleSuccess} isLogin={isLogin} /></div>
+              <div className="divider text-base-content/50 text-sm">O continúa con</div>
+              <div className="flex justify-center">
+                 <GoogleSignIn onGoogleSuccess={handleGoogleSuccess} isLogin={isLogin} />
+              </div>
             </>
           )}
 
-          <p className="text-center text-sm mt-8">
+          <p className="text-center text-sm">
             {isForgot ? (
               <Link to="/login" className="font-bold text-primary hover:underline">Volver al inicio de sesión</Link>
             ) : isLogin ? (
