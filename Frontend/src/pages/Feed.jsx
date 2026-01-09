@@ -39,7 +39,7 @@ const Feed = () => {
         const activityRes = await api.get("/users/feed/activity");
         setActivities(activityRes.data);
         // Usuarios sugeridos
-        const suggestionsRes = await api.get("/search/sugested");
+        const suggestionsRes = await api.get("/search/suggested");
         setSuggestedUsers(suggestionsRes.data);
       } catch (error) {
         console.error("Error cargando feed:", error);
