@@ -101,7 +101,8 @@ const Feed = () => {
                           {item.username}
                         </Link>{" "}
                         <span className="font-normal opacity-70">
-                          {item.action_type === "created"
+                          {item.action_type === "created" ||
+                          item.action_type === "created_global"
                             ? "creó una colección"
                             : "actividad sugerida"}
                         </span>
@@ -123,7 +124,7 @@ const Feed = () => {
 
                 {/* IMAGEN / CONTENIDO */}
                 <Link to={`/collection/${item.collection_id}`}>
-                  <div className="relative aspect-[4/3] bg-base-200 w-full overflow-hidden cursor-pointer group">
+                  <div className="relative aspect-4/3 bg-base-200 w-full overflow-hidden cursor-pointer group">
                     <ItemCover
                       src={item.cover_url}
                       title={item.collection_name}
@@ -157,7 +158,6 @@ const Feed = () => {
                   <div className="text-sm font-semibold opacity-70 hover:opacity-100 cursor-pointer transition-opacity">
                     Me gusta
                   </div>
-                 
                 </div>
               </div>
             ))
@@ -175,13 +175,13 @@ const Feed = () => {
                 {suggestedUsers.length > 0 ? (
                   suggestedUsers.map((user) => (
                     <MiniUserCard
-                      key={user.userId} // Asegúrate que tu backend devuelve userId o id
+                      key={user.id}
                       user={{
-                        id: user.userId, // Adaptamos si tu backend devuelve userId
-                        name: user.username,
-                        handle: "@" + user.username,
-                        img: user.avatar,
-                        isFollowing: false, // Por defecto en sugerencias
+                        id: user.id,
+                        name: user.name,
+                        handle: user.handle,
+                        img: user.img,
+                        isFollowing: false,
                       }}
                     />
                   ))
