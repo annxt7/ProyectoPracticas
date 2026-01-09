@@ -194,7 +194,7 @@ const Explorer = () => {
                   <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
                     <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
                       <div className="aspect-video overflow-hidden bg-white/5">
-                        <ItemCover src={col.cover_url} title={col.title} className="w-full h-full" />
+                        <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
                       </div>
                       <div className="p-4">
                         <h3 className="font-bold text-white text-lg">{col.title}</h3>

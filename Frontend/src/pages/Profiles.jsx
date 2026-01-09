@@ -7,7 +7,7 @@ import {
   X,
   Camera,
   Plus,
-  Trash2,
+  Trash2, 
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
@@ -382,7 +382,7 @@ const Profile = () => {
                     onClick={(e) =>
                       handleDeleteCollection(e, col.collection_id)
                     }
-                    className="btn btn-square btn-sm btn-error text-white border-none"
+                    className="absolute top-2 right-2 p-2 bg-#26272c-600 text-white rounded-full shadow-lg z-20 hover:bg-grey-200 "
                     title="Borrar colección"
                   >
                     <Trash2 size={16} />
