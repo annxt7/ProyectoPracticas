@@ -8,20 +8,20 @@ import {
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
+import { Link } from "react-router";
+import { set } from "zod";
 
 const Explorer = () => {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("cuentas");
   const [users, setUsers] = useState([]);
+  const [usersWithoutMyself, setUsersWithoutMyself] = useState([]);
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Petición al Backend con Debounce
   useEffect(() => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Detectamos si estamos en local o en tu dominio de producción
       const baseUrl = window.location.hostname === "localhost" 
         ? "http://localhost:3000" 
         : "https://axel.informaticamajada.es";
@@ -31,9 +31,6 @@ const Explorer = () => {
           'Accept': 'application/json'
         }
       });
-
-      // Si el servidor responde con algo que no es JSON (como tu "API funcionando")
-      // este check evitará el error de SyntaxError
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new TypeError("El servidor no devolvió JSON. Revisa la ruta en el Backend.");
@@ -41,6 +38,7 @@ const Explorer = () => {
 
       const data = await res.json();
       setUsers(data.users || []);
+      setUsersWithoutMyself(data.users.filter(u => u.id !== data.currentUserId) || []);
       setCollections(data.collections || []);
     } catch (err) {
       console.error("Error en la carga:", err.message);
@@ -114,15 +112,15 @@ const Explorer = () => {
           </div>
         </aside>
 
-        {/* CENTRO: RESULTADOS REALES */}
         <main>
           {loading && <div className="text-center py-4 opacity-50 text-xs">Buscando...</div>}
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {users.length > 0 ? (
-                users.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group">
+              {usersWithoutMyself.length > 0 ? (
+                usersWithoutMyself.map((user) => (
+                  <Link to={`/profile/${user.id}`}>
+                  <div key={user.id} className="flex items-center justify-between p-4 bg-white/2 border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all group">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="avatar">
                         <div className="w-12 h-12 rounded-full ring-2 ring-white/5 bg-white/10">
@@ -146,6 +144,7 @@ const Explorer = () => {
                       {user.isFollowing ? 'Siguiendo' : 'Seguir'}
                     </button>
                   </div>
+                  </Link>
                 ))
               ) : !loading && (
                 <div className="col-span-full text-center py-20 opacity-20 italic">No hay resultados para tu búsqueda</div>
@@ -157,7 +156,8 @@ const Explorer = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {collections.length > 0 ? (
                 collections.map((col) => (
-                  <div key={col.id} className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all group cursor-pointer">
+                  <Link to={`/collection/${col.id}`}> 
+                  <div key={col.id} className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all group cursor-pointer">
                     <div className="aspect-video overflow-hidden bg-white/5">
                       <img src={col.cover || 'https://via.placeholder.com/400'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
                     </div>
@@ -169,6 +169,7 @@ const Explorer = () => {
                       </div>
                     </div>
                   </div>
+                  </Link>
                 ))
               ) : !loading && (
                 <div className="col-span-full text-center py-20 opacity-20 italic">No hay colecciones que coincidan</div>
