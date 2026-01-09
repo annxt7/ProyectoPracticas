@@ -64,3 +64,16 @@ exports.searchTribe = async (req, res, next) => {
         next(error); 
     }
 };
+
+exports.getSuggestedUsers = async (req, res) => {
+    try {
+        const [suggested] = await db.query(`
+            SELECT user_id AS id, username AS name, 
+            CONCAT('@', username) AS handle, avatar_url AS img 
+            FROM Users ORDER BY RAND() LIMIT 3
+        `);
+        res.json(suggested);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
