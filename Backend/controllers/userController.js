@@ -253,3 +253,57 @@ exports.getUsers = async (req, res) => {
         res.json(rows);
     } catch (e) { res.status(500).json({ error: "Error" }); }
 };
+//GET: Actividad
+exports.getActivityFeed = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const sqlFollowing = `
+            SELECT 
+                c.collection_id, 
+                c.collection_name, 
+                c.collection_type, 
+                c.cover_url, 
+                c.created_at, 
+                u.user_id, 
+                u.username, 
+                u.avatar_url,
+                'created' as action_type
+            FROM Collections c
+            JOIN Users u ON c.user_id = u.user_id
+            JOIN Follows f ON c.user_id = f.followed_id
+            WHERE f.follower_id = ? AND c.is_private = 0
+            ORDER BY c.created_at DESC
+            LIMIT 20
+        `;
+
+        let [rows] = await db.query(sqlFollowing, [userId]);
+
+        if (rows.length === 0) {
+            const sqlGlobal = `
+                SELECT 
+                    c.collection_id, 
+                    c.collection_name, 
+                    c.collection_type, 
+                    c.cover_url, 
+                    c.created_at, 
+                    u.user_id, 
+                    u.username, 
+                    u.avatar_url,
+                    'created_global' as action_type
+                FROM Collections c
+                JOIN Users u ON c.user_id = u.user_id
+                WHERE c.is_private = 0
+                ORDER BY c.created_at DESC
+                LIMIT 20
+            `;
+            [rows] = await db.query(sqlGlobal);
+        }
+
+        res.json(rows);
+
+    } catch (error) {
+        console.error("Error en Activity Feed:", error);
+        res.status(500).json({ error: "Error cargando el feed" });
+    }
+};
