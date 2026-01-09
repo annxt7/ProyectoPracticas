@@ -5,11 +5,11 @@ const MiniUserCard = ({ user }) => {
   if (!user) return null;
 
   const handleFollow = (e) => {
-    // Evitamos que el clic en el botón active el Link del perfil
+ 
     e.preventDefault();
     e.stopPropagation();
     console.log("Siguiendo a:", user.name);
-    // Aquí irá tu lógica de fetch para el follow
+    
   };
 
   return (
