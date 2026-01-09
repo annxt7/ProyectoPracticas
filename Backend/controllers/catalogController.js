@@ -15,7 +15,7 @@ exports.searchCatalog = async (req, res) => {
       switch (category) {
         case "Music":
           sql = `SELECT music_id AS id, 'Music' AS type, title, artist, album, release_year, cover_url 
-                 FROM Catalog_Music WHERE title LIKE ? OR artist LIKE ? LIMIT 20`;
+                FROM Catalog_Music WHERE title LIKE ? OR artist LIKE ? LIMIT 20`;
           params = [searchTerm, searchTerm];
           break;
 
