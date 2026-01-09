@@ -130,9 +130,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
         {/* PIE DE PÁGINA DEL MODAL */}
         <div className="p-6 bg-black/40 text-center">
-          <p className="text-[9px] opacity-20 uppercase tracking-[0.3em] font-bold">
-            Hecho con ❤️ para la comunidad
+          <p className="text-[9px] opacity-80 uppercase tracking-[0.3em] font-bold">
+            Págame a mí y no a los bancos 
           </p>
+          <p className="text-[9px] opacity-80 uppercase tracking-[0.5em] font-bold">© 2026 Tribe Platform</p>
         </div>
       </div>
     </div>
