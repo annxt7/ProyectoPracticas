@@ -128,7 +128,7 @@ const Feed = () => {
                     <ItemCover
                       src={item.cover_url}
                       title={item.collection_name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="w-full h-full object-cover"
                     />
 
                     <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
