@@ -1,15 +1,18 @@
-// frontend/src/services/api.js
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: "/api", 
 });
 
-api.interceptors.request.use((config)=>{
-  const token= localStorage.getItem('tribe_token');
-  if(token){
-    config.headers.Authorization= `Bearer ${token}`;
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('tribe_token');
+  
+  if (token) {
+    const cleanToken = token.replace(/^"|"$/g, ''); 
+    
+    config.headers.Authorization = `Bearer ${cleanToken}`;
   }
+  
   return config;
 });
 
