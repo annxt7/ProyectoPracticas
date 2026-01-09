@@ -65,28 +65,39 @@ exports.getUserCollections = async (req, res) => {
     }
 };
 
-// 3. Ver el detalle de una colección (y sus items)
+// 3. Ver el detalle de una colección 
 exports.getCollectionDetails = async (req, res) => {
     const { id } = req.params; 
 
     try {
-        // A. Primero obtenemos la info de la colección (nombre, desc...)
-        const [collectionRows] = await db.query("SELECT * FROM Collections WHERE collection_id = ?", [id]);
+        const sqlCollection = `
+            SELECT 
+                c.collection_id, c.collection_name, c.collection_description, 
+                c.collection_type, c.cover_url, c.likes, c.created_at,
+                c.user_id,
+                u.username AS creator_username, 
+                u.avatar_url AS creator_avatar,
+                u.user_id AS creator_id
+            FROM Collections c
+            LEFT JOIN Users u ON c.user_id = u.user_id
+            WHERE c.collection_id = ?
+        `;
+
+        const [collectionRows] = await db.query(sqlCollection, [id]);
         
         if (collectionRows.length === 0) {
             return res.status(404).json({ error: "Colección no encontrada" });
         }
-        const collection = collectionRows[0];
 
-        // B. Ahora la magia: Obtenemos los items uniendo tablas
-        // COALESCE sirve para decir: "Si no hay título custom, coge el de la peli, o el del libro..."
+        const collection = collectionRows[0];
         const itemsSql = `
             SELECT 
-                i.item_id, i.item_type, i.custom_description,
+                i.item_id, 
+                i.item_type, 
+                i.custom_description,
                 COALESCE(i.custom_title, m.title, b.title, mov.title, s.title, g.title) AS display_title,
                 COALESCE(i.custom_subtitle, m.artist, b.author, mov.director, g.developer, 'Varios') AS display_subtitle,
-                COALESCE(m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image,
-                i.created_at
+                COALESCE(i.custom_image, m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image
             FROM Items i
             LEFT JOIN Catalog_Music m ON i.music_id = m.music_id
             LEFT JOIN Catalog_Books b ON i.book_id = b.book_id
@@ -98,12 +109,12 @@ exports.getCollectionDetails = async (req, res) => {
         
         const [items] = await db.query(itemsSql, [id]);
         
-        // Devolvemos todo junto
         res.json({ ...collection, items });
 
     } catch (error) {
-        console.error("Error en getCollectionDetails:", error);
-        res.status(500).json({ error: "Error al cargar los items" });
+        console.error("Error cargando colección:", error);
+        // Esto te mostrará el error real en la respuesta si vuelve a fallar
+        res.status(500).json({ error: "Error de servidor", details: error.message });
     }
 };
 
@@ -111,43 +122,103 @@ exports.getCollectionDetails = async (req, res) => {
 exports.addItemToCollection = async (req, res) => {
   const { collection_id } = req.params;
   const { 
-    item_type,      
-    reference_id,   
-    custom_title,   
-    custom_subtitle,
-    custom_description 
+    item_type, 
+    reference_id, 
+    custom_title, 
+    custom_subtitle, 
+    custom_description,
+    custom_image
   } = req.body;
+
+  const columnMap = {
+    'Music': 'music_id',
+    'Books': 'book_id',
+    'Movies': 'movie_id',
+    'Shows': 'show_id',
+    'Games': 'game_id'
+  };
 
   try {
     let sql = "";
     let params = [];
 
-    // CASO A: Es un item de la base de datos (Ej: Una película que ya existe en Catalog_Movies)
     if (reference_id && item_type !== 'Custom') {
-        let colName = "";
-        switch (item_type) {
-            case 'Music': colName = 'music_id'; break;
-            case 'Books': colName = 'book_id'; break;
-            case 'Movies': colName = 'movie_id'; break;
-            case 'Shows': colName = 'show_id'; break;
-            case 'Games': colName = 'game_id'; break;
-            default: return res.status(400).json({ error: "Tipo inválido" });
-        }
         
+        const colName = columnMap[item_type];
+        if (!colName) {
+            return res.status(400).json({ error: "Tipo de item inválido" });
+        }
         sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
         params = [collection_id, item_type, reference_id];
     } 
-    // CASO B: Es un item manual (Custom) que el usuario escribe a mano
     else {
-        sql = `INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description) VALUES (?, ?, ?, ?, ?)`;
-        params = [collection_id, item_type, custom_title, custom_subtitle, custom_description];
+        sql = `INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description, custom_image) VALUES (?, ?, ?, ?, ?, ?)`;
+        params = [collection_id, 'Custom', custom_title, custom_subtitle, custom_description || "", custom_image || null];
     }
-
-    await db.query(sql, params);
-    res.status(201).json({ success: true, message: "Item añadido correctamente" });
+    const [result] = await db.query(sql, params);
+    res.status(201).json({ success: true, itemId: result.insertId });
 
   } catch (error) {
     console.error("Error añadiendo item:", error);
-    res.status(500).json({ error: "Error al guardar el item" });
+    res.status(500).json({ error: "Error de base de datos" });
   }
+};
+
+// 5. Borrar un item
+exports.deleteItem = async (req, res) => {
+    const { itemId } = req.params;
+
+    try {
+        const [result] = await db.query("DELETE FROM Items WHERE item_id = ?", [itemId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Item no encontrado" });
+        }
+
+        res.json({ success: true, message: "Item eliminado correctamente" });
+
+    } catch (error) {
+        console.error("Error borrando item:", error);
+        res.status(500).json({ error: "Error de base de datos al borrar" });
+    }
+};
+
+// 6. Actualizar una colección existente
+exports.updateCollection = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id; 
+    const { collection_name, collection_description, cover_url } = req.body;
+
+    console.log(`--- ACTUALIZANDO COLECCIÓN ${id} ---`);
+
+    try {
+        // Preparamos la query dinámica
+        // Solo actualizamos lo que nos envíen
+        const sql = `
+            UPDATE Collections 
+            SET 
+                collection_name = ?, 
+                collection_description = ?,
+                cover_url = COALESCE(?, cover_url) -- Si cover_url es null, mantenemos la vieja
+            WHERE collection_id = ? AND user_id = ?
+        `;
+
+        const [result] = await db.query(sql, [
+            collection_name, 
+            collection_description, 
+            cover_url || null, 
+            id, 
+            userId
+        ]);
+
+        if (result.affectedRows === 0) {
+            return res.status(403).json({ error: "No tienes permiso o la colección no existe" });
+        }
+
+        res.json({ success: true, message: "Colección actualizada" });
+
+    } catch (error) {
+        console.error("Error actualizando colección:", error);
+        res.status(500).json({ error: "Error de servidor" });
+    }
 };

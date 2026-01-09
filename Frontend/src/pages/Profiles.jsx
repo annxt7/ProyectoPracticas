@@ -20,9 +20,9 @@ import api from "../services/api";
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
   const { user, updateUser } = useAuth(); 
-  const { userId } = useParams();         
+  const { userId } = useParams();
 
-  // 1. GUARDIA DE SEGURIDAD
+  // --- 1. LÓGICA ROBUSTA DE IDENTIDAD ---
   if (userId === "me" && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-100">
@@ -31,7 +31,6 @@ const Profile = () => {
     );
   }
 
-  // 2. CALCULAR ID REAL
   const isMe = userId === "me" || !userId || String(userId) === String(user?.id);
   const targetId = isMe ? user?.id : userId;
 
@@ -44,10 +43,10 @@ const Profile = () => {
   const avatarInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // <--- ESTADO CLAVE PARA LAS CÁMARAS
+  const [isEditing, setIsEditing] = useState(false); // Controla cámaras y form
   const [newDescription, setNewDescription] = useState("");
 
-  // Sincronizar datos
+  // Sincronizar datos si soy yo
   useEffect(() => {
     if (isMe && user) {
         setProfileData(user);
@@ -55,7 +54,7 @@ const Profile = () => {
     }
   }, [user, isMe]);
 
-  // Cargar datos externos
+  // Cargar datos
   useEffect(() => {
     const fetchData = async () => {
       if (!targetId) return; 
@@ -81,13 +80,13 @@ const Profile = () => {
     fetchData();
   }, [targetId, isMe]);
 
-  // HANDLERS
+  // --- HANDLERS ---
   const handleSaveBio = async (e) => {
     e.preventDefault();
     try {
       await api.put("/users/update-profile", { bio: newDescription });
       updateUser({ bio: newDescription }); 
-      setIsEditing(false); // <--- AL GUARDAR, SE CIERRA EL MODO EDICIÓN
+      setIsEditing(false); // Cierra edición al guardar
     } catch (error) { console.error(error); }
   };
 
@@ -125,8 +124,6 @@ const Profile = () => {
                 alt="banner"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent"></div>
-            
-            {/* CÁMARA BANNER: Solo si es mi perfil Y estoy editando */}
             {isMe && isEditing && (
                 <button onClick={() => !isUploading && bannerInputRef.current.click()} className="absolute bottom-4 right-4 bg-base-100 p-2 rounded-full shadow-md z-20 hover:bg-base-200 cursor-pointer animate-in fade-in zoom-in duration-300">
                     {isUploading ? <span className="loading loading-spinner loading-xs"/> : <Camera size={20} />}
@@ -137,11 +134,9 @@ const Profile = () => {
 
         <div className="px-6 relative">
             <div className="flex justify-between items-end -mt-12 mb-4">
-                
-                {/* AVATAR */}
                 <div className="relative">
                     <div 
-                        // Solo permitimos clic en el avatar si estamos editando
+                        // Solo deja hacer click si estoy editando
                         onClick={() => isMe && isEditing && !isUploading && avatarInputRef.current.click()} 
                         className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""}`}
                     >
@@ -150,7 +145,7 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    {/* CÁMARA AVATAR: Solo si es mi perfil Y estoy editando */}
+                    {/* CÁMARA AVATAR: Solo sale si estoy editando */}
                     {isMe && isEditing && !isUploading && (
                         <div className="absolute bottom-1 right-1 bg-base-100 p-1.5 rounded-full shadow-md pointer-events-none animate-in fade-in zoom-in duration-300">
                             <Camera size={16}/>
@@ -158,21 +153,19 @@ const Profile = () => {
                     )}
                     <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, "avatar")} className="hidden" accept="image/*"/>
                 </div>
-
-                {/* BOTONES DE ACCIÓN */}
                 <div className="flex gap-2 mb-2">
                     {isMe ? (
                         <>
-                            {/* Si NO estoy editando, muestro "Editar Perfil". Si SÍ, desaparece (porque salen Guardar/Cancelar abajo) */}
-                            {!isEditing ? (
-                                <>
-                                    <button onClick={() => { setIsEditing(true); setNewDescription(profileData?.bio || ""); }} className="btn btn-sm btn-ghost border border-white/40 rounded-full">Editar Perfil</button>
-                                    <button className="btn btn-sm btn-circle btn-ghost border border-white/40"><Settings size={18}/></button>
-                                </>
-                            ) : (
-                                // Opcional: Podrías poner aquí un botón de "Cancelar Edición" rápido
-                                <button onClick={() => setIsEditing(false)} className="btn btn-sm btn-ghost text-error">Cancelar Edición</button>
+                            {/* Si NO estoy editando, muestro el botón de Editar. Si ya estoy editando, lo oculto (opcional) */}
+                            {!isEditing && (
+                                <button onClick={() => { setIsEditing(true); setNewDescription(profileData?.bio || ""); }} className="btn btn-sm md:btn-md btn-ghost border border-white/40 rounded-full">
+                                    Editar Perfil
+                                </button>
                             )}
+                            
+                            <button className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40">
+                                <Settings size={18}/>
+                            </button>
                         </>
                     ) : (
                         <button className="btn btn-primary btn-sm rounded-full px-6 gap-2"><UserPlus size={16}/> Seguir</button>
@@ -180,32 +173,37 @@ const Profile = () => {
                 </div>
             </div>
 
-            {/* INFO */}
+            {/* INFO Y BIO */}
             <div className="space-y-3 mb-6">
                 <div>
                     <h1 className="text-2xl md:text-4xl font-bold font-serif">{profileData?.username || "Cargando..."}</h1>
                     <p className="text-sm opacity-60 flex items-center gap-1 mt-1"><MapPin size={14}/> Madrid, ES</p>
                 </div>
-
-                {/* MODO EDICIÓN DE BIO */}
                 {isEditing ? (
                     <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl animate-in slide-in-from-top-2 duration-300">
-                        <label className="text-xs font-bold uppercase opacity-50">Editar Biografía</label>
                         <textarea 
-                            className="textarea textarea-bordered w-full h-24 focus:textarea-primary" 
+                            className="textarea textarea-bordered w-full h-32 text-base focus:textarea-primary" 
                             value={newDescription} 
-                            onChange={e=>setNewDescription(e.target.value)} 
+                            onChange={e => setNewDescription(e.target.value)} 
                             autoFocus
                             placeholder="Escribe algo sobre ti..."
                         />
                         <div className="flex justify-end gap-2">
-                            <button type="submit" className="btn btn-primary btn-sm gap-2"><Check size={16}/> Guardar Cambios</button>
+                            {/* Botón Check (Guardar) */}
+                            <button type="submit" className="btn btn-primary btn-sm btn-square">
+                                <Check size={18}/>
+                            </button>
+                            {/* Botón X (Cancelar) */}
+                            <button type="button" onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm btn-square hover:bg-base-200">
+                                <X size={18}/>
+                            </button>
                         </div>
                     </form>
                 ) : (
-                    <p className="max-w-md opacity-80 whitespace-pre-wrap">{profileData?.bio || "¡Hola! Soy nuevo en Tribe."}</p>
+                    <p className="max-w-md text-base opacity-80 whitespace-pre-wrap leading-relaxed">
+                        {profileData?.bio || "¡Hola! Soy nuevo en Tribe."}
+                    </p>
                 )}
-
                 <div className="flex gap-6 py-4 mt-4">
                     <div className="flex gap-1 items-baseline">
                         <span className="font-bold text-lg">{collections.length}</span>
@@ -223,17 +221,17 @@ const Profile = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 min-h-[300px] max-w-6xl mx-auto">
             {isMe && activeTab === "collections" && (
-                <Link to="/create-collection" className="aspect-[4/5] border-2 border-dashed border-base-300 rounded-2xl flex flex-col items-center justify-center hover:border-primary/50 hover:bg-base-200/50 transition-all opacity-60 hover:opacity-100 cursor-pointer">
+                <Link to="/create-collection" className="aspect-4/5 border-2 border-dashed border-base-300 rounded-2xl flex flex-col items-center justify-center hover:border-primary/50 hover:bg-base-200/50 transition-all opacity-60 hover:opacity-100 cursor-pointer">
                     <Plus size={32} />
                     <span className="text-xs font-bold mt-2 uppercase">Nueva</span>
                 </Link>
             )}
             
             {collections.map(col => (
-                <Link to={`/collection/${col.collection_id}`} key={col.collection_id} className="card bg-base-200 shadow-sm aspect-[4/5] hover:scale-[1.02] transition-transform cursor-pointer group">
+                <Link to={`/collection/${col.collection_id}`} key={col.collection_id} className="card bg-base-200 shadow-sm aspect-4/5 hover:scale-[1.02] transition-transform cursor-pointer group">
                     <figure className="relative h-full">
                         <img src={col.cover_url || `https://picsum.photos/400?random=${col.collection_id}`} className="w-full h-full object-cover" alt="cover"/>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4">
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4">
                             <h3 className="text-white font-bold leading-tight">{col.collection_name}</h3>
                             <p className="text-white/70 text-xs mt-1">{col.collection_type}</p>
                         </div>
@@ -241,7 +239,6 @@ const Profile = () => {
                 </Link>
             ))}
         </div>
-
       </main>
       <NavMobile />
     </div>

@@ -15,27 +15,24 @@ import {
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import ItemCover from "../components/ItemCover.jsx";
-import { uploadFileToCloudinary } from "../services/upload.js";
 import AddToCollectionModal from "../components/AddToCollectionModal";
 import AddItemModal from "../components/AddItemModal";
 import api from "../services/api.js";
-import { useAuth } from "../context/AuthContext"; // <--- IMPORTANTE
+import { useAuth } from "../context/AuthContext";
 
 const CollectionPage = () => {
-  const { id } = useParams(); // El ID de la colección (de la URL)
-  const { user } = useAuth(); // Tu usuario logueado
+  const { id } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  // Estados de carga
+  // Estados de datos
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Estado de la colección (Empieza vacío, no con datos falsos)
   const [collectionInfo, setCollectionInfo] = useState(null);
   const [items, setItems] = useState([]);
 
-  // Estados de edición
+  // Estados de interfaz
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [fileToUpload, setFileToUpload] = useState(null);
@@ -45,38 +42,36 @@ const CollectionPage = () => {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedItemForSave, setSelectedItemForSave] = useState(null);
 
-  // 1. CARGAR DATOS REALES DEL BACKEND
+  // 1. CARGAR DATOS
   useEffect(() => {
     const fetchCollection = async () => {
       setLoading(true);
       try {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
-
-        // A. Guardar Info de la Colección (Mapeamos nombres de DB a Frontend)
         setCollectionInfo({
-            id: data.collection_id,
-            title: data.collection_name, // DB: collection_name -> UI: title
-            description: data.collection_description || "",
-            type: data.collection_type,
-            cover: data.cover_url || data.collection_image, // A veces se guarda con un nombre u otro
-            creatorId: data.user_id, // Para saber si soy el dueño
-            stats: { items: data.items ? data.items.length : 0, likes: data.likes || 0 }
+          id: data.collection_id,
+          title: data.collection_name,
+          description: data.collection_description || "",
+          type: data.collection_type,
+          cover: data.cover_url || data.collection_image,
+          creatorId: data.creator_id,
+          creatorName: data.creator_username,
+          stats: { items: data.items ? data.items.length : 0, likes: data.likes || 0 },
         });
 
-        // B. Guardar Items (Mapeamos lo que viene del LEFT JOIN complejo del backend)
-        // El backend devuelve: display_title, display_subtitle, display_image
-        if (data.items) {
-            const mappedItems = data.items.map(item => ({
-                id: item.item_id,
-                title: item.display_title || item.custom_title || "Sin título",
-                author: item.display_subtitle || item.custom_subtitle || "Desconocido",
-                cover: item.display_image || "https://via.placeholder.com/300x450?text=No+Image",
-                year: "", // Si tu query devuelve año, ponlo aquí
-            }));
-            setItems(mappedItems);
+        if (data.items && Array.isArray(data.items)) {
+          const mappedItems = data.items.map((item) => ({
+            id: item.item_id,
+            title: item.display_title || item.custom_title || "Sin título",
+            author: item.display_subtitle || item.custom_subtitle || "Desconocido",
+            cover: item.display_image || "https://via.placeholder.com/300x450?text=No+Image",
+            year: "",
+          }));
+          setItems(mappedItems);
+        } else {
+          setItems([]);
         }
-
       } catch (err) {
         console.error("Error cargando colección:", err);
         setError("No se pudo cargar la colección.");
@@ -88,10 +83,8 @@ const CollectionPage = () => {
     if (id) fetchCollection();
   }, [id]);
 
-  // 2. CALCULAR SI SOY EL DUEÑO
-  const isOwner = user && collectionInfo && (user.id === collectionInfo.creatorId || user.userId === collectionInfo.creatorId);
+  const isOwner = user && collectionInfo && String(user.id || user.userId) === String(collectionInfo.creatorId);
 
-  // --- FUNCIONES DE EDICIÓN ---
 
   const handleStartEditing = () => {
     setEditForm({
@@ -111,8 +104,7 @@ const CollectionPage = () => {
     const file = e.target.files[0];
     if (file) {
       setFileToUpload(file);
-      const previewUrl = URL.createObjectURL(file);
-      setEditForm({ ...editForm, cover: previewUrl });
+      setEditForm({ ...editForm, cover: URL.createObjectURL(file) });
     }
   };
 
@@ -120,67 +112,89 @@ const CollectionPage = () => {
     setIsUploading(true);
     try {
       let finalCoverUrl = collectionInfo.cover;
-      
-      // 1. Si hay foto nueva, subirla
       if (fileToUpload) {
         const formData = new FormData();
         formData.append("imagen", fileToUpload);
-        const uploadRes = await api.post("/files/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
+        const uploadRes = await api.post("/files/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         finalCoverUrl = uploadRes.data.url;
       }
 
-      // 2. Actualizar en Base de Datos (Necesitarás una ruta PUT /collections/:id en el backend)
-      // Por ahora actualizamos el estado local para que se vea el cambio
-      // TODO: Crear endpoint backend: router.put("/:id", ...)
-      
-      // Actualizamos estado local
-      setCollectionInfo({
-        ...collectionInfo,
+      // 2. Preparar datos para Backend (Nombres de BD)
+      const payload = {
+        collection_name: editForm.title,
+        collection_description: editForm.description,
+        cover_url: finalCoverUrl,
+      };
+
+      // 3. Actualizar en Base de Datos (PUT)
+      await api.put(`/collections/${collectionInfo.id}`, payload);
+
+      // 4. Actualizar Estado Local
+      setCollectionInfo((prev) => ({
+        ...prev,
         title: editForm.title,
         description: editForm.description,
         cover: finalCoverUrl,
-      });
+      }));
 
       setIsEditing(false);
       setFileToUpload(null);
     } catch (error) {
       console.error("Error al guardar:", error);
-      alert("Error al guardar cambios");
+      alert("Error al actualizar la colección.");
     } finally {
       setIsUploading(false);
     }
   };
-
-  // --- FUNCIONES DE ITEMS ---
-
   const handleDelete = async (itemId) => {
     if (window.confirm("¿Eliminar de la colección?")) {
       try {
-          // Llamada API real para borrar (Necesitas endpoint DELETE /items/:itemId)
-          // await api.delete(`/collections/items/${itemId}`); 
-          
-          // Actualizar UI
-          setItems(items.filter((i) => i.id !== itemId));
+        await api.delete(`/collections/items/${itemId}`);
+        setItems((prev) => prev.filter((i) => i.id !== itemId));
       } catch (error) {
-          console.error("Error borrando item:", error);
+        console.error("Error borrando item:", error);
       }
     }
   };
 
-  const handleAddItemToState = (newItem) => {
-    // Cuando el modal añade un item, lo metemos en la lista visualmente
-    // (El modal ya hace la llamada a la API para guardarlo)
-    const itemFormatted = {
-      id: Date.now(), // ID temporal hasta recargar
-      title: newItem.title,
-      author: newItem.subtitle || newItem.author,
-      cover: newItem.cover,
-    };
-    setItems([...items, itemFormatted]);
+  const handleAddItem = async (newItem) => {
+    try {
+      let finalCoverUrl = newItem.cover;
+      if (newItem.isCustom && newItem.coverFile) {
+        const formData = new FormData();
+        formData.append("imagen", newItem.coverFile);
+        const uploadRes = await api.post("/files/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        finalCoverUrl = uploadRes.data.url;
+      }
+      const payload = {
+        item_type: newItem.isCustom ? "Custom" : newItem.item_type || collectionInfo.type,
+        reference_id: newItem.isCustom ? null : newItem.reference_id,
+        custom_title: newItem.title,
+        custom_subtitle: newItem.subtitle,
+        custom_description: newItem.description || "",
+        custom_image: finalCoverUrl,
+      };
+
+      const res = await api.post(`/collections/${collectionInfo.id}/items`, payload);
+
+      if (res.data.success) {
+        const itemFormatted = {
+          id: res.data.itemId,
+          title: newItem.title,
+          author: newItem.subtitle,
+          cover: finalCoverUrl,
+        };
+        setItems((prev) => [...prev, itemFormatted]);
+      }
+    } catch (error) {
+      console.error("Error guardando item:", error);
+      alert("Error al guardar item.");
+    }
   };
-
-
-  // --- RENDERIZADO ---
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><span className="loading loading-spinner loading-lg"></span></div>;
   if (error || !collectionInfo) return <div className="min-h-screen flex items-center justify-center flex-col gap-4"><h1>Colección no encontrada</h1><Link to="/feed" className="btn">Volver al inicio</Link></div>;
@@ -188,10 +202,9 @@ const CollectionPage = () => {
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
-      
-      {/* HERO SECTION */}
+
+      {/* HEADER / PORTADA */}
       <div className="relative bg-base-100">
-        {/* Fondo borroso */}
         <div className="absolute inset-0 h-80 overflow-hidden -z-10 opacity-30">
           <img
             src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/800")}
@@ -204,15 +217,15 @@ const CollectionPage = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-8">
           <div className="mb-6">
             <Link
-              to={isOwner ? "/profile/me" : "#"} // Si es otro usuario, idealmente ir a /profile/SU_ID
+              to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`}
               className="inline-flex items-center gap-2 text-sm font-medium opacity-60 hover:opacity-100 hover:text-primary transition-all"
             >
-              <ArrowLeft size={16} /> Volver
+              <ArrowLeft size={16} /> {isOwner ? "Volver a mi perfil" : `Volver al perfil de ${collectionInfo.creatorName || "Usuario"}`}
             </Link>
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* PORTADA */}
+            {/* FOTO PORTADA */}
             <div className="flex-none w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/80 bg-base-200 relative group">
               <img
                 src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/400?text=Sin+Portada")}
@@ -220,10 +233,7 @@ const CollectionPage = () => {
                 className="w-full h-full object-cover"
               />
               {isEditing && (
-                <div
-                  onClick={() => fileInputRef.current.click()}
-                  className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                >
+                <div onClick={() => fileInputRef.current.click()} className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
                   <Camera className="text-white mb-2" size={32} />
                   <span className="text-white text-xs font-bold uppercase tracking-widest">Cambiar</span>
                 </div>
@@ -231,11 +241,11 @@ const CollectionPage = () => {
               <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
             </div>
 
-            {/* INFORMACIÓN TEXTO */}
+            {/* INFO Y FORMULARIO */}
             <div className="flex-1 w-full space-y-5">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
-                   {/* Ojo: collectionInfo.creatorId es un ID, no un nombre. Para mostrar nombre necesitas JOIN en backend */}
+                  <span className="text-xs opacity-50 uppercase tracking-widest">Creado por {collectionInfo.creatorName || "Desconocido"}</span>
                   <span className="badge badge-outline text-xs">{collectionInfo.type}</span>
                 </div>
 
@@ -248,9 +258,7 @@ const CollectionPage = () => {
                     autoFocus
                   />
                 ) : (
-                  <h1 className="text-4xl md:text-5xl font-bold font-serif leading-tight text-base-content">
-                    {collectionInfo.title}
-                  </h1>
+                  <h1 className="text-4xl md:text-5xl font-bold font-serif leading-tight text-base-content">{collectionInfo.title}</h1>
                 )}
               </div>
 
@@ -261,15 +269,13 @@ const CollectionPage = () => {
                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 />
               ) : (
-                <p className="text-lg opacity-80 leading-relaxed max-w-2xl border-l-4 border-white/40 pl-4 whitespace-pre-wrap">
-                  {collectionInfo.description || "Sin descripción."}
-                </p>
+                <p className="text-lg opacity-80 leading-relaxed max-w-2xl border-l-4 border-white/40 pl-4 whitespace-pre-wrap">{collectionInfo.description || "Sin descripción."}</p>
               )}
 
-              {/* BOTONES ACCIÓN */}
               <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-white/40">
                 <div className="flex gap-6 text-sm">
-                   <div className="text-center"><span className="block font-bold text-lg">{items.length}</span><span className="opacity-60">Items</span></div>
+                  <div className="text-center"><span className="block font-bold text-lg">{items.length}</span><span className="opacity-60">Items</span></div>
+                  <div className="text-center"><span className="block font-bold text-lg">{collectionInfo.stats.likes}</span><span className="opacity-60">Likes</span></div>
                 </div>
 
                 <div className="flex gap-3">
@@ -290,7 +296,7 @@ const CollectionPage = () => {
                       )}
                     </>
                   ) : (
-                     <button className="btn btn-primary btn-sm gap-2 rounded-full"><BookmarkPlus size={18} /> Guardar Colección</button>
+                    <button className="btn btn-primary btn-sm gap-2 rounded-full"><BookmarkPlus size={18} /> Guardar Colección</button>
                   )}
                   {!isEditing && <button className="btn btn-square btn-ghost btn-sm rounded-full"><Share2 size={18} /></button>}
                 </div>
@@ -300,66 +306,57 @@ const CollectionPage = () => {
         </div>
       </div>
 
-      {/* ITEMS GRID */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-8">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           Contenido <span className="text-xs font-normal opacity-50 bg-base-200 px-2 py-1 rounded-full">{items.length}</span>
         </h2>
 
         {items.length === 0 ? (
-             <div className="text-center py-20 opacity-50 border-2 border-dashed rounded-xl">
-                 <p>Esta colección está vacía.</p>
-                 {isOwner && <button onClick={() => setIsAddItemOpen(true)} className="btn btn-link text-primary">¡Añade algo!</button>}
-             </div>
+          <div className="text-center py-20 opacity-50 border-2 border-dashed rounded-xl">
+            <p>Esta colección está vacía.</p>
+            {isOwner && <button onClick={() => setIsAddItemOpen(true)} className="btn btn-link text-primary">¡Añade algo!</button>}
+          </div>
         ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
             {items.map((item) => (
-                <div key={item.id} className="group relative flex flex-col gap-2">
-                    <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-md">
-                        {/* Usamos ItemCover o img directa */}
-                        {item.cover ? (
-                            <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
-                        ) : (
-                             <ItemCover title={item.title} />
-                        )}
-
-                        <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isOwner ? (
-                            <button onClick={() => handleDelete(item.id)} className="btn btn-square btn-sm btn-error text-white border-none"><Trash2 size={16} /></button>
-                        ) : (
-                            <button onClick={() => setSelectedItemForSave(item)} className="btn btn-square btn-sm btn-white text-primary border-none"><Plus size={18} /></button>
-                        )}
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-sm leading-tight truncate pr-2 group-hover:text-primary transition-colors cursor-pointer" title={item.title}>{item.title}</h3>
-                        <p className="text-xs opacity-60 truncate">{item.author}</p>
-                    </div>
+              <div key={item.id} className="group relative flex flex-col gap-2">
+                <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-md">
+                  {item.cover ? (
+                    <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <ItemCover title={item.title} />
+                  )}
+                  <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {isOwner ? (
+                      <button onClick={() => handleDelete(item.id)} className="btn btn-square btn-sm btn-error text-white border-none"><Trash2 size={16} /></button>
+                    ) : (
+                      <button onClick={() => setSelectedItemForSave(item)} className="btn btn-square btn-sm btn-white text-primary border-none"><Plus size={18} /></button>
+                    )}
+                  </div>
                 </div>
+                <div>
+                  <h3 className="font-bold text-sm leading-tight truncate pr-2 group-hover:text-primary transition-colors cursor-pointer" title={item.title}>{item.title}</h3>
+                  <p className="text-xs opacity-60 truncate">{item.author}</p>
+                </div>
+              </div>
             ))}
-             {/* Tarjeta de añadir al final */}
             {isOwner && (
-                <div onClick={() => setIsAddItemOpen(true)} className="aspect-2/3 rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group">
+              <div onClick={() => setIsAddItemOpen(true)} className="aspect-2/3 rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group">
                 <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors"><Plus size={24} /></div>
                 <span className="text-xs font-bold uppercase mt-2 opacity-40 group-hover:opacity-100">Añadir</span>
-                </div>
+              </div>
             )}
-            </div>
+          </div>
         )}
       </main>
 
-      {/* MODALES */}
       <AddToCollectionModal isOpen={!!selectedItemForSave} item={selectedItemForSave} onClose={() => setSelectedItemForSave(null)} />
-      
-      {/* Pasar collection_id al modal para que sepa dónde guardar */}
       <AddItemModal 
         isOpen={isAddItemOpen} 
         onClose={() => setIsAddItemOpen(false)} 
         collectionType={collectionInfo.type} 
-        collectionId={collectionInfo.id} 
-        onAddItem={handleAddItemToState} 
+        onAddItem={handleAddItem} 
       />
-      
       <NavMobile />
     </div>
   );
