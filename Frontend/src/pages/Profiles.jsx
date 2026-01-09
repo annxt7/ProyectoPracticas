@@ -7,16 +7,20 @@ import {
   X,
   Camera,
   Plus,
+  Trash2, // 1. IMPORTAMOS EL ICONO
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import ItemCover from "../components/ItemCover"; // (Opcional) Si decides usar tu componente ItemCover aquí también
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
   const { user, updateUser } = useAuth();
   const { userId } = useParams();
+
+  // --- LÓGICA DE IDENTIDAD ---
   if (userId === "me" && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-100">
@@ -24,11 +28,15 @@ const Profile = () => {
       </div>
     );
   }
+
   const isMe = userId === "me" || !userId || String(userId) === String(user?.id);
   const targetId = isMe ? user?.id : userId;
+
   const [profileData, setProfileData] = useState(isMe ? user : null);
   const [collections, setCollections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Edición
   const avatarInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -39,13 +47,13 @@ const Profile = () => {
   const DEFAULT_BANNER = "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
   const getImg = (url, fallback) => (url ? url : fallback);
 
-
   useEffect(() => {
     if (isMe && user) {
       setProfileData(user);
       setNewDescription(user.bio || "");
     }
   }, [user, isMe]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!targetId) return;
@@ -53,9 +61,9 @@ const Profile = () => {
 
       try {
         const promises = [
-          // 1. Cargar colecciones (Coincide con tu collectionRoutes.js)
           api.get(`/collections/user/${targetId}`)
         ];
+
         if (!isMe) {
           promises.push(api.get(`/users/${targetId}`));
         }
@@ -63,14 +71,15 @@ const Profile = () => {
         const [collectionsRes, userRes] = await Promise.all(promises);
 
         setCollections(collectionsRes.data);
+
         if (!isMe && userRes) {
           const data = userRes.data;
           setProfileData({
             id: data.id,
             username: data.username,
             bio: data.bio,
-            avatar: data.avatar, 
-            banner: data.banner 
+            avatar: data.avatar,
+            banner: data.banner
           });
         }
       } catch (error) {
@@ -83,7 +92,7 @@ const Profile = () => {
     fetchData();
   }, [targetId, isMe]);
 
-
+  // --- HANDLERS ---
   const handleSaveBio = async (e) => {
     e.preventDefault();
     try {
@@ -115,19 +124,39 @@ const Profile = () => {
     }
   };
 
+  // 2. NUEVA FUNCIÓN PARA BORRAR COLECCIÓN
+  const handleDeleteCollection = async (e, collectionId) => {
+    // CRUCIAL: Detenemos la navegación del Link
+    e.preventDefault(); 
+    e.stopPropagation();
+
+    if (!window.confirm("¿Estás seguro de que quieres borrar esta colección?")) return;
+
+    try {
+      // Llamada a la API (ruta configurada previamente)
+      await api.delete(`/collections/${collectionId}`);
+      
+      // Actualizamos el estado local quitando la colección borrada
+      setCollections((prev) => prev.filter((c) => c.collection_id !== collectionId));
+    } catch (error) {
+      console.error("Error al borrar:", error);
+      alert("No se pudo borrar la colección");
+    }
+  };
+
   if (isLoading && !profileData) {
-      return (
-          <div className="min-h-screen flex items-center justify-center bg-base-100">
-             <span className="loading loading-spinner text-primary"></span>
-          </div>
-      )
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-100">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
       <main className="mx-auto">
-        
+
         {/* HEADER: Banner + Avatar */}
         <div className="relative h-40 md:h-80 w-full bg-neutral-900 overflow-hidden group">
           <img
@@ -136,7 +165,7 @@ const Profile = () => {
             alt="banner"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-          
+
           {/* Botón editar banner (Solo Yo) */}
           {isMe && isEditing && (
             <button
@@ -155,9 +184,8 @@ const Profile = () => {
               {/* Avatar */}
               <div
                 onClick={() => isMe && isEditing && !isUploading && avatarInputRef.current.click()}
-                className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${
-                  isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""
-                }`}
+                className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""
+                  }`}
               >
                 <div className="w-24 md:w-32 rounded-full overflow-hidden bg-base-200">
                   <img
@@ -191,16 +219,16 @@ const Profile = () => {
                   )}
                   <Link to="/settings">
                     <button className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40">
-                        <Settings size={18} />
+                      <Settings size={18} />
                     </button>
                   </Link>
                 </>
               ) : (
-                <button 
-                    className="btn btn-primary btn-sm rounded-full px-6 gap-2"
-                    onClick={() => console.log("Lógica de seguir pendiente")}
+                <button
+                  className="btn btn-primary btn-sm rounded-full px-6 gap-2"
+                  onClick={() => console.log("Lógica de seguir pendiente")}
                 >
-                    <UserPlus size={16} /> Seguir
+                  <UserPlus size={16} /> Seguir
                 </button>
               )}
             </div>
@@ -255,28 +283,24 @@ const Profile = () => {
         <div className="border-t border-white/10 mt-4 sticky top-16 bg-base-100/95 z-30 flex justify-center gap-12 backdrop-blur-md">
           <button
             onClick={() => setActiveTab("collections")}
-            className={`py-4 border-b-2 px-4 text-sm font-bold ${
-              activeTab === "collections" ? "border-primary text-primary" : "border-transparent opacity-50"
-            }`}
+            className={`py-4 border-b-2 px-4 text-sm font-bold ${activeTab === "collections" ? "border-primary text-primary" : "border-transparent opacity-50"
+              }`}
           >
             COLECCIONES
           </button>
-          {/* Solo mostramos GUARDADO si soy yo, usualmente es privado */}
           {isMe && (
             <button
-                onClick={() => setActiveTab("saved")}
-                className={`py-4 border-b-2 px-4 text-sm font-bold ${
-                activeTab === "saved" ? "border-primary text-primary" : "border-transparent opacity-50"
+              onClick={() => setActiveTab("saved")}
+              className={`py-4 border-b-2 px-4 text-sm font-bold ${activeTab === "saved" ? "border-primary text-primary" : "border-transparent opacity-50"
                 }`}
             >
-                GUARDADO
+              GUARDADO
             </button>
           )}
         </div>
 
         {/* GRID DE COLECCIONES */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 min-h-[300px] max-w-6xl mx-auto">
-          {/* Tarjeta de "Nueva Colección" solo si soy yo */}
           {isMe && activeTab === "collections" && (
             <Link
               to="/create-collection"
@@ -287,13 +311,13 @@ const Profile = () => {
             </Link>
           )}
 
-          {/* Listado de Colecciones */}
           {activeTab === "collections" && collections.map((col) => (
             <Link
               to={`/collection/${col.collection_id}`}
               key={col.collection_id}
               className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform cursor-pointer group"
             >
+              {/* OJO: Aquí podrías usar <ItemCover src={col.cover_url} title={col.collection_name} /> si quisieras usar el componente que arreglamos antes */}
               <img
                 src={col.cover_url || `https://ui-avatars.com/api/?name=${col.collection_name}&background=random`}
                 className="w-full h-full object-cover"
@@ -303,12 +327,20 @@ const Profile = () => {
                 <h3 className="text-white font-bold leading-tight">{col.collection_name}</h3>
                 <p className="text-white/70 text-xs mt-1 capitalize">{col.collection_type}</p>
               </div>
+
+              {isMe && (
+                <button
+                  onClick={(e) => handleDeleteCollection(e, col.collection_id)}
+                  className="btn btn-square btn-sm btn-error text-white border-none"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
             </Link>
           ))}
-          
-          {/* Mensaje vacío */}
+
           {activeTab === "collections" && collections.length === 0 && !isMe && (
-               <div className="col-span-full text-center py-10 opacity-40">Este usuario no tiene colecciones públicas.</div>
+            <div className="col-span-full text-center py-10 opacity-40">Este usuario no tiene colecciones públicas.</div>
           )}
         </div>
       </main>

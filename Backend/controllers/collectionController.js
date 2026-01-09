@@ -1,6 +1,6 @@
 const db = require("../config/dbconect");
 
-// 1. Crear una colección nueva
+// Crear una colección nueva
 exports.createCollection = async (req, res) => {
   console.log("--- INTENTO DE CREAR COLECCIÓN ---");
   
@@ -52,7 +52,7 @@ exports.createCollection = async (req, res) => {
   }
 };
 
-// 2. Obtener todas las colecciones de un usuario (para el perfil)
+// Obtener todas las colecciones de un usuario (para el perfil)
 exports.getUserCollections = async (req, res) => {
     const { userId } = req.params;
     try {
@@ -65,7 +65,7 @@ exports.getUserCollections = async (req, res) => {
     }
 };
 
-// 3. Ver el detalle de una colección 
+// Ver el detalle de una colección 
 exports.getCollectionDetails = async (req, res) => {
     const { id } = req.params; 
 
@@ -118,7 +118,7 @@ exports.getCollectionDetails = async (req, res) => {
     }
 };
 
-// 4. Añadir un item a la colección
+// Añadir un item a la colección
 exports.addItemToCollection = async (req, res) => {
   const { collection_id } = req.params;
   const { 
@@ -164,7 +164,7 @@ exports.addItemToCollection = async (req, res) => {
   }
 };
 
-// 5. Borrar un item
+//  Borrar un item
 exports.deleteItem = async (req, res) => {
     const { itemId } = req.params;
 
@@ -182,8 +182,26 @@ exports.deleteItem = async (req, res) => {
         res.status(500).json({ error: "Error de base de datos al borrar" });
     }
 };
+// Borrar una colección
+exports.deleteCollection = async (req, res) => {
+    const { collectionId } = req.params;
+    const userId = req.user.id;
 
-// 6. Actualizar una colección existente
+    try {
+        const [result] = await db.query("DELETE FROM Collections WHERE collection_id = ? AND user_id = ?", [collectionId, userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Colección no encontrada" });
+        }
+
+        res.json({ success: true, message: "Colección eliminada correctamente" });
+
+    } catch (error) {
+        console.error("Error borrando colección:", error);
+        res.status(500).json({ error: "Error de base de datos al borrar" });
+    }
+};
+
+// Actualizar una colección existente
 exports.updateCollection = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id; 
@@ -192,8 +210,7 @@ exports.updateCollection = async (req, res) => {
     console.log(`--- ACTUALIZANDO COLECCIÓN ${id} ---`);
 
     try {
-        // Preparamos la query dinámica
-        // Solo actualizamos lo que nos envíen
+    
         const sql = `
             UPDATE Collections 
             SET 
