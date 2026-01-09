@@ -4,8 +4,7 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const router = express.Router();
-import { verifyToken } from '../middlewares/authMiddleware';
-
+const { verifyToken } = require("../middlewares/authMiddleware");
 //Configuracion
 
 const storage = new CloudinaryStorage({
