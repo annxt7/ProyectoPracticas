@@ -325,8 +325,7 @@ const CollectionPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
             {items.map((item) => (
               <div key={item.id} className="group relative flex flex-col gap-2">
-                <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-md">
-                  {/* CAMBIO 3: Usar ItemCover también aquí para el Grid */}
+                <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-md">
                   <ItemCover 
                     src={item.cover} 
                     title={item.title} 
@@ -349,7 +348,7 @@ const CollectionPage = () => {
             ))}
             
             {isOwner && (
-              <div onClick={() => setIsAddItemOpen(true)} className="aspect-[2/3] rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group">
+              <div onClick={() => setIsAddItemOpen(true)} className="aspect-2/3 rounded-xl border-2 border-dashed border-white/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-base-200/50 transition-all group">
                 <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors"><Plus size={24} /></div>
                 <span className="text-xs font-bold uppercase mt-2 opacity-40 group-hover:opacity-100">Añadir</span>
               </div>

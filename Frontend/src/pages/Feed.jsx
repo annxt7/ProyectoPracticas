@@ -1,76 +1,58 @@
 import React, { useState, useEffect } from "react";
-import {
-  Heart,
-  MoreHorizontal,
-} from "lucide-react";
+import { Heart, MoreHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
+import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
 import NavDesktop from "../components/NavDesktop.jsx";
-import NavMobile from "../components/NavMobile.jsx";  
+import NavMobile from "../components/NavMobile.jsx";
+import api from "../services/api.js";
 
 const Feed = () => {
-  // --- NUEVA LÓGICA PARA SUGERENCIAS ---
   const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  // Helper para calcular "Hace cuanto tiempo"
+  function timeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " a";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " mes";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " d";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " h";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " min";
+    return "Ahora";
+  }
+  //FEED DE ACTIVIDAD
   useEffect(() => {
-  const fetchSuggestions = async () => {
-    try {
-      // Usamos la misma lógica que te funcionó en Explorer
-      const baseUrl = window.location.hostname === "localhost" 
-        ? "http://localhost:3000" 
-        : "https://axel.informaticamajada.es";
+    const fetchFeedData = async () => {
+      setLoading(true);
+      try {
+        //Actividad del feed
+        const activityRes = await api.get("/users/feed/activity");
+        setActivities(activityRes.data);
+        // Usuarios sugeridos
+        const suggestionsRes = await api.get("/search/suggested");
+        setSuggestedUsers(suggestionsRes.data);
+      } catch (error) {
+        console.error("Error cargando feed:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      const response = await fetch(`${baseUrl}/api/search/suggested`);
-      const data = await response.json();
-      setSuggestedUsers(data);
-    } catch (error) {
-      console.error("Error cargando sugerencias:", error);
-    }
-  };
-  fetchSuggestions();
-}, []);
-  // ---------------------------------------
-
-  const activities = [
-    {
-      id: 1,
-      user: "wencesalao",
-      avatar: "https://img.freepik.com/foto-gratis/hombre-sonriente-pulgar-arriba_1187-5818.jpg?semt=ais_hybrid&w=740&q=80",
-      action: "añadió a la colección",
-      target: "Vinilos 80s",
-      image: "https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&q=80&w=600",
-      title: "Pink Floyd - The Wall",
-      likes: 24,
-      comments: 3,
-      time: "2h",
-    },
-    {
-      id: 2,
-      user: "xxx_gumersindo_xxx",
-      avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=100",
-      action: "creó una nueva colección",
-      target: "Cámaras Analógicas",
-      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600",
-      title: "Canon AE-1 Program",
-      likes: 156,
-      comments: 12,
-      time: "5h",
-    },
-    {
-      id: 3,
-      user: "sormariahfernandha",
-      avatar: "https://st2.depositphotos.com/3889193/6856/i/450/depositphotos_68565683-stock-photo-cheerful-woman-with-raised-fists.jpg",
-      action: "guardó un elemento",
-      target: "Lecturas 2024",
-      image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600",
-      title: "1984 - George Orwell",
-      likes: 42,
-      comments: 8,
-      time: "1d",
-    },
-  ];
+    fetchFeedData();
+  }, []);
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content">
+    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
         {/* COLUMNA IZQUIERDA (FEED) */}
@@ -79,87 +61,133 @@ const Feed = () => {
             <h1 className="text-2xl font-bold font-serif">Tu Feed</h1>
           </div>
 
-          {activities.map((item) => (
-            <div
-              key={item.id}
-              className="card border-b bg-base-100 border-white/40 md:border md:rounded-2xl md:shadow-sm overflow-hidden"
-            >
-              <div className="p-4 flex items-center justify-between ">
-                <div className="flex items-center gap-3">
-                  <div className="avatar">
-                    <div className="w-10 h-10 rounded-full ring ring-base-200 ring-offset-1 ">
-                      <img src={item.avatar} alt={item.user} />
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <span className="loading loading-spinner loading-lg"></span>
+            </div>
+          ) : activities.length === 0 ? (
+            <div className="text-center py-10 opacity-50">
+              No hay actividad reciente. ¡Sigue a alguien!
+            </div>
+          ) : (
+            activities.map((item) => (
+              <div
+                key={`${item.action_type}-${item.collection_id}`}
+                className="card border-b bg-base-100 border-white/5 md:border md:rounded-2xl md:shadow-sm overflow-hidden"
+              >
+                {/* CABECERA DEL POST */}
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Link
+                      to={`/profile/${item.user_id}`}
+                      className="avatar cursor-pointer"
+                    >
+                      <div className="w-10 h-10 rounded-full ring ring-base-200 ring-offset-1">
+                        <img
+                          src={
+                            item.avatar_url ||
+                            `https://ui-avatars.com/api/?name=${item.username}&background=random`
+                          }
+                          alt={item.username}
+                        />
+                      </div>
+                    </Link>
+                    <div className="text-sm">
+                      <p className="font-semibold leading-none">
+                        <Link
+                          to={`/profile/${item.user_id}`}
+                          className="hover:underline"
+                        >
+                          {item.username}
+                        </Link>{" "}
+                        <span className="font-normal opacity-70">
+                          {item.action_type === "created"
+                            ? "creó una colección"
+                            : "actividad sugerida"}
+                        </span>
+                      </p>
+                      <p className="text-xs font-bold mt-0.5 opacity-80 capitalize">
+                        {item.collection_type}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-sm">
-                    <p className="font-semibold leading-none">
-                      {item.user}{" "}
-                      <span className="font-normal opacity-70">
-                        {item.action}
-                      </span>
-                    </p>
-                    <p className="text-xs font-bold mt-0.5 opacity-80">
-                      {item.target}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs opacity-50">
+                      {timeAgo(item.created_at)}
+                    </span>
+                    <button className="btn btn-ghost btn-circle btn-xs">
+                      <MoreHorizontal size={16} />
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs opacity-50">{item.time}</span>
-                  <button className="btn btn-ghost btn-circle btn-xs">
-                    <MoreHorizontal size={16} />
-                  </button>
-                </div>
-              </div>
 
-              <div className="relative aspect-4/3 bg-base-200 w-full overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
-                  {item.title}
-                </div>
-                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
-                  <button className="flex items-center gap-1 group">
-                    <Heart
-                      size={24}
-                      className="group-hover:text-red-500 transition-colors"
+                {/* IMAGEN / CONTENIDO */}
+                <Link to={`/collection/${item.collection_id}`}>
+                  <div className="relative aspect-[4/3] bg-base-200 w-full overflow-hidden cursor-pointer group">
+                    <ItemCover
+                      src={item.cover_url}
+                      title={item.collection_name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                  </button>
-                </div>
-              </div>
 
-              <div className="p-4 ">
-                <div className="text-sm font-semibold opacity-50">
-                  {item.likes} me gusta
+                    <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
+                      {item.collection_name}
+                    </div>
+
+                    {/* Botón Like Flotante */}
+                    <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
+                      <button
+                        className="flex items-center gap-1 group/btn"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          console.log("Like!");
+                        }}
+                      >
+                        <Heart
+                          size={20}
+                          className="group-hover/btn:text-red-500 transition-colors"
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </Link>
+
+                {/* PIE DEL POST */}
+                <div className="p-4 flex gap-4">
+                  <div className="text-sm font-semibold opacity-70 hover:opacity-100 cursor-pointer transition-opacity">
+                    Me gusta
+                  </div>
+                 
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* COLUMNA DERECHA (SUGERIDOS) */}
-        <div className="hidden md:block col-span-1 ">
+        <div className="hidden md:block col-span-1">
           <div className="sticky top-24 space-y-6">
-            <div className="border border-white/40 bg-base-200/50 rounded-2xl p-5 ">
+            <div className="border border-white/5 bg-base-200/50 rounded-2xl p-5">
               <h3 className="font-bold font-serif text-lg mb-4 text-primary">
                 Tribers Sugeridos
               </h3>
               <div className="space-y-4">
-                {/* Ahora mapeamos sobre los usuarios reales de la DB */}
                 {suggestedUsers.length > 0 ? (
                   suggestedUsers.map((user) => (
-                    <MiniUserCard 
-                      key={user.id} 
-                      user={user} // Pasamos el objeto 'user' completo
+                    <MiniUserCard
+                      key={user.userId} // Asegúrate que tu backend devuelve userId o id
+                      user={{
+                        id: user.userId, // Adaptamos si tu backend devuelve userId
+                        name: user.username,
+                        handle: "@" + user.username,
+                        img: user.avatar,
+                        isFollowing: false, // Por defecto en sugerencias
+                      }}
                     />
                   ))
                 ) : (
-                  // Placeholder mientras carga o si no hay sugerencias
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-10 bg-white/10 rounded-full w-full"></div>
-                    <div className="h-10 bg-white/10 rounded-full w-full"></div>
+                  <div className="opacity-50 text-sm">
+                    No hay sugerencias por ahora.
                   </div>
                 )}
               </div>

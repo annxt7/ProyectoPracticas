@@ -14,6 +14,7 @@ import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import ItemCover from "../components/ItemCover"; 
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");

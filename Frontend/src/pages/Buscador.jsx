@@ -3,6 +3,7 @@ import { Search, X, TrendingUp, Hash, Sparkles } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom"; // CORRECCIÓN 1: Usar react-router-dom
+import ItemCover from "../components/ItemCover";
 
 const Explorer = () => {
   const [query, setQuery] = useState("");
@@ -193,16 +194,11 @@ const Explorer = () => {
                   <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
                     <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
                       <div className="aspect-video overflow-hidden bg-white/5">
-                        <img
-                          src={col.cover || "https://via.placeholder.com/400"}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          alt=""
-                        />
+                        <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
                       </div>
                       <div className="p-4">
                         <h3 className="font-bold text-white text-lg">{col.title}</h3>
                         <div className="flex items-center justify-between mt-4">
-                          <span className="text-[10px] opacity-40 uppercase tracking-widest">{col.items} objetos</span>
                           <span className="text-xs font-medium text-primary">{col.author}</span>
                         </div>
                       </div>
