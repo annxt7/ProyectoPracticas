@@ -13,14 +13,13 @@ import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import ItemCover from "../components/ItemCover"; // (Opcional) Si decides usar tu componente ItemCover aquí también
+import ItemCover from "../components/ItemCover"; 
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
   const { user, updateUser } = useAuth();
   const { userId } = useParams();
 
-  // --- LÓGICA DE IDENTIDAD ---
   if (userId === "me" && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-100">

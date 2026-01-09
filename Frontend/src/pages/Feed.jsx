@@ -6,6 +6,8 @@ import {
 import MiniUserCard from "../components/MiniUserCard.jsx";
 import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";  
+import api from "../services/api.js";
+import {useAuth} from "../contexts/AuthContext.jsx";
 
 const Feed = () => {
   // --- NUEVA LÓGICA PARA SUGERENCIAS ---
@@ -14,12 +16,11 @@ const Feed = () => {
   useEffect(() => {
   const fetchSuggestions = async () => {
     try {
-      // Usamos la misma lógica que te funcionó en Explorer
-      const baseUrl = window.location.hostname === "localhost" 
-        ? "http://localhost:3000" 
-        : "https://axel.informaticamajada.es";
+      // const baseUrl = window.location.hostname === "localhost" 
+      //   ? "http://localhost:3000" 
+      //   : "https://axel.informaticamajada.es";
 
-      const response = await fetch(`${baseUrl}/api/search/suggested`);
+      const response = await api.get(`${baseUrl}/suggestions`);
       const data = await response.json();
       setSuggestedUsers(data);
     } catch (error) {
@@ -28,8 +29,6 @@ const Feed = () => {
   };
   fetchSuggestions();
 }, []);
-  // ---------------------------------------
-
   const activities = [
     {
       id: 1,
