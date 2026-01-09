@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Heart, MoreHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
+import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
 import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
@@ -155,7 +157,7 @@ const Feed = () => {
                   <div className="text-sm font-semibold opacity-70 hover:opacity-100 cursor-pointer transition-opacity">
                     Me gusta
                   </div>
-                  {/* Puedes añadir lógica de comentarios aquí en el futuro */}
+                 
                 </div>
               </div>
             ))
