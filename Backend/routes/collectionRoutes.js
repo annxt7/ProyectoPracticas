@@ -7,6 +7,7 @@ const { verifyToken } = require("../middlewares/authMiddleware");
 router.post("/", verifyToken, collectionController.createCollection);
 router.post("/:collection_id/items", verifyToken, collectionController.addItemToCollection);
 router.delete("/items/:itemId", verifyToken, collectionController.deleteItem);
+router.delete("/:collectionId", verifyToken, collectionController.deleteCollection);
 
 //PUT
 router.put("/:id", verifyToken, collectionController.updateCollection);
