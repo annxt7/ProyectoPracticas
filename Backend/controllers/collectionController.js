@@ -65,7 +65,7 @@ exports.getUserCollections = async (req, res) => {
     }
 };
 
-// 3. Ver el detalle de una colección (y sus items)
+// 3. Ver el detalle de una colección 
 exports.getCollectionDetails = async (req, res) => {
     const { id } = req.params; 
 
@@ -101,8 +101,6 @@ exports.getCollectionDetails = async (req, res) => {
                 COALESCE(i.custom_subtitle, m.artist, b.author, mov.director, g.developer, 'Varios') AS display_subtitle,
                 
                 COALESCE(i.custom_image, m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image,
-                
-                i.created_at
 
             FROM Items i
             LEFT JOIN Catalog_Music m ON i.music_id = m.music_id
