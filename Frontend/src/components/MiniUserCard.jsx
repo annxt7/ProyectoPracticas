@@ -21,7 +21,7 @@ const MiniUserCard = ({ user }) => {
           <p className="text-xs opacity-60">{user.handle || "Nuevo en Tribe"}</p>
         </div>
       </div>
-      <button className="text-primary text-xs font-bold hover:underline">
+      <button className="btn-primary btn btn-xs rounded-full px-4">
         Seguir
       </button>
     </div>
