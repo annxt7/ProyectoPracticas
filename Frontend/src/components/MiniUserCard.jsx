@@ -1,30 +1,57 @@
-import React from 'react';  
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 const MiniUserCard = ({ user }) => {
-  // Si por alguna razón user no llega, no renderizamos nada para evitar errores
   if (!user) return null;
 
+  const handleFollow = (e) => {
+    // Evitamos que el clic en el botón active el Link del perfil
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Siguiendo a:", user.name);
+    // Aquí irá tu lógica de fetch para el follow
+  };
+
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="avatar">
-          <div className="w-9 h-9 rounded-full ring-1 ring-white/10">
-            {/* Usamos la imagen de la DB o un avatar por defecto si no tiene */}
-            <img 
-              src={user.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`} 
-              alt={user.name} 
-            />
+    <Link to={`/profile/${user.id}`} className="block group">
+      <div className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
+        <div className="flex items-center gap-3 min-w-0">
+          {/* AVATAR */}
+          <div className="avatar">
+            <div className="w-10 h-10 rounded-full ring-2 ring-white/5 bg-white/10 overflow-hidden">
+              <img 
+                src={user.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`} 
+                alt={user.name} 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }}
+              />
+            </div>
+          </div>
+
+          {/* TEXTO */}
+          <div className="min-w-0">
+            <h3 className="font-bold text-sm text-white truncate group-hover:text-primary transition-colors">
+              {user.name}
+            </h3>
+            <p className="text-[10px] opacity-40 leading-none">
+              {user.handle || `@${user.name.toLowerCase().replace(/\s/g, '')}`}
+            </p>
           </div>
         </div>
-        <div className="text-sm">
-          <p className="font-bold">{user.name}</p>
-          <p className="text-xs opacity-60">{user.handle || "Nuevo en Tribe"}</p>
-        </div>
+
+        {/* BOTÓN DE ACCIÓN */}
+        <button 
+          onClick={handleFollow}
+          className={`btn btn-xs rounded-full px-4 transition-all z-10 ${
+            user.isFollowing 
+              ? 'btn-ghost border-white/10 opacity-60' 
+              : 'btn-primary font-bold'
+          }`}
+        >
+          {user.isFollowing ? 'Siguiendo' : 'Seguir'}
+        </button>
       </div>
-      <button className="btn-primary btn btn-xs rounded-full px-4">
-        Seguir
-      </button>
-    </div>
+    </Link>
   );
 };
 

@@ -210,7 +210,7 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
                             <span className="badge badge-xs badge-ghost font-normal px-1">{item.type}</span>
                         )}
                         <span className="truncate">
-                             {item.subtitle} {item.year && `• ${item.year}`}
+                            {item.subtitle} {item.year && `• ${item.year}`}
                         </span>
                       </div>
                     </div>
