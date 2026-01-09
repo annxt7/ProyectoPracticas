@@ -48,10 +48,11 @@ exports.createUser = async (req, res) => {
     res.status(201).json({
       success: true,
       token,
-      userId: result.insertId, // ESTÁNDAR: userId
+      userId: result.insertId, 
       username,
-      avatar: null,            // ESTÁNDAR: avatar
-      banner: DEFAULT_BANNER   // ESTÁNDAR: banner
+      avatar: null,            
+      banner: DEFAULT_BANNER  ,
+      bio: 'Hola! Soy nuevo en Tribe.'
     });
   } catch (error) {
     console.error("Error createUser:", error);
@@ -120,10 +121,10 @@ exports.googleLogin = async (req, res) => {
       token: appToken,
       isNewUser,
       user: {
-        userId: user.user_id,      // ESTÁNDAR
+        userId: user.user_id,      
         username: user.username,
-        avatar: user.avatar_url,   // ESTÁNDAR
-        banner: user.banner_url,   // ESTÁNDAR
+        avatar: user.avatar_url,   
+        banner: user.banner_url,  
         bio: user.bio,
         email: user.email
       }
@@ -134,7 +135,7 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
-// PUT: Update Profile (Normalizado)
+// PUT: Update Profile 
 exports.updateProfile = async (req, res) => {
   if (!req.user || !req.user.id) return res.status(401).json({ error: "No autorizado" });
   
@@ -152,14 +153,12 @@ exports.updateProfile = async (req, res) => {
 
     values.push(userId);
     await db.query(`UPDATE Users SET ${fields.join(", ")} WHERE user_id = ?`, values);
-
-    // Devolvemos nombres ESTÁNDAR al front
     res.json({ 
       success: true, 
       user: { 
         bio, 
-        avatar: avatarUrl, // Devolvemos 'avatar', no avatarUrl
-        banner: bannerUrl  // Devolvemos 'banner', no bannerUrl
+        avatar: avatarUrl, 
+        banner: bannerUrl  
       } 
     });
   } catch (error) {
@@ -190,7 +189,7 @@ exports.getUserFeed = async (req, res) => {
     }
 };
 
-// GET: Colecciones
+// GET: Colecciones del usuario
 exports.getUserCollections = async (req, res) => {
     const userId = req.params.userId || req.user.id;
     try {

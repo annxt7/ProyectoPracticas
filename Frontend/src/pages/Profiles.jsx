@@ -49,15 +49,13 @@ const Profile = () => {
   const DEFAULT_BANNER = "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
   const getImg = (url, fallback) => (url ? url : fallback);
 
-  // Sincronizar datos si soy yo (para que se actualice al editar)
+
   useEffect(() => {
     if (isMe && user) {
       setProfileData(user);
       setNewDescription(user.bio || "");
     }
   }, [user, isMe]);
-
-  // --- 2. CARGAR DATOS DEL PERFIL Y COLECCIONES ---
   useEffect(() => {
     const fetchData = async () => {
       if (!targetId) return;
@@ -76,18 +74,15 @@ const Profile = () => {
 
         const [collectionsRes, userRes] = await Promise.all(promises);
 
-        // Guardamos colecciones
         setCollections(collectionsRes.data);
-
-        // Si es otro usuario, guardamos sus datos en el estado local
         if (!isMe && userRes) {
           const data = userRes.data;
           setProfileData({
             id: data.id,
             username: data.username,
             bio: data.bio,
-            avatar: data.avatar, // Tu backend ya devuelve "avatar" (renombrado desde avatar_url)
-            banner: data.banner  // Tu backend ya devuelve "banner" (renombrado desde banner_url)
+            avatar: data.avatar, 
+            banner: data.banner 
           });
         }
       } catch (error) {
