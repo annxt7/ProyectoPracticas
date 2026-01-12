@@ -309,36 +309,43 @@ exports.getActivityFeed = async (req, res) => {
 };
 
 exports.changePassword = async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-    const userId = req.user.id || req.user.user_id;
-
     try {
-        // Verificamos si db ya tiene la función execute (promisified) o necesita .promise()
-        const connection = db.promise ? db.promise() : db;
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id || req.user.user_id;
 
-        // Buscamos con los nombres de columna confirmados: user_id y password_hash
-        const [rows] = await connection.execute(
+        // Detectar si db usa promesas directamente o requiere .promise()
+        const pool = typeof db.promise === 'function' ? db.promise() : db;
+
+        // Consulta con nombres confirmados del servidor
+        const [rows] = await pool.execute(
             "SELECT password_hash FROM users WHERE user_id = ?", 
             [userId]
         );
-        
-        const user = rows[0];
-        if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-        const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
-        if (!isMatch) return res.status(401).json({ message: "La contraseña actual es incorrecta" });
+        if (!rows.length) {
+            return res.status(404).json({ error: "Usuario no encontrado en producción" });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, rows[0].password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ error: "Contraseña actual incorrecta" });
+        }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        await connection.execute(
+        await pool.execute(
             "UPDATE users SET password_hash = ? WHERE user_id = ?", 
             [hashedPassword, userId]
         );
 
-        res.status(200).json({ message: "¡Contraseña actualizada!" });
-    } catch (error) {
-        console.error("Error en Producción:", error);
-        res.status(500).json({ message: "Error interno del servidor", details: error.message });
+        res.json({ message: "Éxito: Contraseña actualizada en el servidor" });
+    } catch (err) {
+        // Esto enviará el error real al frontend para que puedas leerlo en la consola del navegador
+        res.status(500).json({ 
+            error: "Error en el servidor", 
+            message: err.message,
+            code: err.code 
+        });
     }
 };
