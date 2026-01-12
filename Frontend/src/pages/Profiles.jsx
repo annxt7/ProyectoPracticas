@@ -53,23 +53,36 @@ const Profile = () => {
       setNewDescription(user.bio || "");
     }
   }, [user, isMe]);
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       if (!targetId) return;
       setIsLoading(true);
       try {
-        const promises = [api.get(`/collections/user/${targetId}`)];
+        const collectionsPromise = api.get(`/collections/user/${targetId}`);
+        let userPromise = null;
+        let savedPromise = null;
+
         if (!isMe) {
-          promises.push(api.get(`/users/${targetId}`));
-        }else if(isMe){
-          promises.push(api.get(`/collections/saved/${targetId}`));
+          userPromise = api.get(`/users/${targetId}`);
+        } else {
+          savedPromise = api.get(`/collections/saved/${targetId}`);
         }
-        const [collectionsRes, userRes, savedCollectionsRes] = await Promise.all(promises);
-        setCollections(collectionsRes.data);
-        setSavedCollections(savedCollectionsRes.data);
-        if (!isMe && userRes) {
-          setProfileData(userRes.data);
+        const [colRes, uRes, sRes] = await Promise.all([
+          collectionsPromise,
+          userPromise,
+          savedPromise
+        ]);
+
+        setCollections(colRes.data);
+        if (uRes) {
+          setProfileData(uRes.data);
         }
+        if (sRes) {
+          setSavedCollections(sRes.data);
+        } else {
+          setSavedCollections([]); 
+        }
+
       } catch (error) {
         console.error("Error cargando perfil:", error);
       } finally {
