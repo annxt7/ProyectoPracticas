@@ -307,3 +307,51 @@ exports.getActivityFeed = async (req, res) => {
         res.status(500).json({ error: "Error cargando el feed" });
     }
 };
+
+exports.changePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    
+    // Extraemos el ID del token. 
+    // Importante: Verifica que tu JWT use 'id' o 'user_id'
+    const userId = req.user.id || req.user.user_id; 
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Ambos campos son obligatorios" });
+    }
+
+    try {
+        // 1. Usamos 'user_id' y 'password_hash' que son tus nombres reales
+        const [rows] = await db.execute(
+            "SELECT password_hash FROM users WHERE user_id = ?", 
+            [userId]
+        );
+        const user = rows[0];
+
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        // 2. Comparamos con la columna correcta
+        const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+        
+        if (!isMatch) {
+            return res.status(401).json({ message: "La contraseña actual es incorrecta" });
+        }
+
+        // 3. Hasheamos la nueva clave
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // 4. Actualizamos usando user_id
+        await db.execute(
+            "UPDATE users SET password_hash = ? WHERE user_id = ?", 
+            [hashedPassword, userId]
+        );
+
+        return res.status(200).json({ message: "¡Contraseña actualizada con éxito!" });
+
+    } catch (error) {
+        console.error("Error en servidor producción:", error);
+        return res.status(500).json({ message: "Error interno del servidor" });
+    }
+};
