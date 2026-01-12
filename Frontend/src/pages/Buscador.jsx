@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, X, TrendingUp, Hash, Sparkles } from "lucide-react"; // Corregido
+import { Search, X, TrendingUp, Hash, Sparkles } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom";
@@ -12,7 +12,6 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 1. Obtener mi ID de forma segura (LocalStorage o JWT)
   const getMyId = () => {
     try {
       const stored = localStorage.getItem('user');
@@ -55,20 +54,22 @@ const Explorer = () => {
         if (!res.ok) throw new Error("Error en la respuesta del servidor");
         
         const data = await res.json();
+        
+        // Identificamos quién soy yo (Prioridad: lo que diga el server, si no, local)
         const currentMe = String(data.currentUserId || myId || "").trim();
 
-        // --- FILTRADO DE USUARIOS ---
+        // FILTRAR USUARIOS
         const allUsers = Array.isArray(data.users) ? data.users : [];
         const filteredUsers = allUsers.filter((u) => {
-          const userIdInList = String(u.id || u.user_id || "").trim();
-          return userIdInList !== currentMe;
+          const uId = String(u.id || u.user_id || "").trim();
+          return uId !== currentMe;
         });
 
-        // --- FILTRADO DE COLECCIONES (Excluimos las que sean del usuario logueado) ---
+        // FILTRAR COLECCIONES (Ocultar las mías)
         const allCollections = Array.isArray(data.collections) ? data.collections : [];
         const filteredCollections = allCollections.filter((col) => {
-          // Comprobamos el ID del autor de la colección
-          const authorId = String(col.user_id || col.author_id || "").trim();
+          // Intentamos encontrar el ID del autor en cualquier campo posible
+          const authorId = String(col.user_id || col.author_id || col.owner_id || col.userId || "").trim();
           return authorId !== currentMe;
         });
 
@@ -90,7 +91,6 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER DE BÚSQUEDA */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -103,10 +103,7 @@ const Explorer = () => {
               className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-10 focus:ring-2 ring-primary/50 focus:outline-none text-white transition-all"
             />
             {query && (
-              <button
-                onClick={() => setQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100"
-              >
+              <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100">
                 <X size={18} />
               </button>
             )}
@@ -122,19 +119,14 @@ const Explorer = () => {
                 }`}
               >
                 {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />
-                )}
+                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* LAYOUT PRINCIPAL */}
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-10">
-        
-        {/* SIDEBAR IZQUIERDA */}
         <aside className="hidden lg:block">
           <div className="sticky top-48 space-y-8">
             <div>
@@ -152,11 +144,8 @@ const Explorer = () => {
           </div>
         </aside>
 
-        {/* CONTENIDO PRINCIPAL */}
         <main>
-          {loading && (
-            <div className="text-center py-4 opacity-50 text-xs">Buscando...</div>
-          )}
+          {loading && <div className="text-center py-4 opacity-50 text-xs">Buscando...</div>}
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -203,9 +192,7 @@ const Explorer = () => {
                       </div>
                       <div className="p-4">
                         <h3 className="font-bold text-white text-lg">{col.title}</h3>
-                        <div className="flex items-center justify-between mt-4">
-                          <span className="text-xs font-medium text-primary">{col.author}</span>
-                        </div>
+                        <span className="text-xs font-medium text-primary">{col.author}</span>
                       </div>
                     </div>
                   </Link>
@@ -217,16 +204,13 @@ const Explorer = () => {
           )}
         </main>
 
-        {/* SIDEBAR DERECHA */}
         <aside className="hidden lg:block">
           <div className="sticky top-48">
             <div className="p-6 rounded-[2rem] bg-gradient-to-b from-primary/10 to-transparent border border-primary/10">
               <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-4 flex items-center gap-2 text-primary">
                 <Sparkles size={12} /> Recomendado
               </h4>
-              <p className="text-xs opacity-60 mb-6 leading-relaxed">
-                Descubre nuevas tribus basadas en tus gustos.
-              </p>
+              <p className="text-xs opacity-60 mb-6 leading-relaxed">Descubre nuevas tribus basadas en tus gustos.</p>
             </div>
           </div>
         </aside>
