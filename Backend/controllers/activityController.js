@@ -2,7 +2,7 @@ const db = require('../config/dbconect');
 
 const getNotifications = async (req, res) => {
   try {
-    const userId = req.user.id; // Viene del token
+    const userId = req.user.id; // Extraído del verifyToken
 
     const [rows] = await db.execute(`
       SELECT 
@@ -16,7 +16,6 @@ const getNotifications = async (req, res) => {
       ORDER BY n.created_at DESC
     `, [userId]);
     
-    // Formateo para que el Frontend reciba lo que espera
     const formatted = rows.map(row => ({
       id: row.id,
       type: row.type,
@@ -35,8 +34,8 @@ const getNotifications = async (req, res) => {
 
     res.json(formatted);
   } catch (error) {
-    console.error("Error en DB:", error.message);
-    res.status(500).json({ error: "Error interno del servidor al cargar actividad" });
+    console.error("Error en ActivityController:", error);
+    res.status(500).json({ error: "No se pudo cargar la actividad" });
   }
 };
 
@@ -58,8 +57,4 @@ const markAsRead = async (req, res) => {
   }
 };
 
-module.exports = {
-  getNotifications,
-  markAllAsRead,
-  markAsRead
-};
+module.exports = { getNotifications, markAllAsRead, markAsRead };
