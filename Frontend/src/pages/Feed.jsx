@@ -7,7 +7,7 @@ import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
-import { on } from "../../../Backend/config/dbconect.js";
+
 
 const Feed = () => {
   const [suggestedUsers, setSuggestedUsers] = useState([]);
