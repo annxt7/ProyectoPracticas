@@ -2,7 +2,7 @@ const db = require('../config/dbconect');
 
 const getNotifications = async (req, res) => {
   try {
-    const userId = req.user.id; // Extraído del verifyToken
+    const userId = req.user.id; 
 
     const [rows] = await db.execute(`
       SELECT 

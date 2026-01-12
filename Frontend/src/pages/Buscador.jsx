@@ -4,7 +4,7 @@ import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom";
 import ItemCover from "../components/ItemCover";
-import api from "../services/api";
+import api from "../services/api"; // ahora solo import
 import { useAuth } from "../context/AuthContext";
 
 const Explorer = () => {
@@ -17,9 +17,6 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  /* ======================
-     MIS SEGUIDOS
-  ====================== */
   useEffect(() => {
     if (!user?.id) return;
 
@@ -35,9 +32,6 @@ const Explorer = () => {
     fetchMyFollowing();
   }, [user?.id]);
 
-  /* ======================
-     FOLLOW / UNFOLLOW
-  ====================== */
   const handleFollowToggle = async (targetId, isFollowing) => {
     try {
       if (isFollowing) {
@@ -52,49 +46,37 @@ const Explorer = () => {
     }
   };
 
-  /* ======================
-     BUSCADOR
-  ====================== */
+  // -------------------
+  // Búsqueda usando solo axios
+  // -------------------
   useEffect(() => {
     if (!user?.id) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const baseUrl =
-          window.location.hostname === "localhost"
-            ? "http://localhost:3000"
-            : "https://axel.informaticamajada.es";
+        const token = localStorage.getItem("tribe_token")?.replace(/['"]+/g, "");
 
-        const token = localStorage
-          .getItem("tribe_token")
-          ?.replace(/['"]+/g, "");
+        const res = await api.get("/search", {
+          params: { query },
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-        const res = await fetch(
-          `${baseUrl}/api/search?query=${encodeURIComponent(query)}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        if (!res.ok) throw new Error("Error API");
-        const data = await res.json();
+        const data = res.data;
 
         // Filtrar mi propio usuario por ID
-        const filteredUsers = (data.users || []).filter(
-          u => String(u.id) !== String(user.id)
-        );
+        const filteredUsers = (data.users || []).filter(u => String(u.id) !== String(user.id));
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(data.collections || []);
       } catch (err) {
-        console.error(err);
+        console.error("Error cargando búsqueda:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    const timeoutId = setTimeout(fetchData, 300);
+    const timeoutId = setTimeout(fetchData, 300); // debounce 300ms
     return () => clearTimeout(timeoutId);
   }, [query, user?.id]);
 
@@ -131,9 +113,7 @@ const Explorer = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-3 text-sm font-bold capitalize transition-all relative ${
-                  activeTab === tab
-                    ? "text-primary"
-                    : "text-white/40 hover:text-white"
+                  activeTab === tab ? "text-primary" : "text-white/40 hover:text-white"
                 }`}
               >
                 {tab}
@@ -196,28 +176,20 @@ const Explorer = () => {
                             <img
                               src={
                                 u.img ||
-                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                  u.name
-                                )}&background=random&color=fff`
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random&color=fff`
                               }
                               className="w-12 h-12 rounded-full object-cover"
                             />
                           </div>
                         </div>
                         <div className="min-w-0">
-                          <h3 className="font-bold text-sm text-white truncate">
-                            {u.name}
-                          </h3>
-                          <p className="text-[10px] opacity-40 leading-none">
-                            {u.handle}
-                          </p>
+                          <h3 className="font-bold text-sm text-white truncate">{u.name}</h3>
+                          <p className="text-[10px] opacity-40 leading-none">{u.handle}</p>
                         </div>
                       </Link>
 
                       <button
-                        onClick={() =>
-                          handleFollowToggle(u.id, isFollowing)
-                        }
+                        onClick={() => handleFollowToggle(u.id, isFollowing)}
                         className={`btn btn-xs rounded-full ${
                           isFollowing ? "btn-neutral" : "btn-primary"
                         }`}
@@ -247,19 +219,13 @@ const Explorer = () => {
                 >
                   <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
                     <div className="aspect-video overflow-hidden bg-white/5">
-                      <ItemCover
-                        src={col.cover}
-                        title={col.title}
-                        className="w-full h-full"
-                      />
+                      <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
                     </div>
                     <div className="p-4">
                       <h3 className="font-bold text-white text-lg truncate group-hover:text-primary transition-colors">
                         {col.title}
                       </h3>
-                      <span className="text-xs font-medium text-primary">
-                        {col.author}
-                      </span>
+                      <span className="text-xs font-medium text-primary">{col.author}</span>
                     </div>
                   </div>
                 </Link>
