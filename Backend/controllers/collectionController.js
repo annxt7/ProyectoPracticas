@@ -226,29 +226,37 @@ exports.saveCollection = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        const [result] = await db.query(
+        const [exists] = await db.query(
+            "SELECT * FROM SavedCollections WHERE user_id = ? AND collection_id = ?",
+            [userId, id]
+        );
+
+        if (exists.length > 0) {
+            return res.status(400).json({ error: "Ya tienes esta colección guardada" });
+        }
+
+        await db.query(
             "INSERT INTO SavedCollections (user_id, collection_id) VALUES (?, ?)",
             [userId, id]
         );
         res.json({ success: true, message: "Colección guardada" });
     } catch (error) {
-        console.error("Error guardando colección:", error);
-        res.status(500).json({ error: "Error de servidor" });
+        console.error("DETALLE ERROR GUARDAR:", error); 
+        res.status(500).json({ error: "Error de servidor al guardar", detail: error.message });
     }
 };
 
 //Obtener colecciones guardadas
 exports.getSavedCollections = async (req, res) => {
-    const userId = req.user.id;
-    try{
+    const userId = req.params.userId || req.user.id; 
+    try {
         const sql = `
-        SELECT c.* 
-        FROM Collections c
-        JOIN SavedCollections sc ON c.collection_id = sc.collection_id
-        WHERE sc.user_id = ?
-    `;
+            SELECT c.* FROM Collections c
+            JOIN SavedCollections sc ON c.collection_id = sc.collection_id
+            WHERE sc.user_id = ?
+        `;
         const [result] = await db.query(sql, [userId]);
-        res.json(result);
+        res.json(result); 
     } catch (error) {
         console.error("Error obteniendo colecciones guardadas:", error);
         res.status(500).json({ error: "Error de servidor" });
