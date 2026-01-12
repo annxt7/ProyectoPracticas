@@ -227,7 +227,7 @@ exports.saveCollection = async (req, res) => {
 
     try {
         const [exists] = await db.query(
-            "SELECT * FROM SavedCollections WHERE user_id = ? AND collection_id = ?",
+            "SELECT * FROM Saved_Collections WHERE user_id = ? AND collection_id = ?",
             [userId, id]
         );
 
