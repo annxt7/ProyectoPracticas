@@ -47,10 +47,10 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
   };
 
 // Guardar en colección existente
-  const handleSaveToExisting = async (collectionId) => {
+  const handleSaveToExisting = async (collection_id) => {
     setLoading(true);
     try {
-      await api.post(`/collections/${collectionId}/items`, {
+      await api.post(`/collections/${collection_id}/items`, {
         reference_id: item.id,      // ID que viene del catálogo (Books, Music...)
         item_type: item.type,       // Ej: 'books'
         custom_title: item.title,   // Por si acaso el backend necesita fallback

@@ -83,12 +83,11 @@ const CreateCollection = () => {
 
         // D. REDIRIGIR
         if (res.data.success) {
-            navigate(`/collection/${res.data.collectionId}`);
+            navigate(`/collection/${res.data.collection_id}`);
         }
 
     } catch (error) {
         console.error("Error al crear:", error);
-        // Mostrar alerta con el mensaje real del backend si existe
         alert("Error: " + (error.response?.data?.sqlMessage || "No se pudo crear"));
     } finally {
         setIsLoading(false);

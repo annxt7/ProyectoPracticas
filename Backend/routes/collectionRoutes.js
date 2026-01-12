@@ -10,7 +10,7 @@ router.post("/save/:id", verifyToken, collectionController.saveCollection);
 
 //DELETE
 router.delete("/items/:itemId", verifyToken, collectionController.deleteItem);
-router.delete("/:collectionId", verifyToken, collectionController.deleteCollection);
+router.delete("/:collection_id", verifyToken, collectionController.deleteCollection);
 router.delete("/saved/:id", verifyToken, collectionController.deleteSavedCollection);
 
 //PUT

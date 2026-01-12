@@ -180,11 +180,11 @@ exports.deleteItem = async (req, res) => {
 };
 // Borrar una colección
 exports.deleteCollection = async (req, res) => {
-    const { collectionId } = req.params;
+    const { collection_id } = req.params;
     const userId = req.user.id;
 
     try {
-        const [result] = await db.query("DELETE FROM Collections WHERE collection_id = ? AND user_id = ?", [collectionId, userId]);
+        const [result] = await db.query("DELETE FROM Collections WHERE collection_id = ? AND user_id = ?", [collection_id, userId]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Colección no encontrada" });
         }

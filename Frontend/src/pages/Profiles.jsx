@@ -125,21 +125,21 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteCollection = async (e, collectionId) => {
+  const handleDeleteCollection = async (e, collection_id) => {
     e.preventDefault();
     e.stopPropagation();
     if (!window.confirm("¿Estás seguro de que quieres borrar esta colección?"))
       return;
     try {
-      await api.delete(`/collections/${collectionId}`);
+      await api.delete(`/collections/${collection_id}`);
       setCollections((prev) =>
-        prev.filter((c) => c.collection_id !== collectionId)
+        prev.filter((c) => c.collection_id !== collection_id)
       );
     } catch (error) {
       console.error("Error al borrar:", error);
     }
   };
-  const handleDeleteSavedCollection = async (e, collectionId) => {
+  const handleDeleteSavedCollection = async (e, collection_id) => {
     e.preventDefault();
     e.stopPropagation();
     if (
@@ -149,9 +149,9 @@ const Profile = () => {
     )
       return;
     try {
-      await api.delete(`/collections/saved/${collectionId}`);
+      await api.delete(`/collections/saved/${collection_id}`);
       setSavedCollections((prev) =>
-        prev.filter((c) => c.collection_id !== collectionId)
+        prev.filter((c) => c.collection_id !== collection_id)
       );
     } catch (error) {
       console.error("Error al eliminar de guardados:", error);
@@ -366,6 +366,21 @@ const Profile = () => {
                 key={col.collection_id}
                 className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform group"
               >
+                {col.cover_url ? (
+                   <img
+                    src={col.cover_url}
+                    className="w-full h-full object-cover"
+                    alt="cover"
+                  />
+                 
+                ) : (
+                  <ItemCover 
+                src={col.cover_url}
+                title={col.collection_name}
+                className="w-full h-full object-cover"
+              />
+              
+                )}
                 <img
                   src={
                     col.cover_url ||
