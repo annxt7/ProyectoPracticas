@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Heart,
   UserPlus,
@@ -9,78 +9,53 @@ import {
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
+import api from "../services/api.js"; // Asegúrate de que esta ruta sea correcta
 
 const Activity = () => {
-  // 1. ESTADOS DE FILTROS Y NOTIFICACIONES
-  const [activeFilter, setActiveFilter] = useState("all"); // 'all', 'interactions', 'follows'
-  const [statusFilter, setStatusFilter] = useState("all"); // 'all', 'unread', 'read'
+  const [activeFilter, setActiveFilter] = useState("all"); 
+  const [statusFilter, setStatusFilter] = useState("all"); 
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "like_collection",
-      user: { name: "Alba_Sura", avatar: "https://i.pravatar.cc/150?u=1" },
-      content: "le gustó tu colección",
-      target: "Minimalist Workspaces",
-      image: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=200",
-      time: "2min",
-      read: false,
-    },
-    {
-      id: 2,
-      type: "follow",
-      user: { name: "Vicente_Van_Coco", avatar: "https://i.pravatar.cc/150?u=2" },
-      content: "empezó a seguirte",
-      time: "1h",
-      read: false,
-      isFollowing: false,
-    },
-    {
-      id: 3,
-      type: "comment",
-      user: { name: "Knight_Queen", avatar: "https://i.pravatar.cc/150?u=3" },
-      content: "comentó en",
-      target: "Sci-Fi Classics",
-      commentSnippet: '"¡Toma geroma pastilla de goma."',
-      image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=200",
-      time: "5h",
-      read: true,
-    },
-    {
-      id: 4,
-      type: "system",
-      content: "Bienvenido al Early Access de Tribe.",
-      time: "1d",
-      read: true,
-    },
-    {
-      id: 5,
-      type: "like_item",
-      user: { name: "Pluton_es_un_planeta", avatar: "https://i.pravatar.cc/150?u=4" },
-      content: "le gustó un elemento en",
-      target: "Vinilos 70s",
-      image: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=200",
-      time: "2d",
-      read: true,
-    },
-  ]);
-
-  // 2. LÓGICA DE INTERACCIÓN
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  // 1. CARGAR NOTIFICACIONES REALES
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/activity"); // Cambia a tu endpoint real de notificaciones
+      setNotifications(res.data);
+    } catch (error) {
+      console.error("Error cargando actividad:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // 3. CÁLCULO DE ESTADÍSTICAS (Basado en el array actual)
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  // 2. LÓGICA DE INTERACCIÓN REAL
+  const markAllAsRead = async () => {
+    try {
+      // Llamada al backend para marcar todas como leídas
+      await api.put("/activity/read-all");
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (error) {
+      console.error("Error al marcar como leído:", error);
+    }
+  };
+
+  // 3. CÁLCULO DE ESTADÍSTICAS REALES
   const stats = useMemo(() => ({
     followers: notifications.filter(n => n.type === "follow").length,
-    interactions: notifications.filter(n => n.type.includes("like") || n.type === "comment").length,
+    interactions: notifications.filter(n => n.type?.includes("like") || n.type === "comment").length,
     mentions: notifications.filter(n => n.type === "comment").length
   }), [notifications]);
 
-  // 4. LÓGICA DE FILTRADO COMBINADO
+  // 4. LÓGICA DE FILTRADO
   const filteredNotifications = notifications.filter(n => {
     const matchesType = activeFilter === "all" || 
-      (activeFilter === "interactions" && (n.type.includes("like") || n.type === "comment")) ||
+      (activeFilter === "interactions" && (n.type?.includes("like") || n.type === "comment")) ||
       (activeFilter === "follows" && n.type === "follow");
     
     const matchesStatus = statusFilter === "all" ||
@@ -94,10 +69,9 @@ const Activity = () => {
     <div className="min-h-screen pb-28 md:pb-10 font-sans text-base-content flex flex-col bg-base-100">
       <NavDesktop />
       
-      {/* GRID PRINCIPAL */}
       <div className="max-w-6xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-[200px_1fr_240px] gap-8">
         
-        {/* PANEL IZQUIERDO: FILTROS (STICKY) */}
+        {/* PANEL IZQUIERDO: FILTROS */}
         <aside className="hidden lg:block">
           <div className="sticky top-24 space-y-8">
             <div>
@@ -137,36 +111,42 @@ const Activity = () => {
             </button>
           </div>
 
-          <div className="space-y-10">
-            {/* SECCIÓN PENDIENTES */}
-            {(statusFilter === 'all' || statusFilter === 'unread') && (
-              <section>
-                <h3 className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4 pl-2">Pendientes</h3>
-                <div className="flex flex-col gap-2">
-                  {filteredNotifications.filter(n => !n.read).length > 0 ? (
-                    filteredNotifications.filter(n => !n.read).map(n => <NotificationItem key={n.id} data={n} />)
-                  ) : (
-                    <div className="p-8 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-30 text-sm italic">
-                      No hay notificaciones nuevas
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <span className="loading loading-spinner loading-lg opacity-20"></span>
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {/* SECCIÓN PENDIENTES */}
+              {(statusFilter === 'all' || statusFilter === 'unread') && (
+                <section>
+                  <h3 className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4 pl-2">Pendientes</h3>
+                  <div className="flex flex-col gap-2">
+                    {filteredNotifications.filter(n => !n.read).length > 0 ? (
+                      filteredNotifications.filter(n => !n.read).map(n => <NotificationItem key={n.id} data={n} />)
+                    ) : (
+                      <div className="p-8 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-30 text-sm italic">
+                        No hay notificaciones nuevas
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
 
-            {/* SECCIÓN LEÍDO */}
-            {(statusFilter === 'all' || statusFilter === 'read') && (
-              <section>
-                <h3 className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4 pl-2">Leído</h3>
-                <div className="flex flex-col gap-2 opacity-80">
-                  {filteredNotifications.filter(n => n.read).map(n => <NotificationItem key={n.id} data={n} />)}
-                </div>
-              </section>
-            )}
-          </div>
+              {/* SECCIÓN LEÍDO */}
+              {(statusFilter === 'all' || statusFilter === 'read') && filteredNotifications.filter(n => n.read).length > 0 && (
+                <section>
+                  <h3 className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4 pl-2">Leído</h3>
+                  <div className="flex flex-col gap-2 opacity-80">
+                    {filteredNotifications.filter(n => n.read).map(n => <NotificationItem key={n.id} data={n} />)}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
         </main>
 
-        {/* PANEL DERECHO: RESUMEN (STICKY) */}
+        {/* PANEL DERECHO: RESUMEN */}
         <aside className="hidden lg:block">
           <div className="sticky top-24">
             <div className="p-6 rounded-[2rem] border border-white/5 bg-base-200/40 backdrop-blur-sm">
@@ -196,6 +176,18 @@ const Activity = () => {
 };
 
 const NotificationItem = ({ data }) => {
+  // Función para formatear el tiempo desde la fecha real
+  const formatTime = (dateString) => {
+    if (!dateString) return "Ahora";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / 60000);
+    if (diffInMinutes < 60) return `${diffInMinutes}min`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h`;
+    return `${Math.floor(diffInHours / 24)}d`;
+  };
+
   return (
     <div
       className={`
@@ -215,13 +207,16 @@ const NotificationItem = ({ data }) => {
         ) : (
           <div className="avatar">
             <div className="w-10 h-10 rounded-full ring ring-base-100 ring-offset-2 overflow-hidden">
-              <img src={data.user.avatar} alt={data.user.name} />
+              <img 
+                src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}`} 
+                alt={data.user?.name} 
+              />
             </div>
             <div className={`
               absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-base-100 text-white text-[10px]
-              ${data.type.includes("like") ? "bg-pink-500" : data.type === "follow" ? "bg-blue-500" : "bg-green-500"}
+              ${data.type?.includes("like") ? "bg-pink-500" : data.type === "follow" ? "bg-blue-500" : "bg-green-500"}
             `}>
-              {data.type.includes("like") && <Heart size={10} fill="currentColor" />}
+              {data.type?.includes("like") && <Heart size={10} fill="currentColor" />}
               {data.type === "follow" && <UserPlus size={10} />}
               {data.type === "comment" && <MessageSquare size={10} />}
             </div>
@@ -233,7 +228,7 @@ const NotificationItem = ({ data }) => {
         <div className="text-sm leading-snug">
           {data.type !== "system" && (
             <span className="font-bold cursor-pointer hover:text-primary text-white mr-1">
-              {data.user.name}
+              {data.user?.name || "Usuario"}
             </span>
           )}
           <span className="opacity-80">{data.content}</span>{" "}
@@ -244,7 +239,9 @@ const NotificationItem = ({ data }) => {
             </span>
           )}
         </div>
-        <span className="text-[10px] opacity-40 mt-1 block uppercase tracking-wider">{data.time}</span>
+        <span className="text-[10px] opacity-40 mt-1 block uppercase tracking-wider">
+          {formatTime(data.created_at || data.time)}
+        </span>
       </div>
 
       <div className="flex-none self-center">
@@ -253,7 +250,7 @@ const NotificationItem = ({ data }) => {
             Seguir
           </button>
         )}
-        {(data.type.includes("like") || data.type === "comment") && data.image && (
+        {(data.type?.includes("like") || data.type === "comment") && data.image && (
           <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 shadow-sm">
             <img src={data.image} alt="preview" className="w-full h-full object-cover" />
           </div>

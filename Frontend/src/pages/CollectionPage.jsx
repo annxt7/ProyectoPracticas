@@ -13,12 +13,11 @@ import {
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
-import ItemCover from "../components/ItemCover"; // Asegúrate de que la ruta sea correcta
+import ItemCover from "../components/ItemCover";
 import AddToCollectionModal from "../components/AddToCollectionModal";
 import AddItemModal from "../components/AddItemModal";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
-import { ca } from "zod/v4/locales";
 
 const CollectionPage = () => {
   const { id } = useParams();
@@ -31,6 +30,7 @@ const CollectionPage = () => {
   const [error, setError] = useState(null);
   const [collectionInfo, setCollectionInfo] = useState(null);
   const [items, setItems] = useState([]);
+  const [isSaved, setIsSaved] = useState(false); // Estado para el botón de guardado
 
   // Estados de interfaz
   const [isEditing, setIsEditing] = useState(false);
@@ -50,6 +50,9 @@ const CollectionPage = () => {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
         
+        // Verificamos si la colección ya está guardada por el usuario
+        setIsSaved(data.is_saved || false);
+
         setCollectionInfo({
           id: data.collection_id,
           title: data.collection_name,
@@ -66,7 +69,6 @@ const CollectionPage = () => {
             id: item.item_id,
             title: item.display_title || item.custom_title || "Sin título",
             author: item.display_subtitle || item.custom_subtitle || "Desconocido",
-            // CAMBIO 1: Pasamos null en vez de placeholder para que active el degradado
             cover: item.display_image || null, 
             year: "",
           }));
@@ -105,7 +107,6 @@ const CollectionPage = () => {
     const file = e.target.files[0];
     if (file) {
       setFileToUpload(file);
-      // Creamos una URL temporal para ver la foto al instante
       setEditForm({ ...editForm, cover: URL.createObjectURL(file) });
     }
   };
@@ -114,8 +115,6 @@ const CollectionPage = () => {
     setIsUploading(true);
     try {
       let finalCoverUrl = collectionInfo.cover;
-      
-      // Si hay archivo nuevo, lo subimos
       if (fileToUpload) {
         const formData = new FormData();
         formData.append("imagen", fileToUpload);
@@ -160,13 +159,15 @@ const CollectionPage = () => {
       }
     }
   };
-  const handleSave= async(collection_id)=>{
-    try{
+
+  const handleSaveCollection = async (collection_id) => {
+    try {
       await api.post(`/collections/save/${collection_id}`);
-    }catch(error){
+      setIsSaved(true); // Cambia el estado para que el botón se actualice
+    } catch (error) {
       console.error("Error guardando colección:", error);
     }
-  }
+  };
 
   const handleAddItem = async (newItem) => {
     try {
@@ -214,10 +215,8 @@ const CollectionPage = () => {
 
       {/* HEADER / PORTADA */}
       <div className="relative bg-base-100">
-        {/* Fondo borroso (Background) */}
         <div className="absolute inset-0 h-80 overflow-hidden -z-10 opacity-30">
           <img
-            
             src={isEditing ? editForm.cover : (collectionInfo.cover || "https://via.placeholder.com/800?text=_")}
             className="w-full h-full object-cover blur-3xl transition-all duration-500"
             alt=""
@@ -236,15 +235,12 @@ const CollectionPage = () => {
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            
-            {/* --- FOTO PORTADA PRINCIPAL --- */}
             <div className="flex-none w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/80 bg-base-200 relative group">
               <ItemCover 
                 src={isEditing ? editForm.cover : collectionInfo.cover}
                 title={isEditing ? editForm.title : collectionInfo.title}
                 className="w-full h-full object-cover"
               />
-              
               {isEditing && (
                 <div onClick={() => fileInputRef.current.click()} className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
                   <Camera className="text-white mb-2" size={32} />
@@ -254,7 +250,6 @@ const CollectionPage = () => {
               <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
             </div>
 
-            {/* INFO Y FORMULARIO */}
             <div className="flex-1 w-full space-y-5">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
@@ -309,7 +304,13 @@ const CollectionPage = () => {
                       )}
                     </>
                   ) : (
-                    <button onClick={()=>handleSave(collectionInfo.id)} className="btn btn-primary btn-sm gap-2 rounded-full"><BookmarkPlus size={18} /> Guardar Colección</button>
+                    <button 
+                      onClick={() => handleSaveCollection(collectionInfo.id)} 
+                      disabled={isSaved}
+                      className={`btn btn-sm gap-2 rounded-full transition-all duration-300 ${isSaved ? "btn-ghost border-white/10 text-success" : "btn-primary shadow-lg"}`}
+                    >
+                      {isSaved ? <><Check size={18} /> Guardada</> : <><BookmarkPlus size={18} /> Guardar Colección</>}
+                    </button>
                   )}
                   {!isEditing && <button className="btn btn-square btn-ghost btn-sm rounded-full"><Share2 size={18} /></button>}
                 </div>
@@ -339,7 +340,6 @@ const CollectionPage = () => {
                     title={item.title} 
                     className="w-full h-full object-cover" 
                   />
-                  
                   <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     {isOwner ? (
                       <button onClick={() => handleDelete(item.id)} className="btn btn-square btn-sm btn-error text-white border-none"><Trash2 size={16} /></button>
@@ -369,7 +369,7 @@ const CollectionPage = () => {
       <AddItemModal 
         isOpen={isAddItemOpen} 
         onClose={() => setIsAddItemOpen(false)} 
-        collectionType={collectionInfo.type} 
+        collectionType={collectionInfo?.type} 
         onAddItem={handleAddItem} 
       />
       <NavMobile />
