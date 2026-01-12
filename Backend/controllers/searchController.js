@@ -8,11 +8,10 @@ exports.searchTribe = async (req, res, next) => {
     const searchTerm = query ? `%${query}%` : '%'; 
 
     try {
-        // Registramos en el log combinado quién está buscando qué
         logger.info(`Iniciando búsqueda - Query: "${query || 'general'}" - IP: ${req.ip}`);
 
         // 1. OBTENER USUARIOS
-        // Buscamos por nombre de usuario
+
         const [users] = await db.query(`
             SELECT 
                 user_id AS id, 
@@ -27,7 +26,6 @@ exports.searchTribe = async (req, res, next) => {
         `, [searchTerm]);
 
         // 2. OBTENER COLECCIONES
-        // Buscamos por nombre de colección y unimos con el creador
         const [collections] = await db.query(`
             SELECT 
                 c.collection_id AS id, 
@@ -70,7 +68,7 @@ exports.getSuggestedUsers = async (req, res) => {
                 avatar_url AS img 
             FROM Users 
             ORDER BY RAND() 
-            LIMIT 3
+            LIMIT 4
         `);
         res.json(rows);
     } catch (error) {

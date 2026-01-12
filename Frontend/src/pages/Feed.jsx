@@ -21,7 +21,6 @@ const Feed = () => {
     const fetchMyFollowing = async () => {
       try {
         const res = await api.get(`/users/following/${user.id}`);
-        // Normalizamos los IDs a String para comparar correctamente
         setFollowingIds(res.data.map(u => String(u.id || u.user_id)));
       } catch (e) {
         console.error("Error cargando mis seguidos", e);
