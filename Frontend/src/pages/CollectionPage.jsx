@@ -55,7 +55,7 @@ const CollectionPage = () => {
           title: data.collection_name,
           description: data.collection_description || "",
           type: data.collection_type,
-          cover: data.cover_url || data.collection_image, // Si es null, ItemCover mostrará degradado
+          cover: data.cover_url || data.collection_image,
           creatorId: data.creator_id,
           creatorName: data.creator_username,
           stats: { items: data.items ? data.items.length : 0, likes: data.likes || 0 },

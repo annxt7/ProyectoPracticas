@@ -113,7 +113,7 @@ const CreateCollection = () => {
              <div className="hidden lg:block sticky top-24">
                 <div className="mockup-window border border-base-300 bg-base-200/50 p-8">
                     <div className="flex justify-center">
-                        <div className="w-64 aspect-[4/5] rounded-2xl overflow-hidden relative shadow-2xl group bg-base-100 ring-1 ring-base-200">
+                        <div className="w-64 aspect-4/5 rounded-2xl overflow-hidden relative shadow-2xl group bg-base-100 ring-1 ring-base-200">
                             {formData.coverPreview ? (
                                 <img src={formData.coverPreview} alt="Preview" className="w-full h-full object-cover" />
                             ) : (

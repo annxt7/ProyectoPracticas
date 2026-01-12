@@ -15,6 +15,12 @@ exports.createCollection = async (req, res) => {
     cover_url 
   } = req.body;
 
+  const finalName = collection_name || name || "Mi Nueva Colección";
+  const finalType = collection_type || type || 'Otros';
+  const finalDesc = collection_description || description || "";
+  const finalPrivate = is_private ? 1 : 0;
+  const finalCover = cover_url || '';
+
   try {
     const sql = `
       INSERT INTO Collections 
@@ -24,18 +30,18 @@ exports.createCollection = async (req, res) => {
 
     const [result] = await db.query(sql, [
       user_id, 
-      collection_name || name, 
-      collection_type || type || 'Otros', 
-      collection_description || description || "", 
-      is_private ? 1 : 0, 
-      cover_url || null 
+      finalName, 
+      finalType, 
+      finalDesc, 
+      finalPrivate, 
+      finalCover 
     ]);
 
-    // Devolvemos collection_id con guion bajo para que coincida con el frontend
     res.status(201).json({ 
         success: true,
         message: "Colección creada", 
-        collection_id: result.insertId 
+        collection_id: result.insertId,
+        cover_url: finalCover // Devolvemos la imagen generada por si el front la necesita
     });
 
   } catch (error) {
