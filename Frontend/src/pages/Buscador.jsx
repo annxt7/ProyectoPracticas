@@ -12,23 +12,31 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const getMyId = () => {
+  // 1. Obtener mis datos (ID y Handle) para filtrar
+  const getMyData = () => {
     try {
       const stored = localStorage.getItem('user');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.id || parsed.user_id) return String(parsed.id || parsed.user_id).trim();
+        return {
+          id: String(parsed.id || parsed.user_id || "").trim(),
+          handle: parsed.handle || ""
+        };
       }
+      // Si no hay objeto user, intentamos sacar el ID del token
       const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
-      if (!token) return null;
+      if (!token) return { id: null, handle: "" };
       const payload = JSON.parse(window.atob(token.split('.')[1]));
-      return String(payload.id || payload.userId || payload.user_id || "").trim();
+      return { 
+        id: String(payload.id || payload.userId || "").trim(), 
+        handle: "" 
+      };
     } catch (e) {
-      return null;
+      return { id: null, handle: "" };
     }
   };
 
-  const myId = getMyId();
+  const myData = getMyData();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,22 +63,23 @@ const Explorer = () => {
         
         const data = await res.json();
         
-        // Identificamos quién soy yo (Prioridad: lo que diga el server, si no, local)
-        const currentMe = String(data.currentUserId || myId || "").trim();
+        // El ID que viene del servidor o el que tenemos local
+        const currentMeId = String(data.currentUserId || myData.id || "").trim();
 
-        // FILTRAR USUARIOS
+        // --- FILTRADO DE USUARIOS (Por ID) ---
         const allUsers = Array.isArray(data.users) ? data.users : [];
         const filteredUsers = allUsers.filter((u) => {
           const uId = String(u.id || u.user_id || "").trim();
-          return uId !== currentMe;
+          return uId !== currentMeId;
         });
 
-        // FILTRAR COLECCIONES (Ocultar las mías)
+        // --- FILTRADO DE COLECCIONES (Por Author / Handle) ---
+        // Según tu captura, la colección trae "author": "@paul"
         const allCollections = Array.isArray(data.collections) ? data.collections : [];
         const filteredCollections = allCollections.filter((col) => {
-          // Intentamos encontrar el ID del autor en cualquier campo posible
-          const authorId = String(col.user_id || col.author_id || col.owner_id || col.userId || "").trim();
-          return authorId !== currentMe;
+          // Si el author de la colección coincide con tu handle, la ocultamos
+          const isMine = col.author === myData.handle;
+          return !isMine;
         });
 
         setUsersWithoutMyself(filteredUsers);
@@ -85,12 +94,13 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, myId]);
+  }, [query, myData.id, myData.handle]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
+      {/* HEADER DE BÚSQUEDA */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -119,7 +129,9 @@ const Explorer = () => {
                 }`}
               >
                 {tab}
-                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
+                {activeTab === tab && (
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />
+                )}
               </button>
             ))}
           </div>
@@ -127,6 +139,7 @@ const Explorer = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-10">
+        {/* SIDEBAR IZQUIERDA */}
         <aside className="hidden lg:block">
           <div className="sticky top-48 space-y-8">
             <div>
@@ -144,6 +157,7 @@ const Explorer = () => {
           </div>
         </aside>
 
+        {/* MAIN */}
         <main>
           {loading && <div className="text-center py-4 opacity-50 text-xs">Buscando...</div>}
 
@@ -185,7 +199,7 @@ const Explorer = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {collections.length > 0 ? (
                 collections.map((col) => (
-                  <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
+                  <Link key={col.id} to={`/collection/${col.id}`} className="block group">
                     <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
                       <div className="aspect-video overflow-hidden bg-white/5">
                         <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
@@ -204,6 +218,7 @@ const Explorer = () => {
           )}
         </main>
 
+        {/* RECOMENDADOS */}
         <aside className="hidden lg:block">
           <div className="sticky top-48">
             <div className="p-6 rounded-[2rem] bg-gradient-to-b from-primary/10 to-transparent border border-primary/10">
