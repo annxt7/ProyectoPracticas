@@ -12,32 +12,32 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const getMyId = () => {
+  // 1. Obtener mis datos de identidad (ID y Handle)
+  const getMyIdentity = () => {
     try {
       const stored = localStorage.getItem('user');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.id || parsed.user_id) return String(parsed.id || parsed.user_id).trim();
+        return {
+          id: parsed.id ? String(parsed.id).trim() : null,
+          handle: parsed.handle ? String(parsed.handle).replace("@", "").toLowerCase().trim() : ""
+        };
       }
-      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
-      if (!token) return null;
-      const payload = JSON.parse(window.atob(token.split('.')[1]));
-      return String(payload.id || payload.userId || payload.user_id || "").trim();
     } catch (e) {
-      return null;
+      console.error("Error identificando usuario:", e);
     }
+    return { id: null, handle: "" };
   };
 
-  const myId = getMyId();
+  const myIdentity = getMyIdentity();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const baseUrl =
-          window.location.hostname === "localhost"
-            ? "http://localhost:3000"
-            : "https://axel.informaticamajada.es";
+        const baseUrl = window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://axel.informaticamajada.es";
 
         const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
 
@@ -51,33 +51,33 @@ const Explorer = () => {
           }
         );
 
-        if (!res.ok) throw new Error("Error en la respuesta del servidor");
+        if (!res.ok) throw new Error("Error en la respuesta");
         
         const data = await res.json();
-        
-        // Identificamos quién soy yo (Prioridad: lo que diga el server, si no, local)
-        const currentMe = String(data.currentUserId || myId || "").trim();
 
-        // FILTRAR USUARIOS
-        const allUsers = Array.isArray(data.users) ? data.users : [];
-        const filteredUsers = allUsers.filter((u) => {
-          const uId = String(u.id || u.user_id || "").trim();
-          return uId !== currentMe;
+        // --- FILTRO DE CUENTAS (USUARIOS) ---
+        // Filtramos por ID y por Handle para estar 100% seguros
+        const filteredUsers = (data.users || []).filter((u) => {
+          const userId = String(u.id || u.user_id || "").trim();
+          const userHandle = String(u.handle || "").replace("@", "").toLowerCase().trim();
+          
+          const isMeById = myIdentity.id && userId === myIdentity.id;
+          const isMeByHandle = myIdentity.handle && userHandle === myIdentity.handle;
+
+          return !isMeById && !isMeByHandle;
         });
 
-        // FILTRAR COLECCIONES (Ocultar las mías)
-        const allCollections = Array.isArray(data.collections) ? data.collections : [];
-        const filteredCollections = allCollections.filter((col) => {
-          // Intentamos encontrar el ID del autor en cualquier campo posible
-          const authorId = String(col.user_id || col.author_id || col.owner_id || col.userId || "").trim();
-          return authorId !== currentMe;
+        // --- FILTRO DE COLECCIONES ---
+        const filteredCollections = (data.collections || []).filter((col) => {
+          const colAuthor = String(col.author || "").replace("@", "").toLowerCase().trim();
+          return myIdentity.handle === "" || colAuthor !== myIdentity.handle;
         });
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(filteredCollections);
 
       } catch (err) {
-        console.error("Error en la carga:", err.message);
+        console.error("Error cargando datos:", err);
       } finally {
         setLoading(false);
       }
@@ -85,12 +85,13 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, myId]);
+  }, [query, myIdentity.id, myIdentity.handle]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
+      {/* HEADER DE BÚSQUEDA */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -152,7 +153,7 @@ const Explorer = () => {
               {usersWithoutMyself.length > 0 ? (
                 usersWithoutMyself.map((user) => (
                   <Link key={user.id} to={`/profile/${user.id}`} className="block group">
-                    <div className="flex items-center justify-between p-4 bg-white/2 border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
+                    <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="avatar">
                           <div className="w-12 h-12 rounded-full ring-2 ring-white/5 bg-white/10">
@@ -185,8 +186,8 @@ const Explorer = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {collections.length > 0 ? (
                 collections.map((col) => (
-                  <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
-                    <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
+                  <Link key={col.id} to={`/collection/${col.id}`} className="block group">
+                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
                       <div className="aspect-video overflow-hidden bg-white/5">
                         <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
                       </div>
