@@ -67,20 +67,18 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
   };
 
   // Crear nueva colección y luego guardar el item
-  const handleCreateAndSave = async (e) => {
+ const handleCreateAndSave = async (e) => {
     e.preventDefault();
-    if (!newCollectionName.trim()) return;
+    const cleanName = newCollectionName.trim();
+    if (!cleanName) return;
 
     setLoading(true);
     try {
-      // 1. Crear la colección (Enviamos 'name' y 'type')
       const resCol = await api.post('/collections', {
-        name: newCollectionName,
-        type: item.type || 'otros', 
-        description: 'Nueva colección creada desde búsqueda'
+        name: cleanName,
+        type: item.type || 'custom', 
       });
 
-      // Importante: leemos collection_id con guion bajo
       const newColId = resCol.data.collection_id;
 
       // 2. Guardar el item en la nueva colección
@@ -99,10 +97,10 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+};
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
@@ -165,7 +163,6 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
                         </div>
                         <div className="flex-1">
                             <p className="font-semibold text-sm">{col.collection_name}</p>
-                            <p className="text-xs opacity-50">{col.items_count || 0} items</p>
                         </div>
                         <div className="opacity-0 group-hover:opacity-100 text-primary">
                             <Plus size={18} />
