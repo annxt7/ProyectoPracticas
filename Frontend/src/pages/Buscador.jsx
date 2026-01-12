@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, X, TrendingUp, Hash, Sparkles } from "lucide-react";
+import { Search, X, TrendingUp, Hash, Sparkles } from "lucide-react"; // Corregido
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom";
@@ -12,17 +12,14 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 1. Obtener mi ID del Token (Solución para cuando localStorage está vacío)
+  // 1. Obtener mi ID de forma segura (LocalStorage o JWT)
   const getMyId = () => {
     try {
-      // Intentamos primero por el objeto 'user'
       const stored = localStorage.getItem('user');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.id || parsed.user_id) return String(parsed.id || parsed.user_id).trim();
       }
-
-      // Si no está ahí, descodificamos el token JWT
       const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
       if (!token) return null;
       const payload = JSON.parse(window.atob(token.split('.')[1]));
@@ -58,18 +55,25 @@ const Explorer = () => {
         if (!res.ok) throw new Error("Error en la respuesta del servidor");
         
         const data = await res.json();
-
-        // --- LÓGICA DE FILTRADO MANTENIENDO TU ESTRUCTURA ---
         const currentMe = String(data.currentUserId || myId || "").trim();
-        const allUsers = Array.isArray(data.users) ? data.users : [];
 
-        const filtered = allUsers.filter((u) => {
+        // --- FILTRADO DE USUARIOS ---
+        const allUsers = Array.isArray(data.users) ? data.users : [];
+        const filteredUsers = allUsers.filter((u) => {
           const userIdInList = String(u.id || u.user_id || "").trim();
           return userIdInList !== currentMe;
         });
 
-        setUsersWithoutMyself(filtered);
-        setCollections(Array.isArray(data.collections) ? data.collections : []);
+        // --- FILTRADO DE COLECCIONES (Excluimos las que sean del usuario logueado) ---
+        const allCollections = Array.isArray(data.collections) ? data.collections : [];
+        const filteredCollections = allCollections.filter((col) => {
+          // Comprobamos el ID del autor de la colección
+          const authorId = String(col.user_id || col.author_id || "").trim();
+          return authorId !== currentMe;
+        });
+
+        setUsersWithoutMyself(filteredUsers);
+        setCollections(filteredCollections);
 
       } catch (err) {
         console.error("Error en la carga:", err.message);
@@ -176,13 +180,7 @@ const Explorer = () => {
                           <p className="text-[10px] opacity-40 leading-none">{user.handle}</p>
                         </div>
                       </div>
-                      <button
-                        className={`btn btn-xs rounded-full px-4 ${user.isFollowing ? "btn-ghost border-white/10" : "btn-primary"}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                      >
+                      <button className={`btn btn-xs rounded-full px-4 ${user.isFollowing ? "btn-ghost border-white/10" : "btn-primary"}`}>
                         {user.isFollowing ? "Siguiendo" : "Seguir"}
                       </button>
                     </div>
@@ -196,19 +194,25 @@ const Explorer = () => {
 
           {activeTab === "colecciones" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {collections.map((col) => (
-                <Link key={col.id} to={`/collection/${col.id}`} className="block group">
-                  <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
-                    <div className="aspect-video overflow-hidden bg-white/5">
-                      <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
+              {collections.length > 0 ? (
+                collections.map((col) => (
+                  <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
+                    <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
+                      <div className="aspect-video overflow-hidden bg-white/5">
+                        <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-white text-lg">{col.title}</h3>
+                        <div className="flex items-center justify-between mt-4">
+                          <span className="text-xs font-medium text-primary">{col.author}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-bold text-white text-lg">{col.title}</h3>
-                      <span className="text-xs font-medium text-primary">{col.author}</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))
+              ) : (
+                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay colecciones</div>
+              )}
             </div>
           )}
         </main>
