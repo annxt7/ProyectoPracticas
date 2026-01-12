@@ -12,32 +12,24 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 1. Función para obtener tu nombre de usuario del Token o LocalStorage
-  const getMyHandle = () => {
+  // 1. Obtener mis datos de identidad (ID y Handle)
+  const getMyIdentity = () => {
     try {
-      // Intento 1: LocalStorage directo
       const stored = localStorage.getItem('user');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.handle) return parsed.handle.replace("@", "").toLowerCase().trim();
-        if (parsed.username) return parsed.username.replace("@", "").toLowerCase().trim();
-      }
-
-      // Intento 2: Decodificar el Token si el anterior falla
-      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
-      if (token) {
-        const payload = JSON.parse(window.atob(token.split('.')[1]));
-        // Aquí buscamos campos comunes donde se guarda el nombre en un JWT
-        const nameInToken = payload.handle || payload.username || payload.name || "";
-        return nameInToken.replace("@", "").toLowerCase().trim();
+        return {
+          id: parsed.id ? String(parsed.id).trim() : null,
+          handle: parsed.handle ? String(parsed.handle).replace("@", "").toLowerCase().trim() : ""
+        };
       }
     } catch (e) {
-      console.error("Error obteniendo identidad:", e);
+      console.error("Error identificando usuario:", e);
     }
-    return "";
+    return { id: null, handle: "" };
   };
 
-  const myHandle = getMyHandle();
+  const myIdentity = getMyIdentity();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,29 +55,29 @@ const Explorer = () => {
         
         const data = await res.json();
 
-        // --- FILTRO DE USUARIOS ---
-        // Usamos el ID que suele venir en el token o lo que devuelva el server
-        const myId = JSON.parse(localStorage.getItem('user') || '{}').id;
-        const filteredUsers = (data.users || []).filter(u => String(u.id) !== String(myId));
+        // --- FILTRO DE CUENTAS (USUARIOS) ---
+        // Filtramos por ID y por Handle para estar 100% seguros
+        const filteredUsers = (data.users || []).filter((u) => {
+          const userId = String(u.id || u.user_id || "").trim();
+          const userHandle = String(u.handle || "").replace("@", "").toLowerCase().trim();
+          
+          const isMeById = myIdentity.id && userId === myIdentity.id;
+          const isMeByHandle = myIdentity.handle && userHandle === myIdentity.handle;
 
-        // --- FILTRO DE COLECCIONES (EL QUE TE FALLA) ---
+          return !isMeById && !isMeByHandle;
+        });
+
+        // --- FILTRO DE COLECCIONES ---
         const filteredCollections = (data.collections || []).filter((col) => {
-          if (!myHandle) return true; // Si no sé quién soy, muestro todo por seguridad
-          
           const colAuthor = String(col.author || "").replace("@", "").toLowerCase().trim();
-          
-          // DEBUG: Esto te dirá en la consola por qué se ocultan o no
-          const isMine = colAuthor === myHandle;
-          if (isMine) console.log("Ocultando colección propia de:", colAuthor);
-          
-          return !isMine;
+          return myIdentity.handle === "" || colAuthor !== myIdentity.handle;
         });
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(filteredCollections);
 
       } catch (err) {
-        console.error("Error:", err);
+        console.error("Error cargando datos:", err);
       } finally {
         setLoading(false);
       }
@@ -93,12 +85,13 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, myHandle]);
+  }, [query, myIdentity.id, myIdentity.handle]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
+      {/* HEADER DE BÚSQUEDA */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -153,7 +146,7 @@ const Explorer = () => {
         </aside>
 
         <main>
-          {loading && <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>}
+          {loading && <div className="text-center py-4 opacity-50 text-xs">Buscando...</div>}
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -193,16 +186,14 @@ const Explorer = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {collections.length > 0 ? (
                 collections.map((col) => (
-                  <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
+                  <Link key={col.id} to={`/collection/${col.id}`} className="block group">
                     <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
                       <div className="aspect-video overflow-hidden bg-white/5">
                         <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-bold text-white text-lg truncate group-hover:text-primary transition-colors">{col.title}</h3>
-                        <div className="flex items-center justify-between mt-4">
-                          <span className="text-xs font-medium text-primary">{col.author}</span>
-                        </div>
+                        <h3 className="font-bold text-white text-lg">{col.title}</h3>
+                        <span className="text-xs font-medium text-primary">{col.author}</span>
                       </div>
                     </div>
                   </Link>
