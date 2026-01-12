@@ -2,36 +2,47 @@ const db = require('../config/dbconect');
 
 const getNotifications = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // Viene del token
+
     const [rows] = await db.execute(`
-      SELECT n.*, u.username as userName, u.avatar as userAvatar 
-      FROM notifications n 
-      JOIN users u ON n.actor_id = u.id 
+      SELECT 
+        n.id, n.type, n.content, n.target, n.image, 
+        n.comment_snippet as commentSnippet,
+        n.is_read as 'read', n.created_at,
+        u.user_id as actorId, u.username as actorName, u.avatar_url as actorAvatar
+      FROM Notifications n 
+      JOIN Users u ON n.actor_id = u.user_id 
       WHERE n.user_id = ? 
       ORDER BY n.created_at DESC
     `, [userId]);
-
-    // Formateo para el frontend
+    
+    // Formateo para que el Frontend reciba lo que espera
     const formatted = rows.map(row => ({
       id: row.id,
       type: row.type,
       content: row.content,
       target: row.target,
       image: row.image,
-      read: !!row.is_read,
+      commentSnippet: row.commentSnippet,
+      read: !!row.read,
       created_at: row.created_at,
-      user: { id: row.actor_id, name: row.userName, avatar: row.userAvatar }
+      user: {
+        id: row.actorId,
+        name: row.actorName,
+        avatar: row.actorAvatar
+      }
     }));
 
     res.json(formatted);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error en DB:", error.message);
+    res.status(500).json({ error: "Error interno del servidor al cargar actividad" });
   }
 };
 
 const markAllAsRead = async (req, res) => {
   try {
-    await db.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ?', [req.user.id]);
+    await db.execute('UPDATE Notifications SET is_read = 1 WHERE user_id = ?', [req.user.id]);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -40,14 +51,13 @@ const markAllAsRead = async (req, res) => {
 
 const markAsRead = async (req, res) => {
   try {
-    await db.execute('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    await db.execute('UPDATE Notifications SET is_read = 1 WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// EXPORTACIÓN ÚNICA (Revisa que no haya nada debajo de esto)
 module.exports = {
   getNotifications,
   markAllAsRead,
