@@ -9,6 +9,7 @@ router.get("/test-users", verifyToken, userController.getUsers);
 router.get("/feed/activity", verifyToken, userController.getActivityFeed);
 router.get("followers/:userId", verifyToken, userController.getFollowers);
 router.get("following/:userId", verifyToken, userController.getFollowing);
+router.get("follow-stats/:userId", verifyToken, userController.getFollowStats);
 router.get("/:id", verifyToken, userController.getUserById);
 
 

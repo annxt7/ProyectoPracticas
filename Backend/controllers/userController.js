@@ -308,6 +308,7 @@ exports.getActivityFeed = async (req, res) => {
     }
 };
 
+//Cambiar contraseña
 exports.changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
@@ -352,5 +353,90 @@ exports.changePassword = async (req, res) => {
             details: error.message,
             sqlCode: error.code 
         });
+    }
+};
+
+// Seguir
+exports.followUser = async (req, res) => {
+    const follower_id = req.user.id; 
+    const following_id = req.params.id; 
+
+    if (follower_id == following_id) {
+        return res.status(400).json({ error: "No puedes seguirte a ti mismo" });
+    }
+
+    try {
+        await db.query("INSERT IGNORE INTO Follows (follower_id, following_id) VALUES (?, ?)", [follower_id, following_id]);
+        res.json({ success: true, message: "Ahora sigues a este usuario" });
+    } catch (error) {
+        res.status(500).json({ error: "Error al seguir usuario" });
+    }
+};
+
+// Dejar de seguir
+exports.unfollowUser = async (req, res) => {
+    const follower_id = req.user.id;
+    const following_id = req.params.id;
+
+    try {
+        await db.query("DELETE FROM Follows WHERE follower_id = ? AND following_id = ?", [follower_id, following_id]);
+        res.json({ success: true, message: "Has dejado de seguir a este usuario" });
+    } catch (error) {
+        res.status(500).json({ error: "Error al dejar de seguir" });
+    }
+};
+
+// Obtener Seguidores 
+exports.getFollowers = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await db.query(`
+            SELECT u.id, u.username, u.avatar, u.bio 
+            FROM Users u 
+            JOIN Follows f ON u.id = f.follower_id 
+            WHERE f.following_id = ?`, [id]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener seguidores" });
+    }
+};
+
+// Obtener Seguidos 
+exports.getFollowing = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await db.query(`
+            SELECT u.id, u.username, u.avatar, u.bio 
+            FROM Users u 
+            JOIN Follows f ON u.id = f.following_id 
+            WHERE f.follower_id = ?`, [id]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener seguidos" });
+    }
+};
+
+// Estadísticas rápidas 
+exports.getFollowStats = async (req, res) => {
+    const targetId = req.params.id;
+    const myId = req.user?.id;
+
+    try {
+        const [followers] = await db.query("SELECT COUNT(*) as total FROM Follows WHERE following_id = ?", [targetId]);
+        const [following] = await db.query("SELECT COUNT(*) as total FROM Follows WHERE follower_id = ?", [targetId]);
+        
+        let amIFollowing = false;
+        if (myId) {
+            const [check] = await db.query("SELECT * FROM Follows WHERE follower_id = ? AND following_id = ?", [myId, targetId]);
+            amIFollowing = check.length > 0;
+        }
+
+        res.json({
+            followers: followers[0].total,
+            following: following[0].total,
+            amIFollowing
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener stats" });
     }
 };
