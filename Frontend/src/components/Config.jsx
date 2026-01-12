@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, FileText, Info, LogOut, Heart, Users, Coffee, Lock, CheckCircle2, AlertCircle, Settings } from 'lucide-react';
+import { X, ShieldCheck, FileText, Info, LogOut, Heart, Users, Coffee, Lock, CheckCircle2, AlertCircle, Settings, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
