@@ -20,7 +20,7 @@ import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
 
 const CollectionPage = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // ID de la URL
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -42,7 +42,7 @@ const CollectionPage = () => {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedItemForSave, setSelectedItemForSave] = useState(null);
 
-  // 1. CARGA INICIAL COMPLETA
+  // 1. CARGA INICIAL Y PERSISTENCIA
   useEffect(() => {
     const fetchCollection = async () => {
       setLoading(true);
@@ -50,8 +50,9 @@ const CollectionPage = () => {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
         
-        // Sincronizar estado de guardado
-        setIsSaved(!!data.is_saved);
+        // PERSISTENCIA: Verificamos si ya estaba guardada en la BD
+        // Soportamos booleanos o bits (1/0)
+        setIsSaved(data.is_saved === true || data.is_saved === 1);
 
         setCollectionInfo({
           id: data.collection_id || data.id,
@@ -61,7 +62,10 @@ const CollectionPage = () => {
           cover: data.cover_url || data.collection_image,
           creatorId: data.creator_id,
           creatorName: data.creator_username,
-          stats: { items: data.items ? data.items.length : 0, likes: data.likes || 0 },
+          stats: { 
+            items: data.items ? data.items.length : 0, 
+            likes: data.likes || 0 
+          },
         });
 
         if (data.items) {
@@ -85,26 +89,37 @@ const CollectionPage = () => {
 
   const isOwner = user && collectionInfo && String(user.id || user.userId) === String(collectionInfo.creatorId);
 
-  // 2. LÓGICA DE GUARDADO (LA QUE FALLABA)
+  // 2. FUNCIÓN DE GUARDADO CON ACTUALIZACIÓN OPTIMISTA
   const handleSaveCollection = async () => {
+    // Si ya está guardada o no hay ID, ignorar
+    if (isSaved || !id) return;
+
+    // Paso 1: Cambio visual inmediato
+    setIsSaved(true);
+
     try {
-      // Usamos el ID de la URL directamente para asegurar que no sea undefined
+      // Paso 2: Intentar persistir en el servidor
       const res = await api.post(`/collections/save/${id}`);
       
-      // Si el backend responde con éxito, actualizamos localmente
-      if (res.status === 200 || res.status === 201) {
-        setIsSaved(true);
+      // Si el servidor responde con error, revertimos el cambio visual
+      if (res.status !== 200 && res.status !== 201) {
+        setIsSaved(false);
+        console.error("Servidor rechazó el guardado");
+      } else {
+        // Opcional: Incrementar contador de likes visualmente
         setCollectionInfo(prev => ({
           ...prev,
           stats: { ...prev.stats, likes: (prev.stats.likes || 0) + 1 }
         }));
       }
     } catch (error) {
-      console.error("Error al guardar:", error);
+      // Paso 3: Si falla la red, revertimos el botón
+      setIsSaved(false);
+      console.error("Error de red al guardar:", error);
     }
   };
 
-  // 3. GESTIÓN DE EDICIÓN Y SUBIDA
+  // 3. LÓGICA DE EDICIÓN
   const handleStartEditing = () => {
     setEditForm({
       title: collectionInfo.title,
@@ -131,11 +146,16 @@ const CollectionPage = () => {
         cover_url: finalCoverUrl,
       });
 
-      setCollectionInfo(prev => ({ ...prev, title: editForm.title, description: editForm.description, cover: finalCoverUrl }));
+      setCollectionInfo(prev => ({ 
+        ...prev, 
+        title: editForm.title, 
+        description: editForm.description, 
+        cover: finalCoverUrl 
+      }));
       setIsEditing(false);
       setFileToUpload(null);
     } catch (error) {
-      alert("Error al guardar los cambios.");
+      alert("Error al actualizar la colección.");
     } finally {
       setIsUploading(false);
     }
@@ -152,31 +172,38 @@ const CollectionPage = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-base-100"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
-  if (error || !collectionInfo) return <div className="min-h-screen flex items-center justify-center bg-base-100 flex-col gap-4"><h1>{error}</h1><Link to="/feed" className="btn btn-primary">Volver</Link></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center flex-col gap-4"><h1>{error}</h1><Link to="/feed" className="btn btn-primary">Volver</Link></div>;
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER DINÁMICO */}
+      {/* HEADER / PORTADA BLUR */}
       <div className="relative">
-        <div className="absolute inset-0 h-[500px] overflow-hidden -z-10 opacity-30">
-          <img src={isEditing ? editForm.cover : collectionInfo.cover} className="w-full h-full object-cover blur-3xl" alt="" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-base-100/80 to-base-100"></div>
+        <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-30">
+          <img 
+            src={isEditing ? editForm.cover : collectionInfo.cover} 
+            className="w-full h-full object-cover blur-3xl transition-all duration-700" 
+            alt="" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-base-100"></div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 pt-8">
-          <Link to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`} className="inline-flex items-center gap-2 text-sm opacity-60 hover:opacity-100 mb-8 transition-all">
+        <div className="max-w-6xl mx-auto px-4 pt-8 pb-8">
+          <Link 
+            to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`} 
+            className="inline-flex items-center gap-2 text-sm opacity-60 hover:opacity-100 mb-8"
+          >
             <ArrowLeft size={16} /> {isOwner ? "Mi Perfil" : `Perfil de ${collectionInfo.creatorName}`}
           </Link>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* PORTADA CON OPCIÓN DE CÁMARA SI EDITA */}
+            {/* PORTADA PRINCIPAL */}
             <div className="relative group flex-none w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-base-200">
               <ItemCover src={isEditing ? editForm.cover : collectionInfo.cover} title={collectionInfo.title} className="w-full h-full object-cover" />
               {isEditing && (
-                <div onClick={() => fileInputRef.current.click()} className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center cursor-pointer opacity-100 transition-opacity backdrop-blur-sm">
+                <div onClick={() => fileInputRef.current.click()} className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center cursor-pointer backdrop-blur-md">
                   <Camera className="text-white mb-2" size={32} />
                   <span className="text-white text-[10px] font-bold uppercase tracking-widest">Cambiar Portada</span>
                 </div>
@@ -190,18 +217,17 @@ const CollectionPage = () => {
               }} className="hidden" accept="image/*" />
             </div>
 
-            {/* INFO Y CONTROLES */}
+            {/* INFO */}
             <div className="flex-1 w-full space-y-4">
               <div className="flex items-center gap-3">
-                <span className="badge badge-primary badge-outline font-bold text-[10px] uppercase tracking-widest">{collectionInfo.type}</span>
+                <span className="badge badge-primary badge-outline font-bold text-[10px] tracking-widest">{collectionInfo.type}</span>
               </div>
 
               {isEditing ? (
                 <input 
-                  className="input input-ghost w-full text-4xl md:text-5xl font-serif font-bold px-0 focus:bg-transparent border-b-2 border-primary/30 rounded-none h-auto"
+                  className="input input-ghost w-full text-4xl md:text-5xl font-serif font-bold px-0 focus:bg-transparent border-b-2 border-primary/40 rounded-none h-auto"
                   value={editForm.title}
                   onChange={(e) => setEditForm({...editForm, title: e.target.value})}
-                  autoFocus
                 />
               ) : (
                 <h1 className="text-4xl md:text-5xl font-serif font-bold leading-tight">{collectionInfo.title}</h1>
@@ -209,20 +235,20 @@ const CollectionPage = () => {
 
               {isEditing ? (
                 <textarea 
-                  className="textarea textarea-ghost w-full text-lg opacity-70 px-0 focus:bg-transparent border-l-4 border-primary/30 pl-4 rounded-none h-32 resize-none"
+                  className="textarea textarea-ghost w-full text-lg opacity-70 px-0 focus:bg-transparent border-l-4 border-primary/40 pl-4 rounded-none h-32 resize-none"
                   value={editForm.description}
                   onChange={(e) => setEditForm({...editForm, description: e.target.value})}
                 />
               ) : (
-                <p className="text-lg opacity-60 leading-relaxed max-w-2xl border-l-4 border-white/10 pl-4 whitespace-pre-wrap">
+                <p className="text-lg opacity-60 leading-relaxed max-w-2xl border-l-4 border-white/10 pl-4">
                   {collectionInfo.description || "Sin descripción."}
                 </p>
               )}
 
               <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/5">
                 <div className="flex gap-8">
-                  <div className="text-center md:text-left"><span className="block text-xl font-bold">{items.length}</span><span className="text-[10px] opacity-40 uppercase tracking-widest">Items</span></div>
-                  <div className="text-center md:text-left"><span className="block text-xl font-bold">{collectionInfo.stats.likes}</span><span className="text-[10px] opacity-40 uppercase tracking-widest">Likes</span></div>
+                  <div><span className="block text-xl font-bold">{items.length}</span><span className="text-[10px] opacity-40 uppercase tracking-widest">Items</span></div>
+                  <div><span className="block text-xl font-bold">{collectionInfo.stats.likes}</span><span className="text-[10px] opacity-40 uppercase tracking-widest">Likes</span></div>
                 </div>
 
                 <div className="flex gap-3">
@@ -230,21 +256,26 @@ const CollectionPage = () => {
                     isEditing ? (
                       <>
                         <button onClick={handleSaveEditing} className="btn btn-primary btn-sm rounded-full px-6" disabled={isUploading}>
-                          {isUploading ? <span className="loading loading-spinner"></span> : "Guardar Cambios"}
+                          {isUploading ? <span className="loading loading-spinner"></span> : "Guardar"}
                         </button>
                         <button onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm rounded-full">Cancelar</button>
                       </>
                     ) : (
                       <>
                         <button onClick={handleStartEditing} className="btn btn-outline btn-sm rounded-full gap-2"><Settings size={16} /> Editar</button>
-                        <button onClick={() => setIsAddItemOpen(true)} className="btn btn-primary btn-sm rounded-full gap-2 shadow-lg shadow-primary/20"><Plus size={16} /> Añadir Item</button>
+                        <button onClick={() => setIsAddItemOpen(true)} className="btn btn-primary btn-sm rounded-full gap-2 shadow-lg"><Plus size={16} /> Añadir Item</button>
                       </>
                     )
                   ) : (
+                    /* BOTÓN DE GUARDADO DINÁMICO Y PERSISTENTE */
                     <button 
                       onClick={handleSaveCollection} 
                       disabled={isSaved}
-                      className={`btn btn-sm rounded-full gap-2 transition-all duration-500 ${isSaved ? "btn-ghost bg-success/10 text-success border-success/20" : "btn-primary shadow-lg shadow-primary/20"}`}
+                      className={`btn btn-sm rounded-full gap-2 transition-all duration-500 transform ${
+                        isSaved 
+                        ? "btn-success btn-outline opacity-100 border-success/30 bg-success/5 cursor-default scale-100" 
+                        : "btn-primary shadow-lg hover:scale-105 active:scale-95"
+                      }`}
                     >
                       {isSaved ? <><Check size={18} /> Guardada</> : <><BookmarkPlus size={18} /> Guardar Colección</>}
                     </button>
@@ -257,40 +288,33 @@ const CollectionPage = () => {
         </div>
       </div>
 
-      {/* CONTENIDO DE LA COLECCIÓN */}
-      <main className="max-w-6xl mx-auto px-4 mt-16">
-        <h2 className="text-xl font-bold mb-8 flex items-center gap-2">Contenido <span className="text-xs opacity-30 font-normal">/ {items.length}</span></h2>
-
-        {items.length === 0 ? (
-          <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl opacity-30 italic">Esta colección aún no tiene elementos.</div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10">
-            {items.map((item) => (
-              <div key={item.id} className="group flex flex-col gap-3">
-                <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-base-300 shadow-lg">
-                  <ItemCover src={item.cover} title={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {isOwner ? (
-                      <button onClick={() => handleDeleteItem(item.id)} className="btn btn-square btn-xs btn-error text-white border-none shadow-lg"><Trash2 size={14} /></button>
-                    ) : (
-                      <button onClick={() => setSelectedItemForSave(item)} className="btn btn-square btn-xs btn-primary border-none shadow-lg"><Plus size={14} /></button>
-                    )}
-                  </div>
-                </div>
-                <div className="px-1">
-                  <h3 className="font-bold text-sm leading-tight truncate group-hover:text-primary transition-colors">{item.title}</h3>
-                  <p className="text-[11px] opacity-50 truncate">{item.author}</p>
-                </div>
+      {/* ITEMS GRID */}
+      <main className="max-w-6xl mx-auto px-4 mt-12">
+        <h2 className="text-xl font-bold mb-8">Contenido</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          {items.map((item) => (
+            <div key={item.id} className="group space-y-3">
+              <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-base-300 shadow-md">
+                <ItemCover src={item.cover} title={item.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                {isOwner && (
+                  <button onClick={() => handleDeleteItem(item.id)} className="absolute top-2 right-2 btn btn-square btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
-            ))}
-            {isOwner && (
-              <button onClick={() => setIsAddItemOpen(true)} className="aspect-[2/3] rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 opacity-30 hover:opacity-100 hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <Plus size={32} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Añadir</span>
-              </button>
-            )}
-          </div>
-        )}
+              <div>
+                <h3 className="font-bold text-sm truncate">{item.title}</h3>
+                <p className="text-xs opacity-50 truncate">{item.author}</p>
+              </div>
+            </div>
+          ))}
+          {isOwner && (
+            <button onClick={() => setIsAddItemOpen(true)} className="aspect-[2/3] rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 opacity-30 hover:opacity-100 transition-all">
+              <Plus size={32} />
+              <span className="text-[10px] font-bold uppercase">Añadir</span>
+            </button>
+          )}
+        </div>
       </main>
 
       <AddToCollectionModal isOpen={!!selectedItemForSave} item={selectedItemForSave} onClose={() => setSelectedItemForSave(null)} />
