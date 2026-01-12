@@ -3,11 +3,18 @@ const db = require("../config/dbconect");
 // Crear una colección nueva
 exports.createCollection = async (req, res) => {
   if (!req.user || !req.user.id) {
-      console.error("ERROR: No hay usuario (Falta verifyToken en la ruta)");
-      return res.status(401).json({ error: "Usuario no identificado" });
+    return res.status(401).json({ error: "Usuario no identificado" });
   }
+
   const user_id = req.user.id;
-  const { collection_name, collection_type, collection_description, is_private, cover_url } = req.body;
+  const { 
+    name, collection_name, 
+    type, collection_type, 
+    description, collection_description, 
+    is_private, 
+    cover_url 
+  } = req.body;
+
   try {
     const sql = `
       INSERT INTO Collections 
@@ -17,24 +24,23 @@ exports.createCollection = async (req, res) => {
 
     const [result] = await db.query(sql, [
       user_id, 
-      collection_name, 
-      collection_type, 
-      collection_description, 
+      collection_name || name, 
+      collection_type || type || 'Otros', 
+      collection_description || description || "", 
       is_private ? 1 : 0, 
       cover_url || null 
     ]);
 
-    console.log("¡ÉXITO! ID Creado:", result.insertId);
-
+    // Devolvemos collection_id con guion bajo para que coincida con el frontend
     res.status(201).json({ 
         success: true,
         message: "Colección creada", 
-        collectionId: result.insertId 
+        collection_id: result.insertId 
     });
 
   } catch (error) {
-    console.error("ERROR SQL CRÍTICO:", error);
-    res.status(500).json({ error: "Error de base de datos", sqlMessage: error.message });
+    console.error("ERROR SQL:", error);
+    res.status(500).json({ error: "Error de base de datos" });
   }
 };
 
@@ -116,30 +122,29 @@ exports.addItemToCollection = async (req, res) => {
   } = req.body;
 
   const columnMap = {
-    'Music': 'music_id',
-    'Books': 'book_id',
-    'Movies': 'movie_id',
-    'Shows': 'show_id',
-    'Games': 'game_id'
+    'music': 'music_id',
+    'books': 'book_id',
+    'movies': 'movie_id',
+    'shows': 'show_id',
+    'games': 'game_id'
   };
 
   try {
     let sql = "";
     let params = [];
 
-    if (reference_id && item_type !== 'Custom') {
-        
-        const colName = columnMap[item_type];
-        if (!colName) {
-            return res.status(400).json({ error: "Tipo de item inválido" });
-        }
+    const typeLower = item_type ? item_type.toLowerCase() : 'custom';
+    const colName = columnMap[typeLower];
+
+    if (reference_id && colName) {
         sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
-        params = [collection_id, item_type, reference_id];
+        params = [collection_id, typeLower, reference_id];
     } 
     else {
         sql = `INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description, custom_image) VALUES (?, ?, ?, ?, ?, ?)`;
-        params = [collection_id, 'Custom', custom_title, custom_subtitle, custom_description || "", custom_image || null];
+        params = [collection_id, 'custom', custom_title, custom_subtitle, custom_description || "", custom_image || null];
     }
+
     const [result] = await db.query(sql, params);
     res.status(201).json({ success: true, itemId: result.insertId });
 
