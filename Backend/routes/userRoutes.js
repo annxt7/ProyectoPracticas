@@ -6,8 +6,8 @@ const { verifyToken } = require("../middlewares/authMiddleware");
 
 // GETS
 router.get("/test-users", verifyToken, userController.getUsers);
-router.get("/:id", verifyToken, userController.getUserById);
 router.get("/feed/activity", verifyToken, userController.getActivityFeed);
+router.get("/:id", verifyToken, userController.getUserById);
 
 // POSTS
 router.post("/register", registerValidator, userController.createUser);

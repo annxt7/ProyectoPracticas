@@ -54,6 +54,7 @@ const Profile = () => {
   }, [user, isMe]);
   useEffect(() => {
     const fetchData = async () => {
+      console.log("Cargando perfil para ID:", targetId);
       if (!targetId) return;
       setIsLoading(true);
       setCollections([]);
