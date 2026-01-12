@@ -13,7 +13,7 @@ const FollowsModal = ({ isOpen, onClose, userId, type, title }) => {
       const fetchUsers = async () => {
         setLoading(true);
         try {
-          const res = await api.get(`/users/${userId}/${type}`);
+          const res = await api.get(`/users/${type}/${userId}`);
           setUsers(res.data || []);
         } catch (error) {
           console.error("Error cargando usuarios:", error);
