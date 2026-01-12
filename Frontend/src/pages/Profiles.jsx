@@ -261,9 +261,7 @@ const Profile = () => {
                   </button>
                 </>
               ) : (
-                {
-                  /* SEGUIR */
-                }(
+                (
                   <button className="btn btn-primary btn-sm rounded-full px-6 gap-2">
                     <UserPlus size={16} /> Seguir
                   </button>
