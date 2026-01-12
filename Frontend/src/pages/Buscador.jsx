@@ -2,16 +2,37 @@ import React, { useState, useEffect } from "react";
 import { Search, X, TrendingUp, Hash, Sparkles } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
-import { Link } from "react-router-dom"; // CORRECCIÓN 1: Usar react-router-dom
+import { Link } from "react-router-dom";
 import ItemCover from "../components/ItemCover";
 
 const Explorer = () => {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("cuentas");
-  const [users, setUsers] = useState([]);
   const [usersWithoutMyself, setUsersWithoutMyself] = useState([]);
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // 1. Obtener mi ID del Token (Solución para cuando localStorage está vacío)
+  const getMyId = () => {
+    try {
+      // Intentamos primero por el objeto 'user'
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.id || parsed.user_id) return String(parsed.id || parsed.user_id).trim();
+      }
+
+      // Si no está ahí, descodificamos el token JWT
+      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
+      if (!token) return null;
+      const payload = JSON.parse(window.atob(token.split('.')[1]));
+      return String(payload.id || payload.userId || payload.user_id || "").trim();
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const myId = getMyId();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,39 +43,36 @@ const Explorer = () => {
             ? "http://localhost:3000"
             : "https://axel.informaticamajada.es";
 
+        const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
+
         const res = await fetch(
           `${baseUrl}/api/search?query=${encodeURIComponent(query)}`,
           {
             headers: {
-              Accept: "application/json",
+              "Accept": "application/json",
+              "Authorization": `Bearer ${token}`
             },
           }
         );
 
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          // Si esto pasa, evitamos intentar parsear y lanzamos error controlado
-          throw new TypeError("Respuesta no válida del servidor (no JSON)");
-        }
-
+        if (!res.ok) throw new Error("Error en la respuesta del servidor");
+        
         const data = await res.json();
 
-        // CORRECCIÓN 2: BLINDAJE DE DATOS
-        // Primero aseguramos que receivedUsers sea un array, si no, array vacío.
-        const receivedUsers = Array.isArray(data.users) ? data.users : [];
-        
-        setUsers(receivedUsers);
-        
-        // Ahora filtramos de forma segura
-        setUsersWithoutMyself(
-          receivedUsers.filter((u) => u.id !== data.currentUserId)
-        );
+        // --- LÓGICA DE FILTRADO MANTENIENDO TU ESTRUCTURA ---
+        const currentMe = String(data.currentUserId || myId || "").trim();
+        const allUsers = Array.isArray(data.users) ? data.users : [];
 
+        const filtered = allUsers.filter((u) => {
+          const userIdInList = String(u.id || u.user_id || "").trim();
+          return userIdInList !== currentMe;
+        });
+
+        setUsersWithoutMyself(filtered);
         setCollections(Array.isArray(data.collections) ? data.collections : []);
 
       } catch (err) {
         console.error("Error en la carga:", err.message);
-        // Opcional: Podrías poner un estado de error visual aquí
       } finally {
         setLoading(false);
       }
@@ -62,7 +80,7 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query]);
+  }, [query, myId]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
@@ -96,9 +114,7 @@ const Explorer = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-3 text-sm font-bold capitalize transition-all relative ${
-                  activeTab === tab
-                    ? "text-primary"
-                    : "text-white/40 hover:text-white"
+                  activeTab === tab ? "text-primary" : "text-white/40 hover:text-white"
                 }`}
               >
                 {tab}
@@ -122,16 +138,11 @@ const Explorer = () => {
                 <TrendingUp size={12} /> Tendencias
               </h4>
               <nav className="flex flex-col gap-2">
-                {["Música", "Series", "Películas", "Juegos", "Libros"].map(
-                  (tag) => (
-                    <button
-                      key={tag}
-                      className="flex items-center gap-2 text-sm opacity-60 hover:opacity-100 hover:text-primary transition-all group"
-                    >
-                      <Hash size={14} className="opacity-20 group-hover:opacity-100" /> {tag}
-                    </button>
-                  )
-                )}
+                {["Música", "Series", "Películas", "Juegos", "Libros"].map((tag) => (
+                  <button key={tag} className="flex items-center gap-2 text-sm opacity-60 hover:opacity-100 hover:text-primary transition-all group">
+                    <Hash size={14} className="opacity-20 group-hover:opacity-100" /> {tag}
+                  </button>
+                ))}
               </nav>
             </div>
           </div>
@@ -163,9 +174,6 @@ const Explorer = () => {
                         <div className="min-w-0">
                           <h3 className="font-bold text-sm text-white truncate">{user.name}</h3>
                           <p className="text-[10px] opacity-40 leading-none">{user.handle}</p>
-                          <p className="text-xs opacity-60 mt-2 truncate max-w-[140px] italic">
-                            {user.bio ? `"${user.bio}"` : ""}
-                          </p>
                         </div>
                       </div>
                       <button
@@ -173,7 +181,6 @@ const Explorer = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          console.log("Seguir a", user.name);
                         }}
                       >
                         {user.isFollowing ? "Siguiendo" : "Seguir"}
@@ -189,25 +196,19 @@ const Explorer = () => {
 
           {activeTab === "colecciones" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {collections.length > 0 ? (
-                collections.map((col) => (
-                  <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
-                    <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
-                      <div className="aspect-video overflow-hidden bg-white/5">
-                        <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-bold text-white text-lg">{col.title}</h3>
-                        <div className="flex items-center justify-between mt-4">
-                          <span className="text-xs font-medium text-primary">{col.author}</span>
-                        </div>
-                      </div>
+              {collections.map((col) => (
+                <Link key={col.id} to={`/collection/${col.id}`} className="block group">
+                  <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
+                    <div className="aspect-video overflow-hidden bg-white/5">
+                      <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
                     </div>
-                  </Link>
-                ))
-              ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay colecciones</div>
-              )}
+                    <div className="p-4">
+                      <h3 className="font-bold text-white text-lg">{col.title}</h3>
+                      <span className="text-xs font-medium text-primary">{col.author}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </main>
