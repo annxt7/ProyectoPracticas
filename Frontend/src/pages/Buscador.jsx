@@ -12,7 +12,7 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 1. Obtener mis datos (ID y Handle) para filtrar
+  // 1. Obtener mis datos del LocalStorage para poder filtrar
   const getMyData = () => {
     try {
       const stored = localStorage.getItem('user');
@@ -20,17 +20,10 @@ const Explorer = () => {
         const parsed = JSON.parse(stored);
         return {
           id: String(parsed.id || parsed.user_id || "").trim(),
-          handle: parsed.handle || ""
+          handle: String(parsed.handle || "").replace("@", "").trim().toLowerCase()
         };
       }
-      // Si no hay objeto user, intentamos sacar el ID del token
-      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
-      if (!token) return { id: null, handle: "" };
-      const payload = JSON.parse(window.atob(token.split('.')[1]));
-      return { 
-        id: String(payload.id || payload.userId || "").trim(), 
-        handle: "" 
-      };
+      return { id: null, handle: "" };
     } catch (e) {
       return { id: null, handle: "" };
     }
@@ -62,8 +55,6 @@ const Explorer = () => {
         if (!res.ok) throw new Error("Error en la respuesta del servidor");
         
         const data = await res.json();
-        
-        // El ID que viene del servidor o el que tenemos local
         const currentMeId = String(data.currentUserId || myData.id || "").trim();
 
         // --- FILTRADO DE USUARIOS (Por ID) ---
@@ -74,11 +65,13 @@ const Explorer = () => {
         });
 
         // --- FILTRADO DE COLECCIONES (Por Author / Handle) ---
-        // Según tu captura, la colección trae "author": "@paul"
         const allCollections = Array.isArray(data.collections) ? data.collections : [];
         const filteredCollections = allCollections.filter((col) => {
-          // Si el author de la colección coincide con tu handle, la ocultamos
-          const isMine = col.author === myData.handle;
+          // Normalizamos el autor de la colección (quitamos @ y minúsculas)
+          const colAuthorClean = String(col.author || "").replace("@", "").trim().toLowerCase();
+          
+          // Si el autor de la colección es igual a mi handle, NO la mostramos
+          const isMine = myData.handle !== "" && colAuthorClean === myData.handle;
           return !isMine;
         });
 
@@ -157,16 +150,18 @@ const Explorer = () => {
           </div>
         </aside>
 
-        {/* MAIN */}
+        {/* CONTENIDO CENTRAL */}
         <main>
-          {loading && <div className="text-center py-4 opacity-50 text-xs">Buscando...</div>}
+          {loading && (
+            <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>
+          )}
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {usersWithoutMyself.length > 0 ? (
                 usersWithoutMyself.map((user) => (
                   <Link key={user.id} to={`/profile/${user.id}`} className="block group">
-                    <div className="flex items-center justify-between p-4 bg-white/2 border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
+                    <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="avatar">
                           <div className="w-12 h-12 rounded-full ring-2 ring-white/5 bg-white/10">
@@ -199,14 +194,17 @@ const Explorer = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {collections.length > 0 ? (
                 collections.map((col) => (
-                  <Link key={col.id} to={`/collection/${col.id}`} className="block group">
-                    <div className="bg-white/2 border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
+                  <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
+                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
                       <div className="aspect-video overflow-hidden bg-white/5">
                         <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-bold text-white text-lg">{col.title}</h3>
-                        <span className="text-xs font-medium text-primary">{col.author}</span>
+                        <h3 className="font-bold text-white text-lg truncate group-hover:text-primary transition-colors">{col.title}</h3>
+                        <div className="flex items-center justify-between mt-4">
+                          <span className="text-xs font-medium text-primary">{col.author}</span>
+                          <span className="text-[10px] opacity-30">{col.itemsCount || 0} items</span>
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -218,14 +216,16 @@ const Explorer = () => {
           )}
         </main>
 
-        {/* RECOMENDADOS */}
+        {/* SIDEBAR DERECHA */}
         <aside className="hidden lg:block">
           <div className="sticky top-48">
             <div className="p-6 rounded-[2rem] bg-gradient-to-b from-primary/10 to-transparent border border-primary/10">
               <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-4 flex items-center gap-2 text-primary">
                 <Sparkles size={12} /> Recomendado
               </h4>
-              <p className="text-xs opacity-60 mb-6 leading-relaxed">Descubre nuevas tribus basadas en tus gustos.</p>
+              <p className="text-xs opacity-60 mb-6 leading-relaxed">
+                Descubre nuevas tribus basadas en tus gustos y actividad.
+              </p>
             </div>
           </div>
         </aside>
