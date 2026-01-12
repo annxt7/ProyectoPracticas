@@ -12,19 +12,31 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Intentamos obtener el handle local por si acaso, pero priorizaremos el ID del server
-  const getMyLocalHandle = () => {
+  // 1. OBTENER IDENTIDAD (ID Y HANDLE)
+  const getMyIdentity = () => {
     try {
       const stored = localStorage.getItem('user');
       if (stored) {
         const parsed = JSON.parse(stored);
-        return String(parsed.handle || "").replace("@", "").toLowerCase().trim();
+        return {
+          id: parsed.id ? String(parsed.id).trim() : null,
+          handle: parsed.handle ? String(parsed.handle).replace("@", "").toLowerCase().trim() : ""
+        };
       }
-    } catch (e) { return ""; }
-    return "";
+      // Intento por Token si el objeto 'user' no está
+      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
+      if (token) {
+        const payload = JSON.parse(window.atob(token.split('.')[1]));
+        return {
+          id: payload.id ? String(payload.id).trim() : null,
+          handle: (payload.handle || payload.username || "").replace("@", "").toLowerCase().trim()
+        };
+      }
+    } catch (e) { console.error("Error identidad:", e); }
+    return { id: null, handle: "" };
   };
 
-  const myLocalHandle = getMyLocalHandle();
+  const my = getMyIdentity();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,53 +48,43 @@ const Explorer = () => {
 
         const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
 
-        const res = await fetch(
-          `${baseUrl}/api/search?query=${encodeURIComponent(query)}`,
-          {
-            headers: {
-              "Accept": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-          }
-        );
+        const res = await fetch(`${baseUrl}/api/search?query=${encodeURIComponent(query)}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
 
-        if (!res.ok) throw new Error("Error en la respuesta");
-        
+        if (!res.ok) throw new Error("Error API");
         const data = await res.json();
 
-        // 1. Identificamos quién soy yo según el servidor (prioridad máxima)
-        const currentMeId = data.currentUserId ? String(data.currentUserId).trim() : null;
+        // ID que devuelve el servidor (fuente más fiable)
+        const serverMeId = data.currentUserId ? String(data.currentUserId).trim() : null;
 
-        // --- FILTRO DE CUENTAS ---
-        const allUsers = Array.isArray(data.users) ? data.users : [];
-        const filteredUsers = allUsers.filter((u) => {
-          const userId = String(u.id || u.user_id || "").trim();
-          const userHandle = String(u.handle || "").replace("@", "").toLowerCase().trim();
+        // --- FILTRAR CUENTAS ---
+        const filteredUsers = (data.users || []).filter(u => {
+          const uId = String(u.id || u.user_id || "").trim();
+          const uHandle = String(u.handle || "").replace("@", "").toLowerCase().trim();
           
-          // Si el ID coincide con el que manda el server, o el handle coincide con el local
-          const isMe = (currentMeId && userId === currentMeId) || 
-                       (myLocalHandle !== "" && userHandle === myLocalHandle);
+          // Ocultar si coincide ID (server o local) o el Handle
+          const isMe = (serverMeId && uId === serverMeId) || 
+                       (my.id && uId === my.id) || 
+                       (my.handle && uHandle === my.handle);
           return !isMe;
         });
 
-        // --- FILTRO DE COLECCIONES ---
-        const allCollections = Array.isArray(data.collections) ? data.collections : [];
-        const filteredCollections = allCollections.filter((col) => {
+        // --- FILTRAR COLECCIONES ---
+        const filteredCollections = (data.collections || []).filter(col => {
           const colAuthor = String(col.author || "").replace("@", "").toLowerCase().trim();
-          
-          // Si el ID del autor está en la colección, lo usamos. Si no, usamos el handle.
           const colAuthorId = col.user_id || col.author_id ? String(col.user_id || col.author_id).trim() : null;
-          
-          const isMine = (currentMeId && colAuthorId === currentMeId) || 
-                         (myLocalHandle !== "" && colAuthor === myLocalHandle);
+
+          const isMine = (serverMeId && colAuthorId === serverMeId) || 
+                         (my.id && colAuthorId === my.id) || 
+                         (my.handle && colAuthor === my.handle);
           return !isMine;
         });
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(filteredCollections);
-
       } catch (err) {
-        console.error("Error cargando datos:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -90,12 +92,11 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, myLocalHandle]);
+  }, [query, my.id, my.handle]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
-
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -113,7 +114,6 @@ const Explorer = () => {
               </button>
             )}
           </div>
-
           <div className="flex justify-center gap-8 border-b border-white/5">
             {["cuentas", "colecciones"].map((tab) => (
               <button
@@ -134,24 +134,19 @@ const Explorer = () => {
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-10">
         <aside className="hidden lg:block">
           <div className="sticky top-48 space-y-8">
-            <div>
-              <h4 className="text-[10px] uppercase tracking-[0.2em] opacity-40 font-bold mb-4 flex items-center gap-2">
-                <TrendingUp size={12} /> Tendencias
-              </h4>
-              <nav className="flex flex-col gap-2">
-                {["Música", "Series", "Películas", "Juegos", "Libros"].map((tag) => (
-                  <button key={tag} className="flex items-center gap-2 text-sm opacity-60 hover:opacity-100 hover:text-primary transition-all group">
-                    <Hash size={14} className="opacity-20 group-hover:opacity-100" /> {tag}
-                  </button>
-                ))}
-              </nav>
-            </div>
+            <h4 className="text-[10px] uppercase tracking-[0.2em] opacity-40 font-bold mb-4 flex items-center gap-2"><TrendingUp size={12} /> Tendencias</h4>
+            <nav className="flex flex-col gap-2">
+              {["Música", "Series", "Películas", "Juegos", "Libros"].map((tag) => (
+                <button key={tag} className="flex items-center gap-2 text-sm opacity-60 hover:opacity-100 hover:text-primary transition-all group">
+                  <Hash size={14} className="opacity-20 group-hover:opacity-100" /> {tag}
+                </button>
+              ))}
+            </nav>
           </div>
         </aside>
 
         <main>
           {loading && <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>}
-
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {usersWithoutMyself.length > 0 ? (
@@ -161,12 +156,7 @@ const Explorer = () => {
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="avatar">
                           <div className="w-12 h-12 rounded-full ring-2 ring-white/5 bg-white/10">
-                            <img
-                              src={user.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`}
-                              alt={user.name}
-                              className="w-12 h-12 rounded-full object-cover"
-                              onError={(e) => { e.target.src = "https://via.placeholder.com/150"; }}
-                            />
+                            <img src={user.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`} className="w-12 h-12 rounded-full object-cover" />
                           </div>
                         </div>
                         <div className="min-w-0">
@@ -174,15 +164,11 @@ const Explorer = () => {
                           <p className="text-[10px] opacity-40 leading-none">{user.handle}</p>
                         </div>
                       </div>
-                      <button className={`btn btn-xs rounded-full px-4 ${user.isFollowing ? "btn-ghost border-white/10" : "btn-primary"}`}>
-                        {user.isFollowing ? "Siguiendo" : "Seguir"}
-                      </button>
+                      <button className={`btn btn-xs rounded-full px-4 ${user.isFollowing ? "btn-ghost border-white/10" : "btn-primary"}`}>{user.isFollowing ? "Siguiendo" : "Seguir"}</button>
                     </div>
                   </Link>
                 ))
-              ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay resultados</div>
-              )}
+              ) : (!loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay resultados</div>)}
             </div>
           )}
 
@@ -190,7 +176,7 @@ const Explorer = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {collections.length > 0 ? (
                 collections.map((col) => (
-                  <Link key={col.id} to={`/collection/${col.id}`} className="block group">
+                  <Link key={col.id} to={`/collection/${col.id}`} className="block group cursor-pointer">
                     <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
                       <div className="aspect-video overflow-hidden bg-white/5">
                         <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
@@ -202,25 +188,12 @@ const Explorer = () => {
                     </div>
                   </Link>
                 ))
-              ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay colecciones</div>
-              )}
+              ) : (!loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay colecciones</div>)}
             </div>
           )}
         </main>
-
-        <aside className="hidden lg:block">
-          <div className="sticky top-48">
-            <div className="p-6 rounded-[2rem] bg-gradient-to-b from-primary/10 to-transparent border border-primary/10">
-              <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-4 flex items-center gap-2 text-primary">
-                <Sparkles size={12} /> Recomendado
-              </h4>
-              <p className="text-xs opacity-60 mb-6 leading-relaxed">Descubre nuevas tribus basadas en tus gustos.</p>
-            </div>
-          </div>
-        </aside>
+        <NavMobile />
       </div>
-      <NavMobile />
     </div>
   );
 };
