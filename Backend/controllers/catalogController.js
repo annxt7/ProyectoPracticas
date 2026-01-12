@@ -5,51 +5,59 @@ exports.searchCatalog = async (req, res) => {
 
   if (!query) return res.json([]);
   const searchTerm = `%${query}%`;
-  let sql = "";
-  let params = [];
 
   try {
-  
+    // CATEGORÍA ESPECÍFICA
     if (category && category !== 'General' && category !== 'Custom') {
       
       switch (category) {
         case "Music":
-          sql = `SELECT music_id AS id, 'Music' AS type, title, artist, album, release_year, cover_url 
-                FROM Catalog_Music WHERE title LIKE ? OR artist LIKE ? LIMIT 20`;
-          params = [searchTerm, searchTerm];
-          break;
+          const [musicResults] = await db.query(
+            `SELECT music_id AS id, 'Music' AS type, title, artist, album, release_year, cover_url 
+             FROM Catalog_Music WHERE title LIKE ? OR artist LIKE ? LIMIT 20`,
+            [searchTerm, searchTerm]
+          );
+          return res.json(musicResults);
 
         case "Books":
-          sql = `SELECT book_id AS id, 'Books' AS type, title, author, isbn, publisher, cover_url 
-                 FROM Catalog_Books WHERE title LIKE ? OR author LIKE ? LIMIT 20`;
-          params = [searchTerm, searchTerm];
-          break;
+          const [bookResults] = await db.query(
+            `SELECT book_id AS id, 'Books' AS type, title, author, isbn, publisher, cover_url 
+             FROM Catalog_Books WHERE title LIKE ? OR author LIKE ? LIMIT 20`,
+            [searchTerm, searchTerm]
+          );
+          return res.json(bookResults);
 
         case "Movies":
-          sql = `SELECT movie_id AS id, 'Movies' AS type, title, director, release_year, genre, poster_url 
-                 FROM Catalog_Movies WHERE title LIKE ? LIMIT 20`;
-          params = [searchTerm];
-          break;
+          const [movieResults] = await db.query(
+            `SELECT movie_id AS id, 'Movies' AS type, title, director, release_year, genre, poster_url 
+             FROM Catalog_Movies WHERE title LIKE ? LIMIT 20`,
+            [searchTerm]
+          );
+          return res.json(movieResults);
 
         case "Shows":
-          sql = `SELECT show_id AS id, 'Shows' AS type, title, seasons, platform, release_year, poster_url 
-                 FROM Catalog_Shows WHERE title LIKE ? LIMIT 20`;
-          params = [searchTerm];
-          break;
+          const [showResults] = await db.query(
+            `SELECT show_id AS id, 'Shows' AS type, title, seasons, platform, release_year, poster_url 
+             FROM Catalog_Shows WHERE title LIKE ? LIMIT 20`,
+            [searchTerm]
+          );
+          return res.json(showResults);
 
         case "Games":
-          sql = `SELECT game_id AS id, 'Games' AS type, title, developer, platform, release_year, poster_url 
-                 FROM Catalog_Games WHERE title LIKE ? LIMIT 20`;
-          params = [searchTerm];
-          break;
+          const [gameResults] = await db.query(
+            `SELECT game_id AS id, 'Games' AS type, title, developer, platform, release_year, poster_url 
+             FROM Catalog_Games WHERE title LIKE ? LIMIT 20`,
+            [searchTerm]
+          );
+          return res.json(gameResults);
 
         default:
           return res.status(400).json({ error: "Categoría no válida" });
       }
-      const [results] = await db.query(sql, params);
-      return res.json(results);
     }
 
+    // 2. BÚSQUEDA GENERAL 
+    
     const searchMusic = db.query(
       `SELECT music_id as id, 'Music' as type, title, artist as subtitle, release_year, cover_url as image 
        FROM Catalog_Music WHERE title LIKE ? OR artist LIKE ? LIMIT 5`, 
@@ -79,6 +87,7 @@ exports.searchCatalog = async (req, res) => {
        FROM Catalog_Games WHERE title LIKE ? LIMIT 5`, 
       [searchTerm]
     );
+
     const [music, books, movies, shows, games] = await Promise.all([
       searchMusic, searchBooks, searchMovies, searchShows, searchGames
     ]);

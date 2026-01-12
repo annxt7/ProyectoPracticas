@@ -2,39 +2,26 @@ const db = require("../config/dbconect");
 
 // Crear una colección nueva
 exports.createCollection = async (req, res) => {
-  console.log("--- INTENTO DE CREAR COLECCIÓN ---");
-  
-  // 1. Verificar Usuario
   if (!req.user || !req.user.id) {
-      console.error("ERROR: No hay usuario en req.user (Falta verifyToken en la ruta)");
+      console.error("ERROR: No hay usuario (Falta verifyToken en la ruta)");
       return res.status(401).json({ error: "Usuario no identificado" });
   }
   const user_id = req.user.id;
-
-  // 2. Datos recibidos
-  // NOTA: Asegúrate de que el frontend envía 'cover_url', no 'cover' ni 'image'
   const { collection_name, collection_type, collection_description, is_private, cover_url } = req.body;
-  
-  console.log("Usuario ID:", user_id);
-  console.log("Datos:", { collection_name, collection_type, cover_url });
-
   try {
-    // 3. Query SQL
-    // IMPORTANTE: Los nombres aquí deben ser EXACTOS a tu base de datos
     const sql = `
       INSERT INTO Collections 
       (user_id, collection_name, collection_type, collection_description, is_private, cover_url)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
-    
-    // 4. Ejecución
+
     const [result] = await db.query(sql, [
       user_id, 
       collection_name, 
       collection_type, 
       collection_description, 
-      is_private ? 1 : 0, // Convertimos true/false a 1/0 por seguridad
-      cover_url || null   // Si llega undefined, ponemos null
+      is_private ? 1 : 0, 
+      cover_url || null 
     ]);
 
     console.log("¡ÉXITO! ID Creado:", result.insertId);
@@ -47,12 +34,11 @@ exports.createCollection = async (req, res) => {
 
   } catch (error) {
     console.error("ERROR SQL CRÍTICO:", error);
-    // Devolvemos el mensaje de SQL para que lo veas en el navegador
     res.status(500).json({ error: "Error de base de datos", sqlMessage: error.message });
   }
 };
 
-// Obtener todas las colecciones de un usuario (para el perfil)
+// Obtener todas las colecciones de un usuario 
 exports.getUserCollections = async (req, res) => {
     const { userId } = req.params;
     try {
@@ -113,7 +99,6 @@ exports.getCollectionDetails = async (req, res) => {
 
     } catch (error) {
         console.error("Error cargando colección:", error);
-        // Esto te mostrará el error real en la respuesta si vuelve a fallar
         res.status(500).json({ error: "Error de servidor", details: error.message });
     }
 };
@@ -207,8 +192,6 @@ exports.updateCollection = async (req, res) => {
     const userId = req.user.id; 
     const { collection_name, collection_description, cover_url } = req.body;
 
-    console.log(`--- ACTUALIZANDO COLECCIÓN ${id} ---`);
-
     try {
     
         const sql = `
@@ -227,15 +210,61 @@ exports.updateCollection = async (req, res) => {
             id, 
             userId
         ]);
-
         if (result.affectedRows === 0) {
             return res.status(403).json({ error: "No tienes permiso o la colección no existe" });
         }
-
         res.json({ success: true, message: "Colección actualizada" });
-
     } catch (error) {
         console.error("Error actualizando colección:", error);
         res.status(500).json({ error: "Error de servidor" });
     }
+};
+
+//Guardar colección
+exports.saveCollection = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    try {
+        const [result] = await db.query(
+            "INSERT INTO SavedCollections (user_id, collection_id) VALUES (?, ?)",
+            [userId, id]
+        );
+        res.json({ success: true, message: "Colección guardada" });
+    } catch (error) {
+        console.error("Error guardando colección:", error);
+        res.status(500).json({ error: "Error de servidor" });
+    }
+};
+
+//Obtener colecciones guardadas
+exports.getSavedCollections = async (req, res) => {
+    const { userId } = req.params;
+    try{
+        const sql = `
+        SELECT c.* 
+        FROM Collections c
+        JOIN SavedCollections sc ON c.collection_id = sc.collection_id
+        WHERE sc.user_id = ?
+    `;
+        const [result] = await db.query(sql, [userId]);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error("Error obteniendo colecciones guardadas:", error);
+        res.status(500).json({ error: "Error de servidor" });
+    }
+};
+
+//Eliminar coleccón de guardadas
+exports.deleteSavedCollection = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+    try{
+        const sql = "DELETE FROM SavedCollections WHERE user_id = ? AND collection_id = ?";
+        const [result] = await db.query(sql, [userId, id]);
+        res.json({ success: true, message: "Colección eliminada de guardadas" });
+    }catch(error){
+        console.error('No se ha podido eliminar la colección guardada:', error);
+        res.status(500).json({ error: "Error de servidor" });
+    };
 };

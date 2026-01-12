@@ -18,6 +18,7 @@ import AddToCollectionModal from "../components/AddToCollectionModal";
 import AddItemModal from "../components/AddItemModal";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
+import { ca } from "zod/v4/locales";
 
 const CollectionPage = () => {
   const { id } = useParams();
@@ -159,6 +160,13 @@ const CollectionPage = () => {
       }
     }
   };
+  const handleSave= async(collection_id)=>{
+    try{
+      await api.post(`/collections/save/${collection_id}`);
+    }catch(error){
+      console.error("Error guardando colección:", error);
+    }
+  }
 
   const handleAddItem = async (newItem) => {
     try {
@@ -301,7 +309,7 @@ const CollectionPage = () => {
                       )}
                     </>
                   ) : (
-                    <button className="btn btn-primary btn-sm gap-2 rounded-full"><BookmarkPlus size={18} /> Guardar Colección</button>
+                    <button onClick={()=>handleSave(collectionInfo.id)} className="btn btn-primary btn-sm gap-2 rounded-full"><BookmarkPlus size={18} /> Guardar Colección</button>
                   )}
                   {!isEditing && <button className="btn btn-square btn-ghost btn-sm rounded-full"><Share2 size={18} /></button>}
                 </div>
