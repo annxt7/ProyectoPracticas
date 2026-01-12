@@ -4,6 +4,7 @@ const applySecurity = require("./middlewares");
 const dbconection = require("./config/dbconect");
 const requestLogger = require("./middlewares/logMiddleware"); 
 const logger = require("./config/logger");
+const activityRoutes = require('./routes/activityRoutes');
 
 // Importación de Rutas
 const userRoutes = require('./routes/userRoutes');
@@ -30,6 +31,7 @@ app.use('/api/collections', collectionRoutes);
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/files', uploadRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/activity', activityRoutes);
 
 // 4. RUTA DE SALUD (Health Check)
 app.get("/api/health", (req, res) => {

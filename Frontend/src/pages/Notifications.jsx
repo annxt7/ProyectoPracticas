@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
-import api from "../services/api.js"; // Asegúrate de que esta ruta sea correcta
+import api from "../services/api.js";
 
 const Activity = () => {
   const [activeFilter, setActiveFilter] = useState("all"); 
@@ -17,11 +17,11 @@ const Activity = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. CARGAR NOTIFICACIONES REALES
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/activity"); // Cambia a tu endpoint real de notificaciones
+      // Endpoint que devuelve las notificaciones del usuario logueado
+      const res = await api.get("/activity"); 
       setNotifications(res.data);
     } catch (error) {
       console.error("Error cargando actividad:", error);
@@ -34,10 +34,9 @@ const Activity = () => {
     fetchNotifications();
   }, []);
 
-  // 2. LÓGICA DE INTERACCIÓN REAL
   const markAllAsRead = async () => {
+    if (notifications.filter(n => !n.read).length === 0) return;
     try {
-      // Llamada al backend para marcar todas como leídas
       await api.put("/activity/read-all");
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (error) {
@@ -45,14 +44,22 @@ const Activity = () => {
     }
   };
 
-  // 3. CÁLCULO DE ESTADÍSTICAS REALES
+  // Marcar una sola notificación como leída al hacer click
+  const markAsRead = async (id) => {
+    try {
+      await api.put(`/activity/${id}/read`);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const stats = useMemo(() => ({
     followers: notifications.filter(n => n.type === "follow").length,
     interactions: notifications.filter(n => n.type?.includes("like") || n.type === "comment").length,
     mentions: notifications.filter(n => n.type === "comment").length
   }), [notifications]);
 
-  // 4. LÓGICA DE FILTRADO
   const filteredNotifications = notifications.filter(n => {
     const matchesType = activeFilter === "all" || 
       (activeFilter === "interactions" && (n.type?.includes("like") || n.type === "comment")) ||
@@ -117,30 +124,40 @@ const Activity = () => {
             </div>
           ) : (
             <div className="space-y-10">
-              {/* SECCIÓN PENDIENTES */}
-              {(statusFilter === 'all' || statusFilter === 'unread') && (
-                <section>
-                  <h3 className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4 pl-2">Pendientes</h3>
-                  <div className="flex flex-col gap-2">
-                    {filteredNotifications.filter(n => !n.read).length > 0 ? (
-                      filteredNotifications.filter(n => !n.read).map(n => <NotificationItem key={n.id} data={n} />)
-                    ) : (
-                      <div className="p-8 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-30 text-sm italic">
-                        No hay notificaciones nuevas
+              {filteredNotifications.length > 0 ? (
+                <>
+                  {/* SECCIÓN PENDIENTES */}
+                  {(statusFilter === 'all' || statusFilter === 'unread') && (
+                    <section>
+                      <h3 className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4 pl-2">Pendientes</h3>
+                      <div className="flex flex-col gap-2">
+                        {filteredNotifications.filter(n => !n.read).length > 0 ? (
+                          filteredNotifications.filter(n => !n.read).map(n => 
+                            <NotificationItem key={n.id} data={n} onRead={() => markAsRead(n.id)} />
+                          )
+                        ) : (
+                          <div className="p-8 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-30 text-sm italic">
+                            No hay notificaciones nuevas
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </section>
-              )}
+                    </section>
+                  )}
 
-              {/* SECCIÓN LEÍDO */}
-              {(statusFilter === 'all' || statusFilter === 'read') && filteredNotifications.filter(n => n.read).length > 0 && (
-                <section>
-                  <h3 className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4 pl-2">Leído</h3>
-                  <div className="flex flex-col gap-2 opacity-80">
-                    {filteredNotifications.filter(n => n.read).map(n => <NotificationItem key={n.id} data={n} />)}
-                  </div>
-                </section>
+                  {/* SECCIÓN LEÍDO */}
+                  {(statusFilter === 'all' || statusFilter === 'read') && filteredNotifications.filter(n => n.read).length > 0 && (
+                    <section>
+                      <h3 className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4 pl-2">Leído</h3>
+                      <div className="flex flex-col gap-2 opacity-80">
+                        {filteredNotifications.filter(n => n.read).map(n => 
+                          <NotificationItem key={n.id} data={n} />
+                        )}
+                      </div>
+                    </section>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-20 opacity-40">No se encontró actividad con estos filtros.</div>
               )}
             </div>
           )}
@@ -150,7 +167,7 @@ const Activity = () => {
         <aside className="hidden lg:block">
           <div className="sticky top-24">
             <div className="p-6 rounded-[2rem] border border-white/5 bg-base-200/40 backdrop-blur-sm">
-              <h4 className="text-[10px] uppercase tracking-[0.2em] opacity-40 font-bold mb-6 text-white">Resumen Semanal</h4>
+              <h4 className="text-[10px] uppercase tracking-[0.2em] opacity-40 font-bold mb-6 text-white">Resumen</h4>
               <div className="space-y-5">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-medium opacity-60">Seguidores</span>
@@ -161,7 +178,7 @@ const Activity = () => {
                   <span className="text-sm font-black text-pink-400">{stats.interactions}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium opacity-60">Menciones</span>
+                  <span className="text-xs font-medium opacity-60">Comentarios</span>
                   <span className="text-sm font-black text-green-400">{stats.mentions}</span>
                 </div>
               </div>
@@ -169,34 +186,49 @@ const Activity = () => {
           </div>
         </aside>
       </div>
-      
       <NavMobile />
     </div>
   );
 };
 
-const NotificationItem = ({ data }) => {
-  // Función para formatear el tiempo desde la fecha real
+const NotificationItem = ({ data, onRead }) => {
+  const [isFollowing, setIsFollowing] = useState(false);
+
   const formatTime = (dateString) => {
     if (!dateString) return "Ahora";
     const date = new Date(dateString);
     const now = new Date();
-    const diffInMinutes = Math.floor((now - date) / 60000);
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return `ahora`;
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) return `${diffInMinutes}min`;
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours}h`;
     return `${Math.floor(diffInHours / 24)}d`;
   };
 
+  const handleFollow = async (e) => {
+    e.stopPropagation();
+    try {
+      await api.post(`/users/follow/${data.user.id}`);
+      setIsFollowing(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div
+      onClick={!data.read ? onRead : undefined}
       className={`
-      relative group flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 border border-white/10
-      ${data.read ? "hover:bg-white/5" : "bg-white/5 hover:bg-white/10"}
-    `}
+        relative group flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 border border-white/5
+        ${data.read ? "hover:bg-white/5 opacity-70" : "bg-white/[0.03] hover:bg-white/[0.07]"}
+        ${!data.read ? "cursor-pointer" : ""}
+      `}
     >
       {!data.read && (
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--p),0.8)]"></div>
+        <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--p),0.8)]"></div>
       )}
 
       <div className="relative flex-none">
@@ -206,7 +238,7 @@ const NotificationItem = ({ data }) => {
           </div>
         ) : (
           <div className="avatar">
-            <div className="w-10 h-10 rounded-full ring ring-base-100 ring-offset-2 overflow-hidden">
+            <div className="w-10 h-10 rounded-full ring ring-base-100 ring-offset-2 overflow-hidden bg-base-300">
               <img 
                 src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}`} 
                 alt={data.user?.name} 
@@ -227,7 +259,7 @@ const NotificationItem = ({ data }) => {
       <div className="flex-1 min-w-0 pt-0.5">
         <div className="text-sm leading-snug">
           {data.type !== "system" && (
-            <span className="font-bold cursor-pointer hover:text-primary text-white mr-1">
+            <span className="font-bold hover:text-primary text-white mr-1 transition-colors">
               {data.user?.name || "Usuario"}
             </span>
           )}
@@ -240,18 +272,23 @@ const NotificationItem = ({ data }) => {
           )}
         </div>
         <span className="text-[10px] opacity-40 mt-1 block uppercase tracking-wider">
-          {formatTime(data.created_at || data.time)}
+          {formatTime(data.created_at)}
         </span>
       </div>
 
       <div className="flex-none self-center">
-        {data.type === "follow" && (
-          <button className="btn btn-sm btn-outline rounded-full px-4 hover:btn-primary text-xs">
+        {data.type === "follow" && !isFollowing && (
+          <button 
+            onClick={handleFollow}
+            className="btn btn-xs btn-primary rounded-full px-4 text-[10px] font-bold"
+          >
             Seguir
           </button>
         )}
+        {isFollowing && <span className="text-[10px] opacity-40 font-bold px-2">Siguiendo</span>}
+        
         {(data.type?.includes("like") || data.type === "comment") && data.image && (
-          <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 shadow-sm">
+          <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/10 shadow-sm">
             <img src={data.image} alt="preview" className="w-full h-full object-cover" />
           </div>
         )}
