@@ -83,10 +83,11 @@ const Profile = () => {
           savedPromise = api.get(`/collections/saved/${targetId}`);
         }
 
-        const [colRes, uRes, sRes] = await Promise.all([
+        const [colRes, uRes, sRes,statsRes] = await Promise.all([
           collectionsPromise,
           userPromise,
           savedPromise,
+          statsPromise
         ]);
         setCollections(colRes.data || []);
         setSavedCollections(isMe ? sRes.data || [] : []);
