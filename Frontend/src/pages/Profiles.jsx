@@ -25,13 +25,12 @@ const Profile = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   //Perfil propio??
-  const isMe =
-    userId === "me" || String(userId) === String(user?.id);
+  const isMe = userId === "me" || String(userId) === String(user?.id);
   const targetId = isMe ? user?.id : userId;
 
   const [profileData, setProfileData] = useState(isMe ? user : null);
   const [collections, setCollections] = useState([]);
-  const [savedCollections,setSavedCollections] = useState([]);
+  const [savedCollections, setSavedCollections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Edición
@@ -53,42 +52,42 @@ const Profile = () => {
       setNewDescription(user.bio || "");
     }
   }, [user, isMe]);
-useEffect(() => {
-  const fetchData = async () => {
-    if (!targetId) return;
-    setIsLoading(true);
-    setCollections([]);
-    setSavedCollections([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!targetId) return;
+      setIsLoading(true);
+      setCollections([]);
+      setSavedCollections([]);
 
-    try {
-      const collectionsPromise = api.get(`/collections/user/${targetId}`);
-      let userPromise = Promise.resolve({ data: null });
-      let savedPromise = Promise.resolve({ data: [] });
+      try {
+        const collectionsPromise = api.get(`/collections/user/${targetId}`);
+        let userPromise = Promise.resolve({ data: null });
+        let savedPromise = Promise.resolve({ data: [] });
 
-      if (!isMe) {
-        userPromise = api.get(`/users/${targetId}`);
-      } else {
-        savedPromise = api.get(`/collections/saved}`);
+        if (!isMe) {
+          userPromise = api.get(`/users/${targetId}`);
+        } else {
+          savedPromise = api.get(`/collections/saved/${targetId}`);
+        }
+
+        const [colRes, uRes, sRes] = await Promise.all([
+          collectionsPromise,
+          userPromise,
+          savedPromise,
+        ]);
+        setCollections(colRes.data || []);
+        setSavedCollections(isMe ? sRes.data || [] : []);
+        if (!isMe && uRes.data) {
+          setProfileData(uRes.data);
+        }
+      } catch (error) {
+        console.error("Error cargando perfil:", error);
+      } finally {
+        setIsLoading(false);
       }
-
-      const [colRes, uRes, sRes] = await Promise.all([
-        collectionsPromise,
-        userPromise,
-        savedPromise
-      ]);
-      setCollections(colRes.data || []);
-      setSavedCollections(isMe ? (sRes.data || []) : []);
-      if (!isMe && uRes.data) {
-        setProfileData(uRes.data);
-      }
-    } catch (error) {
-      console.error("Error cargando perfil:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  fetchData();
-}, [targetId, isMe]);
+    };
+    fetchData();
+  }, [targetId, isMe]);
 
   // --- HANDLERS ---
   const handleSaveBio = async (e) => {
@@ -139,10 +138,14 @@ useEffect(() => {
       console.error("Error al borrar:", error);
     }
   };
-    const handleDeleteSavedCollection = async (e, collectionId) => {
+  const handleDeleteSavedCollection = async (e, collectionId) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm("¿Estás seguro de que quieres eliminar esta colección de tus guardados?"))
+    if (
+      !window.confirm(
+        "¿Estás seguro de que quieres eliminar esta colección de tus guardados?"
+      )
+    )
       return;
     try {
       await api.delete(`/collections/saved/${collectionId}`);
@@ -393,9 +396,10 @@ useEffect(() => {
               </Link>
             ))}
           {/* COLECCIONES GUARDADAS */}
-          {activeTab === "saved" && isMe && (
+          {activeTab === "saved" &&
+            isMe &&
             savedCollections.map((col) => (
-               <Link
+              <Link
                 to={`/collection/${col.collection_id}`}
                 key={col.collection_id}
                 className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform group"
@@ -427,10 +431,7 @@ useEffect(() => {
                   </button>
                 )}
               </Link>
-            )
-          )
-        
-          )}
+            ))}
         </div>
 
         {/* Config*/}
