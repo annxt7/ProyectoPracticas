@@ -83,11 +83,11 @@ const Profile = () => {
           savedPromise = api.get(`/collections/saved/${targetId}`);
         }
 
-        const [colRes, uRes, sRes,statsRes] = await Promise.all([
+        const [colRes, uRes, sRes, statsRes] = await Promise.all([
           collectionsPromise,
           userPromise,
           savedPromise,
-          statsPromise
+          statsPromise,
         ]);
         setCollections(colRes.data || []);
         setSavedCollections(isMe ? sRes.data || [] : []);
@@ -183,20 +183,34 @@ const Profile = () => {
       </div>
     );
   }
+  // --- HANDLERS ---
   const handleFollowToggle = async () => {
+    if (!targetId) return;
+    const prevFollowers = followStats.followers;
+    const prevFollowingState = isFollowing;
+
+    setIsFollowing(!isFollowing);
+    setFollowStats((prev) => ({
+      ...prev,
+      followers: isFollowing ? prev.followers - 1 : prev.followers + 1,
+    }));
+
     try {
-      if (isFollowing) {
+      if (prevFollowingState) {
         await api.delete(`/users/unfollow/${targetId}`);
-        setFollowStats((prev) => ({ ...prev, followers: prev.followers - 1 }));
       } else {
         await api.post(`/users/follow/${targetId}`);
-        setFollowStats((prev) => ({ ...prev, followers: prev.followers + 1 }));
       }
-      setIsFollowing(!isFollowing);
     } catch (error) {
       console.error("Error al cambiar estado de seguimiento:", error);
+      setIsFollowing(prevFollowingState);
+      setFollowStats((prev) => ({
+        ...prev,
+        followers: prevFollowers,
+      }));
     }
   };
+
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
@@ -308,35 +322,84 @@ const Profile = () => {
           </div>
 
           {/* INFORMACIÓN DEL PERFIL */}
-        <div className="space-y-3 mb-6">
+          <div className="space-y-3 mb-6">
             <h1 className="text-2xl md:text-4xl font-bold font-serif">
               {profileData?.username || "Usuario"}
             </h1>
-
-            {/* ... (Bio igual) ... */}
-
+            {/* BIO */}
+            <div className="mt-2 text-sm md:text-base">
+              {isEditing ? (
+                <form onSubmit={handleSaveBio} className="flex flex-col gap-2">
+                  <textarea
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    className="textarea textarea-bordered w-full resize-none bg-base-100 text-white placeholder:text-white/40"
+                    rows={3}
+                    placeholder="Escribe algo sobre ti..."
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="btn btn-sm btn-ghost"
+                    >
+                      Cancelar
+                    </button>
+                    <button type="submit" className="btn btn-sm btn-primary">
+                      Guardar
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <p className="opacity-80">
+                  {profileData?.bio || "Sin bio aún..."}
+                </p>
+              )}
+            </div>
             <div className="flex gap-6 py-4 mt-4">
               <div className="flex gap-1 items-baseline">
                 <span className="font-bold text-lg">{collections.length}</span>
-                <span className="text-xs uppercase opacity-60 font-bold">Colecciones</span>
+                <span className="text-xs uppercase opacity-60 font-bold">
+                  Colecciones
+                </span>
               </div>
 
               {/* CONTADOR SEGUIDORES (Clickable) */}
-              <div 
+              <div
                 className="flex gap-1 items-baseline cursor-pointer hover:opacity-70 transition-opacity"
-                onClick={() => setFollowModal({ open: true, type: "followers", title: "Seguidores" })}
+                onClick={() =>
+                  setFollowModal({
+                    open: true,
+                    type: "followers",
+                    title: "Seguidores",
+                  })
+                }
               >
-                <span className="font-bold text-lg">{followStats.followers}</span>
-                <span className="text-xs uppercase opacity-60 font-bold">Seguidores</span>
+                <span className="font-bold text-lg">
+                  {followStats.followers}
+                </span>
+                <span className="text-xs uppercase opacity-60 font-bold">
+                  Seguidores
+                </span>
               </div>
 
               {/* CONTADOR SEGUIDOS (Clickable) */}
-              <div 
+              <div
                 className="flex gap-1 items-baseline cursor-pointer hover:opacity-70 transition-opacity"
-                onClick={() => setFollowModal({ open: true, type: "following", title: "Siguiendo" })}
+                onClick={() =>
+                  setFollowModal({
+                    open: true,
+                    type: "following",
+                    title: "Siguiendo",
+                  })
+                }
               >
-                <span className="font-bold text-lg">{followStats.following}</span>
-                <span className="text-xs uppercase opacity-60 font-bold">Siguiendo</span>
+                <span className="font-bold text-lg">
+                  {followStats.following}
+                </span>
+                <span className="text-xs uppercase opacity-60 font-bold">
+                  Siguiendo
+                </span>
               </div>
             </div>
           </div>

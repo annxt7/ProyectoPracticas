@@ -6,31 +6,47 @@ import MiniUserCard from "../components/MiniUserCard.jsx";
 import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
 import api from "../services/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import { on } from "../../../Backend/config/dbconect.js";
 
 const Feed = () => {
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [followingIds, setFollowingIds] = useState([]);
+  const isFollowing = followingIds.includes(user.id);
 
-  // Función para obtener mi ID (misma lógica que Explorer)
-  const getMyId = () => {
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.id || parsed.user_id) return String(parsed.id || parsed.user_id).trim();
+  const {user} = useAuth();
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchMyFollowing = async () => {
+      try {
+        const res = await api.get(`/users/following/${user.id}`);
+        setFollowingIds(res.data.map(u => u.id));
+      } catch (e) {
+        console.error("Error cargando mis seguidos", e);
       }
-      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
-      if (!token) return null;
-      const payload = JSON.parse(window.atob(token.split('.')[1]));
-      return String(payload.id || payload.userId || payload.user_id || "").trim();
-    } catch (e) {
-      return null;
+    };
+
+    fetchMyFollowing();
+  }, [user?.id]);
+
+  const handleFollowToggle = async (targetId, isFollowing) => {
+    try {
+      if (isFollowing) {
+        await api.delete(`/users/unfollow/${targetId}`);
+        setFollowingIds(prev => prev.filter(id => id !== targetId));
+      } else {
+        await api.post(`/users/follow/${targetId}`);
+        setFollowingIds(prev => [...prev, targetId]);
+      }
+    } catch (error) {
+      console.error("Error follow toggle:", error);
     }
   };
-
-  const myId = getMyId();
-
+  
   function timeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -52,19 +68,14 @@ const Feed = () => {
     const fetchFeedData = async () => {
       setLoading(true);
       try {
-        // 1. Cargar Actividad del feed
         const activityRes = await api.get("/users/feed/activity");
-        // FILTRO: No mostrar mi propia actividad en el feed
         const filteredActivity = activityRes.data.filter(item => 
-          String(item.user_id).trim() !== myId
+          String(item.user_id).trim() !== user.id
         );
         setActivities(filteredActivity);
-
-        // 2. Cargar Usuarios sugeridos
         const suggestionsRes = await api.get("/search/suggested");
-        // FILTRO: No mostrarme a mí mismo en sugerencias
-        const filteredSuggestions = suggestionsRes.data.filter(user => 
-          String(user.id || user.user_id).trim() !== myId
+        const filteredSuggestions = suggestionsRes.data.filter(u => 
+          String(u.id || u.user_id).trim() !== user.id
         );
         setSuggestedUsers(filteredSuggestions);
 
@@ -76,7 +87,7 @@ const Feed = () => {
     };
 
     fetchFeedData();
-  }, [myId]); // Añadido myId como dependencia
+  }, [user.id]); 
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
@@ -169,15 +180,16 @@ const Feed = () => {
               </h3>
               <div className="space-y-4">
                 {suggestedUsers.length > 0 ? (
-                  suggestedUsers.map((user) => (
+                  suggestedUsers.map((u) => (
                     <MiniUserCard
-                      key={user.id}
+                      key={u.id}
                       user={{
-                        id: user.id,
-                        name: user.name,
-                        handle: user.handle,
-                        img: user.img,
-                        isFollowing: false,
+                        id: u.id,
+                        name: u.name,
+                        handle: u.handle,
+                        img: u.img,
+                        isFollowing: isFollowing,
+                        onFollowToggle: () => handleFollowToggle(u.id, isFollowing),
                       }}
                     />
                   ))

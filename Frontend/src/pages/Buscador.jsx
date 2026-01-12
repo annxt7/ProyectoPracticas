@@ -17,9 +17,6 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  /* ======================
-     MIS SEGUIDOS
-  ====================== */
   useEffect(() => {
     if (!user?.id) return;
 
@@ -35,9 +32,6 @@ const Explorer = () => {
     fetchMyFollowing();
   }, [user?.id]);
 
-  /* ======================
-     FOLLOW / UNFOLLOW
-  ====================== */
   const handleFollowToggle = async (targetId, isFollowing) => {
     try {
       if (isFollowing) {
@@ -52,9 +46,6 @@ const Explorer = () => {
     }
   };
 
-  /* ======================
-     BUSCADOR
-  ====================== */
   useEffect(() => {
     if (!user?.id) return;
 
