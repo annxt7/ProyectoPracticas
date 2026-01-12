@@ -12,24 +12,19 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 1. Obtener mis datos de identidad (ID y Handle)
-  const getMyIdentity = () => {
+  // Intentamos obtener el handle local por si acaso, pero priorizaremos el ID del server
+  const getMyLocalHandle = () => {
     try {
       const stored = localStorage.getItem('user');
       if (stored) {
         const parsed = JSON.parse(stored);
-        return {
-          id: parsed.id ? String(parsed.id).trim() : null,
-          handle: parsed.handle ? String(parsed.handle).replace("@", "").toLowerCase().trim() : ""
-        };
+        return String(parsed.handle || "").replace("@", "").toLowerCase().trim();
       }
-    } catch (e) {
-      console.error("Error identificando usuario:", e);
-    }
-    return { id: null, handle: "" };
+    } catch (e) { return ""; }
+    return "";
   };
 
-  const myIdentity = getMyIdentity();
+  const myLocalHandle = getMyLocalHandle();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,22 +50,32 @@ const Explorer = () => {
         
         const data = await res.json();
 
-        // --- FILTRO DE CUENTAS (USUARIOS) ---
-        // Filtramos por ID y por Handle para estar 100% seguros
-        const filteredUsers = (data.users || []).filter((u) => {
+        // 1. Identificamos quién soy yo según el servidor (prioridad máxima)
+        const currentMeId = data.currentUserId ? String(data.currentUserId).trim() : null;
+
+        // --- FILTRO DE CUENTAS ---
+        const allUsers = Array.isArray(data.users) ? data.users : [];
+        const filteredUsers = allUsers.filter((u) => {
           const userId = String(u.id || u.user_id || "").trim();
           const userHandle = String(u.handle || "").replace("@", "").toLowerCase().trim();
           
-          const isMeById = myIdentity.id && userId === myIdentity.id;
-          const isMeByHandle = myIdentity.handle && userHandle === myIdentity.handle;
-
-          return !isMeById && !isMeByHandle;
+          // Si el ID coincide con el que manda el server, o el handle coincide con el local
+          const isMe = (currentMeId && userId === currentMeId) || 
+                       (myLocalHandle !== "" && userHandle === myLocalHandle);
+          return !isMe;
         });
 
         // --- FILTRO DE COLECCIONES ---
-        const filteredCollections = (data.collections || []).filter((col) => {
+        const allCollections = Array.isArray(data.collections) ? data.collections : [];
+        const filteredCollections = allCollections.filter((col) => {
           const colAuthor = String(col.author || "").replace("@", "").toLowerCase().trim();
-          return myIdentity.handle === "" || colAuthor !== myIdentity.handle;
+          
+          // Si el ID del autor está en la colección, lo usamos. Si no, usamos el handle.
+          const colAuthorId = col.user_id || col.author_id ? String(col.user_id || col.author_id).trim() : null;
+          
+          const isMine = (currentMeId && colAuthorId === currentMeId) || 
+                         (myLocalHandle !== "" && colAuthor === myLocalHandle);
+          return !isMine;
         });
 
         setUsersWithoutMyself(filteredUsers);
@@ -85,13 +90,12 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, myIdentity.id, myIdentity.handle]);
+  }, [query, myLocalHandle]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER DE BÚSQUEDA */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -146,7 +150,7 @@ const Explorer = () => {
         </aside>
 
         <main>
-          {loading && <div className="text-center py-4 opacity-50 text-xs">Buscando...</div>}
+          {loading && <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>}
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -192,7 +196,7 @@ const Explorer = () => {
                         <ItemCover src={col.cover} title={col.title} className="w-full h-full" />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-bold text-white text-lg">{col.title}</h3>
+                        <h3 className="font-bold text-white text-lg truncate group-hover:text-primary transition-colors">{col.title}</h3>
                         <span className="text-xs font-medium text-primary">{col.author}</span>
                       </div>
                     </div>
