@@ -311,42 +311,46 @@ exports.getActivityFeed = async (req, res) => {
 exports.changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        // Intentamos obtener el ID de varias formas comunes en JWT
-        const userId = req.user.id || req.user.user_id || req.user.sub;
+        // Obtenemos el ID del token (verificando ambos posibles nombres)
+        const userId = req.user.id || req.user.user_id;
 
-        // Detectar automáticamente si db es promesa
+        // Detectar si db ya es una promesa (común en tu servidor)
         const pool = typeof db.promise === 'function' ? db.promise() : db;
 
-        // IMPORTANTE: Asegúrate de que 'users' esté en minúsculas o como esté en tu DB
+        // 1. SELECT usando 'Users' (exacto como en tu DB)
         const [rows] = await pool.execute(
-            "SELECT password_hash FROM users WHERE user_id = ?", 
+            "SELECT password_hash FROM Users WHERE user_id = ?", 
             [userId]
         );
 
         if (!rows || rows.length === 0) {
-            return res.status(404).json({ error: "Usuario no encontrado en la base de datos de producción" });
+            return res.status(404).json({ error: "Usuario no encontrado en el servidor" });
         }
 
+        // 2. Verificación de la contraseña actual
         const isMatch = await bcrypt.compare(currentPassword, rows[0].password_hash);
         if (!isMatch) {
-            return res.status(401).json({ error: "La contraseña actual no es correcta" });
+            return res.status(401).json({ error: "La contraseña actual es incorrecta" });
         }
 
+        // 3. Encriptación de la nueva clave
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
+        // 4. UPDATE usando 'Users'
         await pool.execute(
-            "UPDATE users SET password_hash = ? WHERE user_id = ?", 
+            "UPDATE Users SET password_hash = ? WHERE user_id = ?", 
             [hashedPassword, userId]
         );
 
-        return res.status(200).json({ message: "Contraseña actualizada correctamente" });
+        return res.status(200).json({ message: "¡Contraseña actualizada correctamente!" });
+
     } catch (error) {
-        console.error("DEBUG SERVIDOR:", error);
+        console.error("DEBUG PRODUCCIÓN:", error);
         return res.status(500).json({ 
             error: "Error interno", 
-            message: error.message,
-            sqlCode: error.code // Esto te dirá si es 'ER_NO_SUCH_TABLE' u otro
+            details: error.message,
+            sqlCode: error.code 
         });
     }
 };
