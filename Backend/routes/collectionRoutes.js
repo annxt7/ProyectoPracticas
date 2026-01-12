@@ -19,6 +19,6 @@ router.put("/:id", verifyToken, collectionController.updateCollection);
 // GET 
 router.get("/user/:userId",verifyToken, collectionController.getUserCollections);
 router.get("/:id",verifyToken, collectionController.getCollectionDetails);
-router.get("/saved/:userId",verifyToken, collectionController.getSavedCollections);
+router.get("/saved",verifyToken, collectionController.getSavedCollections);
 
 module.exports = router;
