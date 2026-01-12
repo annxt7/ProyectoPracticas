@@ -104,8 +104,8 @@ const FollowsModal = ({ isOpen, onClose, userId, type, title }) => {
 
                       <p className="font-bold text-sm">{u.username}</p>
                     </div>
-
-                    <button
+                    {u.id !== user.id ?(
+                      <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleFollow(u.id, isFollowing);
@@ -116,6 +116,8 @@ const FollowsModal = ({ isOpen, onClose, userId, type, title }) => {
                     >
                       {isFollowing ? "Siguiendo" : "Seguir"}
                     </button>
+                    ) : null}
+                    
                   </div>
                 );
               })}

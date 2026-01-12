@@ -4,6 +4,8 @@ import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom";
 import ItemCover from "../components/ItemCover";
+import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 const Explorer = () => {
   const [query, setQuery] = useState("");
@@ -11,8 +13,37 @@ const Explorer = () => {
   const [usersWithoutMyself, setUsersWithoutMyself] = useState([]);
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [followingIds, setFollowingIds] = useState([]);
+  const { user } = useAuth();
+  useEffect(() => {
+      const fetchMyFollowing = async () => {
+        try {
+          const res = await api.get(`/users/following/${user.id}`);
+          setFollowingIds(res.data.map((u) => u.id));
+        } catch (e) {
+          console.error("Error cargando mis seguidos", e);
+        }
+      };
 
-  // 1. OBTENER IDENTIDAD (ID Y HANDLE)
+      fetchMyFollowing();
+    
+  }, followingIds);
+
+   const handleFollow = async (targetId, isFollowing) => {
+    try {
+      if (isFollowing) {
+        await api.delete(`/users/unfollow/${targetId}`);
+        setFollowingIds((prev) => prev.filter((id) => id !== targetId));
+      } else {
+        await api.post(`/users/follow/${targetId}`);
+        setFollowingIds((prev) => [...prev, targetId]);
+      }
+    } catch (error) {
+      console.error("Error follow toggle:", error);
+    }
+  };
+
+  // OBTENER IDENTIDAD (ID Y HANDLE)
   const getMyIdentity = () => {
     try {
       const stored = localStorage.getItem('user');
@@ -164,7 +195,17 @@ const Explorer = () => {
                           <p className="text-[10px] opacity-40 leading-none">{user.handle}</p>
                         </div>
                       </div>
-                      <button className={`btn btn-xs rounded-full px-4 ${user.isFollowing ? "btn-ghost border-white/10" : "btn-primary"}`}>{user.isFollowing ? "Siguiendo" : "Seguir"}</button>
+                     <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFollow(u.id, isFollowing);
+                      }}
+                      className={`btn btn-xs rounded-full ${
+                        isFollowing ? "btn-neutral" : "btn-primary"
+                      }`}
+                    >
+                      {isFollowing ? "Siguiendo" : "Seguir"}
+                    </button>
                     </div>
                   </Link>
                 ))
