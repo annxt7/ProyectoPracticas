@@ -4,12 +4,36 @@ import { Link } from 'react-router-dom';
 const MiniUserCard = ({ user }) => {
   if (!user) return null;
 
+  // 1. Obtener mi ID de forma segura para comparar
+  const getMyId = () => {
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.id || parsed.user_id) return String(parsed.id || parsed.user_id).trim();
+      }
+      
+      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
+      if (!token) return null;
+      const payload = JSON.parse(window.atob(token.split('.')[1]));
+      return String(payload.id || payload.userId || payload.user_id || "").trim();
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const myId = getMyId();
+  const cardUserId = String(user.id || user.user_id || "").trim();
+
+  // FILTRO: Si la tarjeta es de mi propio usuario, no renderizamos nada
+  if (myId && cardUserId === myId) {
+    return null;
+  }
+
   const handleFollow = (e) => {
- 
     e.preventDefault();
     e.stopPropagation();
     console.log("Siguiendo a:", user.name);
-    
   };
 
   return (

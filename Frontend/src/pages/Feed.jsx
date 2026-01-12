@@ -12,12 +12,29 @@ const Feed = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Helper para calcular "Hace cuanto tiempo"
+  // Función para obtener mi ID (misma lógica que Explorer)
+  const getMyId = () => {
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.id || parsed.user_id) return String(parsed.id || parsed.user_id).trim();
+      }
+      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
+      if (!token) return null;
+      const payload = JSON.parse(window.atob(token.split('.')[1]));
+      return String(payload.id || payload.userId || payload.user_id || "").trim();
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const myId = getMyId();
+
   function timeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " a";
     interval = seconds / 2592000;
@@ -30,17 +47,27 @@ const Feed = () => {
     if (interval > 1) return Math.floor(interval) + " min";
     return "Ahora";
   }
-  //FEED DE ACTIVIDAD
+
   useEffect(() => {
     const fetchFeedData = async () => {
       setLoading(true);
       try {
-        //Actividad del feed
+        // 1. Cargar Actividad del feed
         const activityRes = await api.get("/users/feed/activity");
-        setActivities(activityRes.data);
-        // Usuarios sugeridos
+        // FILTRO: No mostrar mi propia actividad en el feed
+        const filteredActivity = activityRes.data.filter(item => 
+          String(item.user_id).trim() !== myId
+        );
+        setActivities(filteredActivity);
+
+        // 2. Cargar Usuarios sugeridos
         const suggestionsRes = await api.get("/search/suggested");
-        setSuggestedUsers(suggestionsRes.data);
+        // FILTRO: No mostrarme a mí mismo en sugerencias
+        const filteredSuggestions = suggestionsRes.data.filter(user => 
+          String(user.id || user.user_id).trim() !== myId
+        );
+        setSuggestedUsers(filteredSuggestions);
+
       } catch (error) {
         console.error("Error cargando feed:", error);
       } finally {
@@ -49,12 +76,13 @@ const Feed = () => {
     };
 
     fetchFeedData();
-  }, []);
+  }, [myId]); // Añadido myId como dependencia
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
+        
         {/* COLUMNA IZQUIERDA (FEED) */}
         <div className="md:col-span-2 space-y-6">
           <div className="md:hidden flex items-center justify-between mb-4">
@@ -67,42 +95,31 @@ const Feed = () => {
             </div>
           ) : activities.length === 0 ? (
             <div className="text-center py-10 opacity-50">
-              No hay actividad reciente. ¡Sigue a alguien!
+              No hay actividad reciente de otros usuarios.
             </div>
           ) : (
             activities.map((item) => (
               <div
-                key={`${item.action_type}-${item.collection_id}`}
+                key={`${item.action_type}-${item.collection_id}-${item.created_at}`}
                 className="card border-b bg-base-100 border-white/5 md:border md:rounded-2xl md:shadow-sm overflow-hidden"
               >
-                {/* CABECERA DEL POST */}
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Link
-                      to={`/profile/${item.user_id}`}
-                      className="avatar cursor-pointer"
-                    >
+                    <Link to={`/profile/${item.user_id}`} className="avatar cursor-pointer">
                       <div className="w-10 h-10 rounded-full ring ring-base-200 ring-offset-1">
                         <img
-                          src={
-                            item.avatar_url ||
-                            `https://ui-avatars.com/api/?name=${item.username}&background=random`
-                          }
+                          src={item.avatar_url || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
                           alt={item.username}
                         />
                       </div>
                     </Link>
                     <div className="text-sm">
                       <p className="font-semibold leading-none">
-                        <Link
-                          to={`/profile/${item.user_id}`}
-                          className="hover:underline"
-                        >
+                        <Link to={`/profile/${item.user_id}`} className="hover:underline">
                           {item.username}
                         </Link>{" "}
                         <span className="font-normal opacity-70">
-                          {item.action_type === "created" ||
-                          item.action_type === "created_global"
+                          {item.action_type === "created" || item.action_type === "created_global"
                             ? "creó una colección"
                             : "actividad sugerida"}
                         </span>
@@ -113,16 +130,13 @@ const Feed = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs opacity-50">
-                      {timeAgo(item.created_at)}
-                    </span>
+                    <span className="text-xs opacity-50">{timeAgo(item.created_at)}</span>
                     <button className="btn btn-ghost btn-circle btn-xs">
                       <MoreHorizontal size={16} />
                     </button>
                   </div>
                 </div>
 
-                {/* IMAGEN / CONTENIDO */}
                 <Link to={`/collection/${item.collection_id}`}>
                   <div className="relative aspect-4/3 bg-base-200 w-full overflow-hidden cursor-pointer group">
                     <ItemCover
@@ -130,34 +144,16 @@ const Feed = () => {
                       title={item.collection_name}
                       className="w-full h-full object-cover"
                     />
-
                     <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
                       {item.collection_name}
-                    </div>
-
-                    {/* Botón Like Flotante */}
-                    <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
-                      <button
-                        className="flex items-center gap-1 group/btn"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          console.log("Like!");
-                        }}
-                      >
-                        <Heart
-                          size={20}
-                          className="group-hover/btn:text-red-500 transition-colors"
-                        />
-                      </button>
                     </div>
                   </div>
                 </Link>
 
-                {/* PIE DEL POST */}
                 <div className="p-4 flex gap-4">
-                  <div className="text-sm font-semibold opacity-70 hover:opacity-100 cursor-pointer transition-opacity">
-                    Me gusta
-                  </div>
+                  <button className="flex items-center gap-1 text-sm font-semibold opacity-70 hover:opacity-100 transition-opacity">
+                    <Heart size={18} /> Me gusta
+                  </button>
                 </div>
               </div>
             ))
@@ -186,9 +182,7 @@ const Feed = () => {
                     />
                   ))
                 ) : (
-                  <div className="opacity-50 text-sm">
-                    No hay sugerencias por ahora.
-                  </div>
+                  <div className="opacity-50 text-sm">No hay sugerencias por ahora.</div>
                 )}
               </div>
             </div>
