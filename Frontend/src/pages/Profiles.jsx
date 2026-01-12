@@ -92,10 +92,10 @@ const Profile = () => {
         setCollections(colRes.data || []);
         setSavedCollections(isMe ? sRes.data || [] : []);
         setFollowStats({
-          followers: statsRes.data.followers,
-          following: statsRes.data.following,
+          followers: statsRes.data.followers || 0,
+          following: statsRes.data.following || 0,
         });
-        setIsFollowing(statsRes.data.amIFollowing);
+        setIsFollowing(statsRes.data.amIFollowing || false);
         if (!isMe && uRes.data) {
           setProfileData(uRes.data);
         }
