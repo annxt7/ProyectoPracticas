@@ -2,11 +2,42 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 const FollowsModal = ({ isOpen, onClose, userId, type, title }) => {
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [followingIds, setFollowingIds] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchMyFollowing = async () => {
+        try {
+          const res = await api.get(`/users/following/${user.id}`);
+          setFollowingIds(res.data.map((u) => u.id));
+        } catch (e) {
+          console.error("Error cargando mis seguidos", e);
+        }
+      };
+
+      fetchMyFollowing();
+    }
+  }, [isOpen]);
+  const handleFollow = async (targetId, isFollowing) => {
+    try {
+      if (isFollowing) {
+        await api.delete(`/users/unfollow/${targetId}`);
+        setFollowingIds((prev) => prev.filter((id) => id !== targetId));
+      } else {
+        await api.post(`/users/follow/${targetId}`);
+        setFollowingIds((prev) => [...prev, targetId]);
+      }
+    } catch (error) {
+      console.error("Error follow toggle:", error);
+    }
+  };
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -44,29 +75,50 @@ const FollowsModal = ({ isOpen, onClose, userId, type, title }) => {
             </div>
           ) : users.length > 0 ? (
             <div className="space-y-4">
-              {users.map((u) => (
-                <div 
-                  key={u.id} 
-                  className="flex items-center justify-between group cursor-pointer"
-                  onClick={() => {
-                    navigate(`/profile/${u.id}`);
-                    onClose();
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="avatar">
-                      <div className="w-12 rounded-full">
-                        <img src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}`} alt={u.username} />
+              {users.map((u) => {
+                const isFollowing = followingIds.includes(u.id);
+
+                return (
+                  <div
+                    key={u.id}
+                    className="flex items-center justify-between group"
+                  >
+                    <div
+                      className="flex items-center gap-3 cursor-pointer"
+                      onClick={() => {
+                        navigate(`/profile/${u.id}`);
+                        onClose();
+                      }}
+                    >
+                      <div className="avatar">
+                        <div className="w-12 rounded-full">
+                          <img
+                            src={
+                              u.avatar ||
+                              `https://ui-avatars.com/api/?name=${u.username}`
+                            }
+                            alt={u.username}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div>
+
                       <p className="font-bold text-sm">{u.username}</p>
-                      <p className="text-xs opacity-50">{u.bio?.substring(0, 40)}...</p>
                     </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFollow(u.id, isFollowing);
+                      }}
+                      className={`btn btn-xs rounded-full ${
+                        isFollowing ? "btn-neutral" : "btn-primary"
+                      }`}
+                    >
+                      {isFollowing ? "Siguiendo" : "Seguir"}
+                    </button>
                   </div>
-                  <button className="btn btn-xs btn-outline rounded-full opacity-0 group-hover:opacity-100 transition-all">Ver</button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-10 opacity-50">
