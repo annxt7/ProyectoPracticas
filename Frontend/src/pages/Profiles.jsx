@@ -73,7 +73,7 @@ const Profile = () => {
 
       try {
         const collectionsPromise = api.get(`/collections/user/${targetId}`);
-        const statsPromise = api.get(`/users/${targetId}/follow-stats`);
+        const statsPromise = api.get(`/users/follow-stats/${targetId}`);
         let userPromise = Promise.resolve({ data: null });
         let savedPromise = Promise.resolve({ data: [] });
 
