@@ -54,43 +54,41 @@ const Profile = () => {
     }
   }, [user, isMe]);
 useEffect(() => {
-    const fetchData = async () => {
-      if (!targetId) return;
-      setIsLoading(true);
-      try {
-        const collectionsPromise = api.get(`/collections/user/${targetId}`);
-        let userPromise = null;
-        let savedPromise = null;
+  const fetchData = async () => {
+    if (!targetId) return;
+    setIsLoading(true);
+    setCollections([]);
+    setSavedCollections([]);
 
-        if (!isMe) {
-          userPromise = api.get(`/users/${targetId}`);
-        } else {
-          savedPromise = api.get(`/collections/saved/${targetId}`);
-        }
-        const [colRes, uRes, sRes] = await Promise.all([
-          collectionsPromise,
-          userPromise,
-          savedPromise
-        ]);
+    try {
+      const collectionsPromise = api.get(`/collections/user/${targetId}`);
+      let userPromise = Promise.resolve({ data: null });
+      let savedPromise = Promise.resolve({ data: [] });
 
-        setCollections(colRes.data);
-        if (uRes) {
-          setProfileData(uRes.data);
-        }
-        if (sRes) {
-          setSavedCollections(sRes.data);
-        } else {
-          setSavedCollections([]); 
-        }
-
-      } catch (error) {
-        console.error("Error cargando perfil:", error);
-      } finally {
-        setIsLoading(false);
+      if (!isMe) {
+        userPromise = api.get(`/users/${targetId}`);
+      } else {
+        savedPromise = api.get(`/collections/saved}`);
       }
-    };
-    fetchData();
-  }, [targetId, isMe]);
+
+      const [colRes, uRes, sRes] = await Promise.all([
+        collectionsPromise,
+        userPromise,
+        savedPromise
+      ]);
+      setCollections(colRes.data || []);
+      setSavedCollections(isMe ? (sRes.data || []) : []);
+      if (!isMe && uRes.data) {
+        setProfileData(uRes.data);
+      }
+    } catch (error) {
+      console.error("Error cargando perfil:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  fetchData();
+}, [targetId, isMe]);
 
   // --- HANDLERS ---
   const handleSaveBio = async (e) => {

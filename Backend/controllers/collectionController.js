@@ -239,7 +239,7 @@ exports.saveCollection = async (req, res) => {
 
 //Obtener colecciones guardadas
 exports.getSavedCollections = async (req, res) => {
-    const { userId } = req.params;
+    const userId = req.user.id;
     try{
         const sql = `
         SELECT c.* 
@@ -248,7 +248,7 @@ exports.getSavedCollections = async (req, res) => {
         WHERE sc.user_id = ?
     `;
         const [result] = await db.query(sql, [userId]);
-        res.json({ success: true, result });
+        res.json(result);
     } catch (error) {
         console.error("Error obteniendo colecciones guardadas:", error);
         res.status(500).json({ error: "Error de servidor" });
