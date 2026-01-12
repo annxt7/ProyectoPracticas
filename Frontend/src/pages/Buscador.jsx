@@ -12,33 +12,40 @@ const Explorer = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 1. Obtener mis datos del LocalStorage para poder filtrar
-  const getMyData = () => {
+  // 1. Función para obtener tu nombre de usuario del Token o LocalStorage
+  const getMyHandle = () => {
     try {
+      // Intento 1: LocalStorage directo
       const stored = localStorage.getItem('user');
       if (stored) {
         const parsed = JSON.parse(stored);
-        return {
-          id: String(parsed.id || parsed.user_id || "").trim(),
-          handle: String(parsed.handle || "").replace("@", "").trim().toLowerCase()
-        };
+        if (parsed.handle) return parsed.handle.replace("@", "").toLowerCase().trim();
+        if (parsed.username) return parsed.username.replace("@", "").toLowerCase().trim();
       }
-      return { id: null, handle: "" };
+
+      // Intento 2: Decodificar el Token si el anterior falla
+      const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
+      if (token) {
+        const payload = JSON.parse(window.atob(token.split('.')[1]));
+        // Aquí buscamos campos comunes donde se guarda el nombre en un JWT
+        const nameInToken = payload.handle || payload.username || payload.name || "";
+        return nameInToken.replace("@", "").toLowerCase().trim();
+      }
     } catch (e) {
-      return { id: null, handle: "" };
+      console.error("Error obteniendo identidad:", e);
     }
+    return "";
   };
 
-  const myData = getMyData();
+  const myHandle = getMyHandle();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const baseUrl =
-          window.location.hostname === "localhost"
-            ? "http://localhost:3000"
-            : "https://axel.informaticamajada.es";
+        const baseUrl = window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://axel.informaticamajada.es";
 
         const token = localStorage.getItem('tribe_token')?.replace(/['"]+/g, '');
 
@@ -52,26 +59,25 @@ const Explorer = () => {
           }
         );
 
-        if (!res.ok) throw new Error("Error en la respuesta del servidor");
+        if (!res.ok) throw new Error("Error en la respuesta");
         
         const data = await res.json();
-        const currentMeId = String(data.currentUserId || myData.id || "").trim();
 
-        // --- FILTRADO DE USUARIOS (Por ID) ---
-        const allUsers = Array.isArray(data.users) ? data.users : [];
-        const filteredUsers = allUsers.filter((u) => {
-          const uId = String(u.id || u.user_id || "").trim();
-          return uId !== currentMeId;
-        });
+        // --- FILTRO DE USUARIOS ---
+        // Usamos el ID que suele venir en el token o lo que devuelva el server
+        const myId = JSON.parse(localStorage.getItem('user') || '{}').id;
+        const filteredUsers = (data.users || []).filter(u => String(u.id) !== String(myId));
 
-        // --- FILTRADO DE COLECCIONES (Por Author / Handle) ---
-        const allCollections = Array.isArray(data.collections) ? data.collections : [];
-        const filteredCollections = allCollections.filter((col) => {
-          // Normalizamos el autor de la colección (quitamos @ y minúsculas)
-          const colAuthorClean = String(col.author || "").replace("@", "").trim().toLowerCase();
+        // --- FILTRO DE COLECCIONES (EL QUE TE FALLA) ---
+        const filteredCollections = (data.collections || []).filter((col) => {
+          if (!myHandle) return true; // Si no sé quién soy, muestro todo por seguridad
           
-          // Si el autor de la colección es igual a mi handle, NO la mostramos
-          const isMine = myData.handle !== "" && colAuthorClean === myData.handle;
+          const colAuthor = String(col.author || "").replace("@", "").toLowerCase().trim();
+          
+          // DEBUG: Esto te dirá en la consola por qué se ocultan o no
+          const isMine = colAuthor === myHandle;
+          if (isMine) console.log("Ocultando colección propia de:", colAuthor);
+          
           return !isMine;
         });
 
@@ -79,7 +85,7 @@ const Explorer = () => {
         setCollections(filteredCollections);
 
       } catch (err) {
-        console.error("Error en la carga:", err.message);
+        console.error("Error:", err);
       } finally {
         setLoading(false);
       }
@@ -87,13 +93,12 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, myData.id, myData.handle]);
+  }, [query, myHandle]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER DE BÚSQUEDA */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -122,9 +127,7 @@ const Explorer = () => {
                 }`}
               >
                 {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />
-                )}
+                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
               </button>
             ))}
           </div>
@@ -132,7 +135,6 @@ const Explorer = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-10">
-        {/* SIDEBAR IZQUIERDA */}
         <aside className="hidden lg:block">
           <div className="sticky top-48 space-y-8">
             <div>
@@ -150,11 +152,8 @@ const Explorer = () => {
           </div>
         </aside>
 
-        {/* CONTENIDO CENTRAL */}
         <main>
-          {loading && (
-            <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>
-          )}
+          {loading && <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>}
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -203,7 +202,6 @@ const Explorer = () => {
                         <h3 className="font-bold text-white text-lg truncate group-hover:text-primary transition-colors">{col.title}</h3>
                         <div className="flex items-center justify-between mt-4">
                           <span className="text-xs font-medium text-primary">{col.author}</span>
-                          <span className="text-[10px] opacity-30">{col.itemsCount || 0} items</span>
                         </div>
                       </div>
                     </div>
@@ -216,16 +214,13 @@ const Explorer = () => {
           )}
         </main>
 
-        {/* SIDEBAR DERECHA */}
         <aside className="hidden lg:block">
           <div className="sticky top-48">
             <div className="p-6 rounded-[2rem] bg-gradient-to-b from-primary/10 to-transparent border border-primary/10">
               <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-4 flex items-center gap-2 text-primary">
                 <Sparkles size={12} /> Recomendado
               </h4>
-              <p className="text-xs opacity-60 mb-6 leading-relaxed">
-                Descubre nuevas tribus basadas en tus gustos y actividad.
-              </p>
+              <p className="text-xs opacity-60 mb-6 leading-relaxed">Descubre nuevas tribus basadas en tus gustos.</p>
             </div>
           </div>
         </aside>
