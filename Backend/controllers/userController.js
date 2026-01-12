@@ -311,24 +311,25 @@ exports.getActivityFeed = async (req, res) => {
 exports.changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        const userId = req.user.id || req.user.user_id;
+        // Intentamos obtener el ID de varias formas comunes en JWT
+        const userId = req.user.id || req.user.user_id || req.user.sub;
 
-        // Detectar si db usa promesas directamente o requiere .promise()
+        // Detectar automáticamente si db es promesa
         const pool = typeof db.promise === 'function' ? db.promise() : db;
 
-        // Consulta con nombres confirmados del servidor
+        // IMPORTANTE: Asegúrate de que 'users' esté en minúsculas o como esté en tu DB
         const [rows] = await pool.execute(
             "SELECT password_hash FROM users WHERE user_id = ?", 
             [userId]
         );
 
-        if (!rows.length) {
-            return res.status(404).json({ error: "Usuario no encontrado en producción" });
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ error: "Usuario no encontrado en la base de datos de producción" });
         }
 
         const isMatch = await bcrypt.compare(currentPassword, rows[0].password_hash);
         if (!isMatch) {
-            return res.status(401).json({ error: "Contraseña actual incorrecta" });
+            return res.status(401).json({ error: "La contraseña actual no es correcta" });
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -339,13 +340,13 @@ exports.changePassword = async (req, res) => {
             [hashedPassword, userId]
         );
 
-        res.json({ message: "Éxito: Contraseña actualizada en el servidor" });
-    } catch (err) {
-        // Esto enviará el error real al frontend para que puedas leerlo en la consola del navegador
-        res.status(500).json({ 
-            error: "Error en el servidor", 
-            message: err.message,
-            code: err.code 
+        return res.status(200).json({ message: "Contraseña actualizada correctamente" });
+    } catch (error) {
+        console.error("DEBUG SERVIDOR:", error);
+        return res.status(500).json({ 
+            error: "Error interno", 
+            message: error.message,
+            sqlCode: error.code // Esto te dirá si es 'ER_NO_SUCH_TABLE' u otro
         });
     }
 };
