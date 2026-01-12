@@ -63,9 +63,12 @@ exports.getUserCollections = async (req, res) => {
     }
 };
 
+
 // Ver el detalle de una colección 
 exports.getCollectionDetails = async (req, res) => {
     const { id } = req.params; 
+    // Capturamos el ID del usuario desde el token (si existe)
+    const viewerId = req.user ? req.user.id : null;
 
     try {
         const sqlCollection = `
@@ -75,19 +78,27 @@ exports.getCollectionDetails = async (req, res) => {
                 c.user_id,
                 u.username AS creator_username, 
                 u.avatar_url AS creator_avatar,
-                u.user_id AS creator_id
+                u.user_id AS creator_id,
+                -- ESTA LÍNEA ES LA CLAVE:
+                (SELECT COUNT(*) FROM Saved_Collections sc 
+                WHERE sc.collection_id = c.collection_id AND sc.user_id = ?) AS is_saved
             FROM Collections c
             LEFT JOIN Users u ON c.user_id = u.user_id
             WHERE c.collection_id = ?
         `;
 
-        const [collectionRows] = await db.query(sqlCollection, [id]);
+        // Pasamos viewerId primero para el COUNT y luego id para el WHERE
+        const [collectionRows] = await db.query(sqlCollection, [viewerId, id]);
         
         if (collectionRows.length === 0) {
             return res.status(404).json({ error: "Colección no encontrada" });
         }
 
         const collection = collectionRows[0];
+
+        // Convertimos el conteo en un booleano para el frontend
+        collection.is_saved = collection.is_saved > 0;
+
         const itemsSql = `
             SELECT 
                 i.item_id, 
