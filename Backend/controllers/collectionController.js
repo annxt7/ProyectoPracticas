@@ -236,7 +236,7 @@ exports.saveCollection = async (req, res) => {
         }
 
         await db.query(
-            "INSERT INTO SavedCollections (user_id, collection_id) VALUES (?, ?)",
+            "INSERT INTO Saved_Collections (user_id, collection_id) VALUES (?, ?)",
             [userId, id]
         );
         res.json({ success: true, message: "Colección guardada" });
@@ -252,7 +252,7 @@ exports.getSavedCollections = async (req, res) => {
     try {
         const sql = `
             SELECT c.* FROM Collections c
-            JOIN SavedCollections sc ON c.collection_id = sc.collection_id
+            JOIN Saved_Collections sc ON c.collection_id = sc.collection_id
             WHERE sc.user_id = ?
         `;
         const [result] = await db.query(sql, [userId]);
@@ -268,7 +268,7 @@ exports.deleteSavedCollection = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
     try{
-        const sql = "DELETE FROM SavedCollections WHERE user_id = ? AND collection_id = ?";
+        const sql = "DELETE FROM Saved_Collections WHERE user_id = ? AND collection_id = ?";
         const [result] = await db.query(sql, [userId, id]);
         res.json({ success: true, message: "Colección eliminada de guardadas" });
     }catch(error){
