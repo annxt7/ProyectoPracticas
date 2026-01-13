@@ -23,7 +23,6 @@ const GoogleSignIn = ({ onGoogleSuccess, isLoading }) => {
         text= "continue_with" 
         shape= "square"
         theme= "filled_blue"
-        background= "none"
       />
     </div>
   );
