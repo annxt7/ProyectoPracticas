@@ -68,7 +68,7 @@ exports.getSuggestedUsers = async (req, res) => {
                 avatar_url AS img 
             FROM Users 
             ORDER BY RAND() 
-            LIMIT 4
+            LIMIT 3
         `);
         res.json(rows);
     } catch (error) {
