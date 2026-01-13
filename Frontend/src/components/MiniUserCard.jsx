@@ -5,14 +5,14 @@ const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
   if (!user) return null;
 
   const handleBtnClick = (e) => {
-    e.preventDefault(); // Evita que el Link nos lleve al perfil al clicar el botón
+    e.preventDefault(); 
     e.stopPropagation();
     onFollowToggle?.();
   };
 
   return (
     <Link to={`/profile/${user.id}`} className="block group">
-      <div className="flex items-center justify-between p-3 bg-white/0.02 border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
+      <div className="flex items-center justify-between p-3 bg-white/0.02 border border-white/5 rounded-2xl hover:bg-white/5 transition-all">
         
         <div className="flex items-center gap-3 min-w-0">
           <div className="avatar">

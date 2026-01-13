@@ -4,3 +4,9 @@
 html, body, #root {
   @apply bg-base-300 text-base-content h-full;
 }
+
+.google-wrapper {
+  overflow: hidden;
+  border-radius: 9999px;
+  width: fit-content;
+}
