@@ -21,8 +21,8 @@ const GoogleSignIn = ({ onGoogleSuccess, isLoading }) => {
         onSuccess={onSuccess}
         onError={onError}
         text= "continue_with" 
+        shape= "pill"
         theme= "filled_blue"
-        
       />
     </div>
   );
