@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
   if (!user) return null;
-
+ console.log(user)
   const handleBtnClick = (e) => {
     e.preventDefault(); // Evita que el Link nos lleve al perfil al clicar el botón
     e.stopPropagation();
@@ -19,7 +19,7 @@ const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
             <div className="w-10 h-10 rounded-full ring-2 ring-white/5 bg-white/10 overflow-hidden">
               <img
                 src={
-                  user.img ||
+                  user.avatar_url ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`
                 }
                 alt={user.name}
