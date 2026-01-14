@@ -17,50 +17,60 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Cargar lista de seguidos
+  // 1. Cargar lista de seguidos (Normalización a números)
   const fetchMyFollowing = useCallback(async () => {
     if (!user?.id) return;
     try {
       const res = await api.get(`/users/following/${user.id}`);
-      // Mapeamos buscando cualquier variante de ID que devuelva tu DB
+      // Buscamos el ID en cualquier propiedad posible que devuelva tu endpoint de seguidos
       const ids = res.data.map(u => Number(u.user_id || u.id || u.following_id));
       setFollowingIds(ids);
-    } catch (e) { console.error("Error seguidos:", e); }
+    } catch (e) { console.error("Error al cargar seguidos:", e); }
   }, [user?.id]);
 
   useEffect(() => {
     fetchMyFollowing();
   }, [fetchMyFollowing]);
 
-  // 2. Búsqueda y FILTRADO REAL
+  // 2. Búsqueda y Filtrado Estricto
   useEffect(() => {
-    // Si no hay usuario en el context, no podemos filtrar "mis cosas"
     if (!user?.id) return;
     
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await api.get("/search", { params: { query } });
-        const { users = [], collections = [] } = res.data;
+        const rawUsers = res.data.users || [];
+        const rawCollections = res.data.collections || [];
         
         const myId = Number(user.id);
 
-        // FILTRO USUARIOS: Mapeo agresivo de IDs para no aparecer yo
-        const filteredUsers = users.filter(u => {
-          const uId = Number(u.user_id || u.id || u.id_user);
-          return uId !== myId;
-        });
+        // NORMALIZAR Y FILTRAR USUARIOS
+        const filteredUsers = rawUsers
+          .map(u => ({
+            ...u,
+            finalId: Number(u.user_id || u.id),
+            finalName: u.username || u.name || "Usuario",
+            finalAvatar: u.avatar_url || u.avatar || u.img
+          }))
+          .filter(u => u.finalId !== myId);
 
-        // FILTRO COLECCIONES: Mapeo agresivo para quitar las mías
-        const filteredCollections = collections.filter(col => {
-          const creatorId = Number(col.user_id || col.userId || col.creator_id || col.id_user);
-          return creatorId !== myId;
-        });
+        // NORMALIZAR Y FILTRAR COLECCIONES
+        const filteredCollections = rawCollections
+          .map(c => ({
+            ...c,
+            finalId: Number(c.collection_id || c.id),
+            finalCreatorId: Number(c.user_id || c.userId || c.creator_id),
+            finalTitle: c.collection_name || c.title,
+            finalCover: c.cover_url || c.cover,
+            finalAuthor: c.creator_username || c.username || c.author || "usuario"
+          }))
+          .filter(c => c.finalCreatorId !== myId); // EXCLUSIÓN DE MIS COLECCIONES
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(filteredCollections);
       } catch (err) { 
-        console.error("Error search:", err); 
+        console.error("Error en búsqueda:", err); 
       } finally { 
         setLoading(false); 
       }
@@ -70,24 +80,26 @@ const Explorer = () => {
     return () => clearTimeout(timeoutId);
   }, [query, user?.id]);
 
+  // 3. Manejo del Follow (Usando la ID normalizada)
   const handleFollowToggle = async (targetId, isFollowing) => {
-    const numericTargetId = Number(targetId);
+    const numericId = Number(targetId);
     try {
       if (isFollowing) {
-        await api.delete(`/users/unfollow/${numericTargetId}`);
-        setFollowingIds(prev => prev.filter(id => id !== numericTargetId));
+        await api.delete(`/users/unfollow/${numericId}`);
+        setFollowingIds(prev => prev.filter(id => id !== numericId));
       } else {
-        await api.post(`/users/follow/${numericTargetId}`);
-        setFollowingIds(prev => [...prev, numericTargetId]);
+        await api.post(`/users/follow/${numericId}`);
+        setFollowingIds(prev => [...prev, numericId]);
       }
-    } catch (error) { console.error("Error follow:", error); }
+    } catch (error) { 
+      console.error("Error en follow:", error);
+    }
   };
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* Header Buscador */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -97,7 +109,7 @@ const Explorer = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar en Tribe..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-10 text-white h-12 focus:outline-none focus:border-primary/50"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-10 text-white h-12 focus:outline-none"
             />
           </div>
 
@@ -118,9 +130,7 @@ const Explorer = () => {
 
       <div className="max-w-[1400px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[250px_1fr_250px] gap-8">
         <aside className="hidden lg:block">
-           <h4 className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold flex items-center gap-2">
-            <TrendingUp size={14} /> Tendencias
-          </h4>
+           <h4 className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold"><TrendingUp size={14} className="inline mr-2"/> Tendencias</h4>
         </aside>
 
         <main className="w-full max-w-3xl mx-auto">
@@ -129,30 +139,23 @@ const Explorer = () => {
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {usersWithoutMyself.map((u) => {
-                const uId = Number(u.user_id || u.id);
-                const isFollowing = followingIds.includes(uId);
-                
-                // MAPEO DE IMAGEN: Buscamos en todas las propiedades posibles
-                const avatar = u.avatar_url || u.avatar || u.img || u.profile_image;
-                const displayName = u.username || u.name || "Usuario";
-
+                const isFollowing = followingIds.includes(u.finalId);
                 return (
-                  <div key={uId} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
-                    <Link to={`/profile/${uId}`} className="flex items-center gap-3 min-w-0">
+                  <div key={u.finalId} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+                    <Link to={`/profile/${u.finalId}`} className="flex items-center gap-3 min-w-0">
                       <img 
-                        src={avatar || `https://ui-avatars.com/api/?name=${displayName}&background=random`} 
+                        src={u.finalAvatar || `https://ui-avatars.com/api/?name=${u.finalName}&background=random`} 
                         className="w-10 h-10 rounded-full object-cover border border-white/10" 
-                        alt={displayName} 
-                        onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${displayName}&background=random` }}
+                        alt="" 
                       />
                       <div className="min-w-0">
-                        <h3 className="font-bold text-[13px] text-white truncate">{displayName}</h3>
-                        <p className="text-[10px] opacity-40">@{displayName.toLowerCase()}</p>
+                        <h3 className="font-bold text-[13px] text-white truncate">{u.finalName}</h3>
+                        <p className="text-[10px] opacity-40">@{u.finalName.toLowerCase()}</p>
                       </div>
                     </Link>
                     <button 
-                      onClick={() => handleFollowToggle(uId, isFollowing)}
-                      className={`btn btn-xs px-4 rounded-lg font-bold ${isFollowing ? "btn-neutral opacity-50" : "btn-primary"}`}
+                      onClick={() => handleFollowToggle(u.finalId, isFollowing)}
+                      className={`btn btn-xs px-4 rounded-lg font-bold transition-all ${isFollowing ? "btn-neutral opacity-60" : "btn-primary"}`}
                     >
                       {isFollowing ? "Siguiendo" : "Seguir"}
                     </button>
@@ -164,25 +167,19 @@ const Explorer = () => {
 
           {activeTab === "colecciones" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {collections.map((col) => {
-                const colId = col.collection_id || col.id;
-                const author = col.username || col.creator_username || col.author || "usuario";
-                const cover = col.cover_url || col.cover || col.image;
-
-                return (
-                  <Link key={colId} to={`/collection/${colId}`} className="block group">
-                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
-                      <div className="aspect-video overflow-hidden">
-                        <ItemCover src={cover} title={col.collection_name || col.title} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-bold text-white text-md truncate">{col.collection_name || col.title}</h3>
-                        <p className="text-[10px] text-primary/60 mt-1">@{author.toLowerCase()}</p>
-                      </div>
+              {collections.map((col) => (
+                <Link key={col.finalId} to={`/collection/${col.finalId}`} className="block group">
+                  <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all">
+                    <div className="aspect-video overflow-hidden">
+                      <ItemCover src={col.finalCover} title={col.finalTitle} className="w-full h-full object-cover" />
                     </div>
-                  </Link>
-                );
-              })}
+                    <div className="p-4">
+                      <h3 className="font-bold text-white text-md truncate">{col.finalTitle}</h3>
+                      <p className="text-[10px] text-primary/60 mt-1">@{col.finalAuthor.toLowerCase()}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </main>
