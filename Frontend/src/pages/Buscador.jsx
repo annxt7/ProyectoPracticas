@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Search, X, TrendingUp, Hash } from "lucide-react"; // Asegúrate de tener lucide-react
+import { Search, X, TrendingUp, Hash, Search as SearchIcon, TrendingUp as TrendingIcon } from "lucide-react"; 
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom";
 import ItemCover from "../components/ItemCover";
 import api from "../services/api"; 
 import { useAuth } from "../context/AuthContext";
-import { Search as SearchIcon, TrendingUp as TrendingIcon } from "lucide-react";
 
 const Explorer = () => {
   const [query, setQuery] = useState("");
@@ -18,10 +17,9 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Cargar IDs de personas que ya sigo
+  // 1. Cargar IDs de seguidos
   useEffect(() => {
     if (!user?.id) return;
-
     const fetchMyFollowing = async () => {
       try {
         const res = await api.get(`/users/following/${user.id}`);
@@ -30,11 +28,10 @@ const Explorer = () => {
         console.error("Error cargando mis seguidos", e);
       }
     };
-
     fetchMyFollowing();
   }, [user?.id]);
 
-  // 2. Lógica de Follow/Unfollow
+  // 2. Lógica Follow/Unfollow
   const handleFollowToggle = async (targetId, isFollowing) => {
     try {
       if (isFollowing) {
@@ -49,32 +46,31 @@ const Explorer = () => {
     }
   };
 
-  // 3. Búsqueda con Filtrado de Contenido Propio
+  // 3. Búsqueda con Filtrado Robusto
   useEffect(() => {
     if (!user?.id) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("tribe_token")?.replace(/['"]+/g, "");
-
         const res = await api.get("/search", {
-          params: { query },
-          headers: { Authorization: `Bearer ${token}` },
+          params: { query }
         });
 
         const data = res.data;
+        const myId = String(user.id);
 
-        // FILTRO: No mostrar mi propio perfil
+        // FILTRO USUARIOS: Quitarnos a nosotros mismos
         const filteredUsers = (data.users || []).filter(
-          (u) => String(u.id) !== String(user.id)
+          (u) => String(u.id) !== myId
         );
 
-        // FILTRO: No mostrar mis propias colecciones
-        // Comprobamos user_id o author_id según lo devuelva tu backend
-        const filteredCollections = (data.collections || []).filter(
-          (col) => String(col.user_id || col.userId) !== String(user.id)
-        );
+        // FILTRO COLECCIONES: Comprobamos todas las posibles variantes de nombre de ID
+        // Si el backend envía user_id, creator_id o author_id, esto lo capturará.
+        const filteredCollections = (data.collections || []).filter((col) => {
+            const creatorId = String(col.user_id || col.userId || col.creator_id || col.author_id || "");
+            return creatorId !== myId;
+        });
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(filteredCollections);
@@ -85,7 +81,7 @@ const Explorer = () => {
       }
     };
 
-    const timeoutId = setTimeout(fetchData, 300); // Debounce de 300ms
+    const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
   }, [query, user?.id]);
 
@@ -130,7 +126,6 @@ const Explorer = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-10">
-        {/* ASIDE IZQUIERDO: TENDENCIAS */}
         <aside className="hidden lg:block">
           <div className="sticky top-48 space-y-8">
             <h4 className="text-[10px] uppercase tracking-[0.2em] opacity-40 font-bold mb-4 flex items-center gap-2">
@@ -147,11 +142,8 @@ const Explorer = () => {
           </div>
         </aside>
 
-        {/* MAIN CONTENT */}
         <main>
-          {loading && (
-            <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>
-          )}
+          {loading && <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>}
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -185,7 +177,7 @@ const Explorer = () => {
                   );
                 })
               ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay cuentas que coincidan</div>
+                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay cuentas</div>
               )}
             </div>
           )}
@@ -198,22 +190,21 @@ const Explorer = () => {
                     <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all shadow-xl">
                       <div className="aspect-video overflow-hidden bg-white/5 relative">
                         <ItemCover src={col.cover} title={col.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                       <div className="p-5">
                         <h3 className="font-bold text-white text-lg truncate group-hover:text-primary transition-colors">
                           {col.title}
                         </h3>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs font-medium text-primary/80">@{col.author || 'usuario'}</span>
-                          <span className="text-[10px] opacity-30 uppercase font-bold tracking-widest">{col.type || 'Colección'}</span>
+                           <span className="text-xs font-medium text-primary/80">@{col.author || 'usuario'}</span>
+                           <span className="text-[10px] opacity-30 uppercase font-bold tracking-widest">{col.type || 'Colección'}</span>
                         </div>
                       </div>
                     </div>
                   </Link>
                 ))
               ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No se encontraron colecciones ajenas</div>
+                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay colecciones de otros usuarios</div>
               )}
             </div>
           )}
