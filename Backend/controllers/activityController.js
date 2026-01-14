@@ -1,54 +1,84 @@
-const db = require('../config/dbconect'); 
+const db = require("../config/dbconect");
 
-const getNotifications = async (req, res) => {
+// GET: Obtener todas las notificaciones del usuario logueado
+exports.getNotifications = async (req, res) => {
   try {
-    // Sincronizamos con el ID del token para que siempre sea el usuario logueado
+    // El ID viene del middleware verifyToken (auth)
     const userId = req.user.id; 
 
-    const [rows] = await db.execute(`
-      SELECT n.*, u.username as actorName, u.avatar_url as actorAvatar
+    // Consultamos las notificaciones y unimos con la tabla Users para obtener datos del 'actor'
+    const sql = `
+      SELECT 
+        n.id, 
+        n.type, 
+        n.content, 
+        n.is_read, 
+        n.created_at,
+        u.username AS actorName,
+        u.avatar_url AS actorAvatar
       FROM Notifications n
       LEFT JOIN Users u ON n.actor_id = u.user_id
       WHERE n.user_id = ?
       ORDER BY n.created_at DESC
-    `, [userId]);
+    `;
 
-    const formatted = rows.map(row => ({
-      id: row.id,
-      // Mapeo de tipos para que el Frontend entienda 'like_collection' como 'interactions'
-      type: row.type === 'like_collection' ? 'interactions' : row.type,
-      content: row.content,
-      // Convertimos el 0/1 de MariaDB a true/false de JS
-      read: Boolean(row.is_read), 
-      created_at: row.created_at,
+    const [rows] = await db.query(sql, [userId]);
+
+    // MAPEO DE CONCORDANCIA: 
+    // Transformamos los datos para que el Frontend reciba lo que necesita
+    const formattedNotifications = rows.map(n => ({
+      id: n.id,
+      type: n.type,
+      content: n.content,
+      read: n.is_read === 1, // Convertimos tinyint(1) a booleano real
+      created_at: n.created_at,
       user: {
-        name: row.actorName || "Usuario",
-        avatar: row.actorAvatar
+        name: n.actorName || "Usuario",
+        avatar: n.actorAvatar
       }
     }));
 
-    res.json(formatted);
+    console.log(`✅ Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
+    res.json(formattedNotifications);
   } catch (error) {
-    res.status(500).json({ error: "Error de sincronización" });
+    console.error("Error en getNotifications:", error);
+    res.status(500).json({ error: "Error al sincronizar notificaciones" });
   }
 };
 
-const markAllAsRead = async (req, res) => {
+// PUT: Marcar una notificación como leída
+exports.markAsRead = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
   try {
-    await db.execute('UPDATE Notifications SET is_read = 1 WHERE user_id = ?', [req.user.id]);
-    res.json({ success: true });
+    // Aseguramos que solo el dueño de la notificación pueda marcarla como leída
+    const [result] = await db.query(
+      "UPDATE Notifications SET is_read = 1 WHERE id = ? AND user_id = ?",
+      [id, userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Notificación no encontrada o no autorizada" });
+    }
+
+    res.json({ success: true, message: "Notificación actualizada" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Error al actualizar" });
   }
 };
 
-const markAsRead = async (req, res) => {
+// PUT: Marcar todas como leídas
+exports.markAllAsRead = async (req, res) => {
+  const userId = req.user.id;
+
   try {
-    await db.execute('UPDATE Notifications SET is_read = 1 WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    res.json({ success: true });
+    await db.query(
+      "UPDATE Notifications SET is_read = 1 WHERE user_id = ?",
+      [userId]
+    );
+    res.json({ success: true, message: "Todas las notificaciones marcadas como leídas" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Error al actualizar todas" });
   }
 };
-
-module.exports = { getNotifications, markAllAsRead, markAsRead };
