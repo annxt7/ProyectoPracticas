@@ -2,23 +2,32 @@ const db = require('../config/dbconect');
 
 const getNotifications = async (req, res) => {
   try {
-    const userId = req.user.id; 
+    // Asumimos que tu middleware de auth guarda el username en req.user.username
+    const username = req.user.username || req.user.name; 
+
+    if (!username) {
+      return res.status(400).json({ error: "No se identificó el nombre de usuario" });
+    }
+
     console.log("--- DEBUG BACKEND ---");
-    console.log("Buscando notificaciones para el Usuario ID:", userId);
+    console.log("Buscando notificaciones para el username:", username);
 
     const [rows] = await db.execute(`
       SELECT 
         n.id, n.type, n.content, n.target, n.image, 
         n.comment_snippet as commentSnippet,
         n.is_read as 'is_read', n.created_at,
-        u.user_id as actorId, u.username as actorName, u.avatar_url as actorAvatar
-      FROM Notifications n 
-      LEFT JOIN Users u ON n.actor_id = u.user_id 
-      WHERE n.user_id = ? 
+        u_actor.username as actorName, u_actor.avatar_url as actorAvatar
+      FROM Notifications n
+      -- JOIN para encontrar al DUEÑO de la notificación por su username
+      JOIN Users u_owner ON n.user_id = u_owner.user_id
+      -- LEFT JOIN para traer los datos de quien hizo la acción (el actor)
+      LEFT JOIN Users u_actor ON n.actor_id = u_actor.user_id
+      WHERE u_owner.username = ? 
       ORDER BY n.created_at DESC
-    `, [userId]);
+    `, [username]);
     
-    console.log(`Filas encontradas en DB: ${rows.length}`);
+    console.log(`Filas encontradas para ${username}: ${rows.length}`);
 
     const formatted = rows.map(row => ({
       id: row.id,
@@ -27,11 +36,9 @@ const getNotifications = async (req, res) => {
       target: row.target,
       image: row.image,
       commentSnippet: row.commentSnippet,
-      // Forzamos conversión a booleano para React
-      read: row.is_read === 1 || row.is_read === true, 
+      read: row.is_read === 1 || row.is_read === true,
       created_at: row.created_at,
       user: {
-        id: row.actorId,
         name: row.actorName || "Usuario",
         avatar: row.actorAvatar
       }
@@ -39,8 +46,8 @@ const getNotifications = async (req, res) => {
 
     res.json(formatted);
   } catch (error) {
-    console.error("ERROR CRÍTICO:", error);
-    res.status(500).json({ error: "Error interno" });
+    console.error("Error en ActivityController:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
