@@ -36,6 +36,7 @@ exports.getAdminData = async (req, res) => {
       collections: collections.map(col => ({
         id: col.id,
         name: col.name,
+        item_count: col.item_count || 0,
         owner: {
           username: col.owner_username,
           avatar: col.owner_avatar
