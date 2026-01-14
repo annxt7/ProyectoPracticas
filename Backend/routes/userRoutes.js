@@ -26,5 +26,6 @@ router.put("/change-password", verifyToken, userController.changePassword);
 
 
 router.get("/:id", verifyToken, userController.getUserById);
+router.get("/me", verifyToken, userController.getMe);
 
 module.exports = router;

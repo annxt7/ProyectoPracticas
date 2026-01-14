@@ -598,3 +598,35 @@ exports.forgotPassword = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
+
+// userController.js
+
+exports.getMe = async (req, res) => {
+  try {
+    // El ID viene del middleware verifyToken (req.user.id)
+    const userId = req.user.id;
+
+    const [rows] = await db.query(
+      `SELECT 
+        user_id AS id, 
+        username, 
+        email, 
+        role, 
+        avatar_url AS avatar, 
+        banner_url AS banner, 
+        bio 
+      FROM Users 
+      WHERE user_id = ?`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error en getMe:", error);
+    res.status(500).json({ error: "Error al obtener datos de sesión" });
+  }
+};
