@@ -24,8 +24,8 @@ router.put("/complete-profile", verifyToken, userController.completeProfile);
 router.put("/update-profile", verifyToken, userController.updateProfile);
 router.put("/change-password", verifyToken, userController.changePassword); 
 
-
-router.get("/:id", verifyToken, userController.getUserById);
 router.get("/me", verifyToken, userController.getMe);
+router.get("/:id", verifyToken, userController.getUserById);
+
 
 module.exports = router;
