@@ -66,7 +66,6 @@ const fetchData = async () => {
     fetchData();
   }, [activeTab]);
 
-  // --- LÓGICA DE ELIMINACIÓN GENÉRICA ---
  const handleDelete = async (id, isModal = false) => {
   if (!window.confirm("¿Estás seguro de eliminar este elemento?")) return;
 
@@ -102,7 +101,6 @@ const fetchData = async () => {
     }
   };
 
-  // --- LÓGICA VER COLECCIONES DE USUARIO (MODAL) ---
   const openUserCollections = async (userObj) => {
     setSelectedUser(userObj);
     setLoadingModal(true);

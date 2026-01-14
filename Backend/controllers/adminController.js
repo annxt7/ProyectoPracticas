@@ -15,6 +15,7 @@ exports.getAdminData = async (req, res) => {
         u.avatar_url as owner_avatar
       FROM Collections c
       LEFT JOIN Users u ON c.user_id = u.user_id
+      WHERE u.role != 'admin'
       ORDER BY c.created_at DESC
     `);
 
