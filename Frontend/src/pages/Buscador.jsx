@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Search, X, TrendingUp, Hash, Search as SearchIcon, Sparkles, Trophy } from "lucide-react"; 
+import React, { useState, useEffect, useCallback } from "react";
+import { TrendingUp, Sparkles, Search as SearchIcon } from "lucide-react"; 
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom";
@@ -17,29 +17,36 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Cargar lista de seguidos
-  useEffect(() => {
+  // 1. Cargar lista de seguidos (Normalizando a Números)
+  const fetchMyFollowing = useCallback(async () => {
     if (!user?.id) return;
-    const fetchMyFollowing = async () => {
-      try {
-        const res = await api.get(`/users/following/${user.id}`);
-        setFollowingIds(res.data.map(u => u.id));
-      } catch (e) { console.error(e); }
-    };
-    fetchMyFollowing();
+    try {
+      const res = await api.get(`/users/following/${user.id}`);
+      // Guardamos como números para evitar errores de comparación (String vs Int)
+      setFollowingIds(res.data.map(u => Number(u.user_id || u.id)));
+    } catch (e) { console.error("Error al cargar seguidos:", e); }
   }, [user?.id]);
 
-  // 2. Lógica Follow
+  useEffect(() => {
+    fetchMyFollowing();
+  }, [fetchMyFollowing]);
+
+  // 2. Lógica Follow Toggle Corregida
   const handleFollowToggle = async (targetId, isFollowing) => {
+    const numericId = Number(targetId);
     try {
       if (isFollowing) {
-        await api.delete(`/users/unfollow/${targetId}`);
-        setFollowingIds(prev => prev.filter(id => id !== targetId));
+        await api.delete(`/users/unfollow/${numericId}`);
+        setFollowingIds(prev => prev.filter(id => id !== numericId));
       } else {
-        await api.post(`/users/follow/${targetId}`);
-        setFollowingIds(prev => [...prev, targetId]);
+        await api.post(`/users/follow/${numericId}`);
+        setFollowingIds(prev => [...prev, numericId]);
       }
-    } catch (error) { console.error(error); }
+    } catch (error) { 
+      console.error("Error en el toggle de follow:", error); 
+      // Si falla, refrescamos de la DB para sincronizar
+      fetchMyFollowing();
+    }
   };
 
   // 3. Búsqueda y Filtro de Seguridad
@@ -50,25 +57,24 @@ const Explorer = () => {
       try {
         const res = await api.get("/search", { params: { query } });
         const data = res.data;
-        const myId = String(user.id || "");
-        const myIdentifiers = [
-          String(user.name || "").toLowerCase().trim(),
-          String(user.username || "").toLowerCase().trim()
-        ].filter(Boolean);
+        
+        const myId = Number(user.id);
 
-        const filteredUsers = (data.users || []).filter(u => String(u.id) !== myId);
+        // Filtrar usuarios: quitarme a mí mismo y asegurar que existan datos
+        const filteredUsers = (data.users || []).filter(u => Number(u.id || u.user_id) !== myId);
 
+        // Filtrar colecciones: quitar las mías
         const filteredCollections = (data.collections || []).filter((col) => {
-          const colAuthor = String(col.author || "").toLowerCase().trim().replace(/^@+/, "");
-          const colCreatorId = String(col.user_id || col.userId || "");
-          const isMyId = colCreatorId !== "" && colCreatorId === myId;
-          const isMyName = myIdentifiers.some(id => id.replace(/^@+/, "") === colAuthor);
-          return !isMyId && !isMyName;
+          return Number(col.user_id || col.userId) !== myId;
         });
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(filteredCollections);
-      } catch (err) { console.error(err); } finally { setLoading(false); }
+      } catch (err) { 
+        console.error("Error en búsqueda:", err); 
+      } finally { 
+        setLoading(false); 
+      }
     };
 
     const timeoutId = setTimeout(fetchData, 300);
@@ -79,7 +85,6 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER BUSCADOR */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -110,29 +115,19 @@ const Explorer = () => {
         </div>
       </div>
 
-      {/* GRID PRINCIPAL */}
       <div className="max-w-[1400px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[250px_1fr_250px] gap-8">
         
-        {/* COLUMNA IZQUIERDA: TENDENCIAS */}
         <aside className="hidden lg:block">
           <div className="sticky top-48 space-y-8">
-            <div>
-              <h4 className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-6 flex items-center gap-2">
-                <TrendingUp size={14} /> Tendencias
-              </h4>
-              <div className="space-y-4">
-                {["Cyberpunk", "Anime", "Minimal", "Gaming"].map((tag) => (
-                  <div key={tag} className="group cursor-pointer">
-                    <p className="text-xs opacity-40 group-hover:text-primary transition-colors">#{tag}</p>
-                    <p className="text-[9px] font-bold opacity-20">1.2k colecciones</p>
-                  </div>
-                ))}
-              </div>
+            <h4 className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-6 flex items-center gap-2">
+              <TrendingUp size={14} /> Tendencias
+            </h4>
+            <div className="space-y-4 opacity-40 text-xs italic font-light">
+              Explorando la red...
             </div>
           </div>
         </aside>
 
-        {/* COLUMNA CENTRAL: RESULTADOS */}
         <main className="w-full max-w-3xl mx-auto">
           {loading && (
             <div className="flex justify-center py-10">
@@ -142,63 +137,74 @@ const Explorer = () => {
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {usersWithoutMyself.length > 0 ? (
-                usersWithoutMyself.map((u) => (
-                  <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-all">
-                    <Link to={`/profile/${u.id}`} className="flex items-center gap-3 min-w-0">
-                      <img src={u.img || `https://ui-avatars.com/api/?name=${u.name}&background=random`} className="w-10 h-10 rounded-full object-cover" alt="" />
+              {usersWithoutMyself.map((u) => {
+                const isFollowing = followingIds.includes(Number(u.id || u.user_id));
+                const username = u.username || u.name || 'usuario';
+                const displayName = u.name || u.username || 'Usuario';
+                
+                return (
+                  <div key={u.id || u.user_id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-all">
+                    <Link to={`/profile/${u.id || u.user_id}`} className="flex items-center gap-3 min-w-0">
+                      <img 
+                        src={u.avatar_url || u.img || `https://ui-avatars.com/api/?name=${displayName}&background=random`} 
+                        className="w-10 h-10 rounded-full object-cover border border-white/5" 
+                        alt={displayName} 
+                      />
                       <div className="min-w-0">
-                        <h3 className="font-bold text-[13px] text-white truncate">{u.name}</h3>
-                        <p className="text-[10px] opacity-40">@{u.username || 'usuario'}</p>
+                        <h3 className="font-bold text-[13px] text-white truncate">{displayName}</h3>
+                        <p className="text-[10px] opacity-40">@{username.toLowerCase()}</p>
                       </div>
                     </Link>
                     <button 
-                      onClick={() => handleFollowToggle(u.id, followingIds.includes(u.id))}
-                      className={`btn btn-xs rounded-lg px-3 ${followingIds.includes(u.id) ? "btn-neutral" : "btn-primary"}`}
+                      onClick={() => handleFollowToggle(u.id || u.user_id, isFollowing)}
+                      className={`btn btn-xs rounded-lg px-4 font-bold transition-all ${
+                        isFollowing 
+                        ? "bg-white/10 text-white border-transparent hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/50" 
+                        : "btn-primary"
+                      }`}
                     >
-                      {followingIds.includes(u.id) ? "Siguiendo" : "Seguir"}
+                      {isFollowing ? "Siguiendo" : "Seguir"}
                     </button>
                   </div>
-                ))
-              ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic text-sm">No hay resultados</div>
+                );
+              })}
+              {!loading && usersWithoutMyself.length === 0 && (
+                <div className="col-span-full text-center py-20 opacity-20 italic text-sm">No se encontraron cuentas</div>
               )}
             </div>
           )}
 
           {activeTab === "colecciones" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {collections.length > 0 ? (
-                collections.map((col) => (
-                  <Link key={col.id} to={`/collection/${col.id}`} className="block group">
-                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all shadow-xl">
-                      <div className="aspect-video overflow-hidden">
-                        <ItemCover src={col.cover} title={col.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-bold text-white text-md truncate group-hover:text-primary transition-colors">
-                          {col.title}
-                        </h3>
-                        <p className="text-[10px] text-primary/60 mt-1">@{col.author}</p>
-                      </div>
+              {collections.map((col) => (
+                <Link key={col.collection_id || col.id} to={`/collection/${col.collection_id || col.id}`} className="block group">
+                  <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all shadow-xl">
+                    <div className="aspect-video overflow-hidden">
+                      <ItemCover src={col.cover_url || col.cover} title={col.collection_name || col.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     </div>
-                  </Link>
-                ))
-              ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic text-sm">No hay colecciones</div>
+                    <div className="p-4">
+                      <h3 className="font-bold text-white text-md truncate group-hover:text-primary transition-colors">
+                        {col.collection_name || col.title}
+                      </h3>
+                      <p className="text-[10px] text-primary/60 mt-1">@{col.author || col.creator_username || 'autor'}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+              {!loading && collections.length === 0 && (
+                <div className="col-span-full text-center py-20 opacity-20 italic text-sm">No hay colecciones para mostrar</div>
               )}
             </div>
           )}
         </main>
 
-        {/* COLUMNA DERECHA: BALANCE */}
         <aside className="hidden lg:block">
            <div className="sticky top-48">
               <div className="p-6 rounded-2xl border border-white/5 bg-gradient-to-b from-white/[0.01] to-transparent">
                  <Sparkles className="text-primary/40 mb-3" size={18} />
                  <h5 className="text-[10px] font-bold uppercase tracking-widest opacity-40">Tip</h5>
                  <p className="text-[11px] opacity-30 mt-2 leading-relaxed">
-                   Explora perfiles para descubrir nuevas gemas.
+                   Sigue a usuarios con tus mismos gustos para ver sus actualizaciones en tu feed.
                  </p>
               </div>
            </div>
