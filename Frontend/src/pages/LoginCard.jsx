@@ -133,15 +133,7 @@ const AuthScreen = ({ type = "login" }) => {
           return;
         }
 
-        // CASO 2: LOGIN O REGISTRO EXITOSO
-        const userData = {
-          id: response.data.userId,
-          username: response.data.username,
-          banner: response.data.banner || null,
-          bio: response.data.bio || "Hola, soy nuevo en Tribe!",
-          email: data.email,
-        };
-        login(normalizeUser(response.data), data.response.token);
+        login(normalizeUser(response.data), response.data.token);
 
 
         // Redirección
