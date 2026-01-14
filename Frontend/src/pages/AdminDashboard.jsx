@@ -42,18 +42,21 @@ console.log("Datos del usuario en el Dashboard:", user);
   }, [user, navigate]);
 
   // Cargar datos según la pestaña
- const fetchData = async () => {
+const fetchData = async () => {
   setLoading(true);
   try {
-    if (activeTab === "requests" || activeTab === "users") {
-      const response = await api.get("/admin/data");
-      setData(activeTab === "users" ? response.data.users : response.data.requests);
-    } else {
-      const response = await api.get("/admin/collections");
-      setData(response.data);
+  const response = await api.get("/admin/data");
+    
+    if (activeTab === "users") {
+      setData(response.data.users || []);
+    } else if (activeTab === "requests") {
+      setData(response.data.requests || []);
+    } else if (activeTab === "collections") {
+      setData(response.data.collections || []);
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error cargando datos:", error);
+    setData([]);
   } finally {
     setLoading(false);
   }
@@ -64,30 +67,24 @@ console.log("Datos del usuario en el Dashboard:", user);
   }, [activeTab]);
 
   // --- LÓGICA DE ELIMINACIÓN GENÉRICA ---
-  const handleDelete = async (id, isModal = false) => {
-    if (!window.confirm("¿Estás seguro de eliminar este elemento permanentemente?")) return;
+ const handleDelete = async (id, isModal = false) => {
+  if (!window.confirm("¿Estás seguro de eliminar este elemento?")) return;
 
-    try {
-      // Si estamos borrando desde el modal, es una colección
-      const endpoint = (activeTab === "users" && !isModal) 
-        ? `/admin/User/${id}` 
-        : `/admin/Collections/${id}`;
-
-      await api.delete(endpoint);
-      
-      if (isModal) {
-        // Actualizar lista del modal
-        setUserCollections(userCollections.filter(c => c._id !== id));
-      } else {
-        // Actualizar lista principal
-        setData(data.filter((item) => item.id !== id));
-      }
-      alert("Eliminado correctamente.");
-    } catch (error) {
-      console.error(error);
-      alert("Error al eliminar.");
+  try {
+    // 1. Determinar el tipo para el backend
+    const type = activeTab === "users" && !isModal ? "User" : "Collections";
+    await api.delete(`/admin/${type}/${id}`);
+    if (isModal) {
+      setUserCollections(prev => prev.filter(c => String( c.id) !== String(id)));
+    } else {
+      setData(prev => prev.filter(item => String(item.id ) !== String(id)));
     }
-  };
+    
+    alert("Eliminado con éxito");
+  } catch (error) {
+    alert("Error al eliminar del servidor");
+  }
+};
 
   // --- LÓGICA DE SOLICITUDES DE CONTRASEÑA ---
   const handleGenerateCode = async (reqId, email) => {
@@ -109,11 +106,11 @@ console.log("Datos del usuario en el Dashboard:", user);
   const openUserCollections = async (userObj) => {
     setSelectedUser(userObj);
     setLoadingModal(true);
-    // Abrir modal (DaisyUI controla esto vía checkbox o clase, usaremos estado)
+  
     document.getElementById('modal_user_collections').showModal();
 
     try {
-      const res = await api.get(`/collections/user/${userObj._id}`); // Ajusta tu endpoint
+      const res = await api.get(`/collections/user/${userObj.id}`); 
       setUserCollections(res.data);
     } catch (error) {
       console.error("Error cargando colecciones del usuario");
@@ -139,9 +136,6 @@ console.log("Datos del usuario en el Dashboard:", user);
       {/* HEADER */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-           <button onClick={() => navigate("/feed")} className="btn btn-ghost btn-sm gap-2 pl-0 mb-1">
-             <ArrowLeft size={16}/> Volver
-          </button>
           <h1 className="text-3xl font-bold font-serif flex items-center gap-2">
             <ShieldAlert className="text-primary" /> Admin Panel
           </h1>
@@ -334,13 +328,13 @@ console.log("Datos del usuario en el Dashboard:", user);
                   </thead>
                   <tbody>
                     {userCollections.map(col => (
-                      <tr key={col._id}>
+                      <tr key={col.id}>
                         <td className="font-bold">{col.title}</td>
                         <td>{col.items?.length || 0}</td>
                         <td>{col.isPublic ? "Pública" : "Privada"}</td>
                         <td className="text-right">
                           <button 
-                            onClick={() => handleDelete(col._id, true)}
+                            onClick={() => handleDelete(col.id, true)}
                             className="btn btn-xs btn-error btn-outline"
                           >
                             Eliminar
