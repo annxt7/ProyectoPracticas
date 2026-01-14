@@ -461,22 +461,21 @@ exports.changePassword = async (req, res) => {
 
 // Seguir
 exports.followUser = async (req, res) => {
-  const follower_id = req.user.id;
-  const following_id = req.params.id;
-
-  if (follower_id == following_id) {
-    return res.status(400).json({ error: "No puedes seguirte a ti mismo" });
-  }
+  const followerId = req.user.id; // Tú
+  const followingId = req.params.id; // A quién sigues
 
   try {
+    // 1. Lógica existente para seguir...
+    await db.query("INSERT INTO Followers (follower_id, following_id) VALUES (?, ?)", [followerId, followingId]);
+
+    // 2. CREAR LA NOTIFICACIÓN (Esto es lo que te falta)
     await db.query(
-      "INSERT IGNORE INTO Follows (follower_id, following_id) VALUES (?, ?)",
-      [follower_id, following_id]
+      "INSERT INTO Notifications (user_id, actor_id, type, content) VALUES (?, ?, 'follow', 'ha empezado a seguirte')",
+      [followingId, followerId] // El dueño de la notificación es el seguido
     );
-    res.json({ success: true, message: "Ahora sigues a este usuario" });
-  } catch (error) {
-    res.status(500).json({ error: "Error al seguir usuario" });
-  }
+
+    res.json({ message: "Ahora sigues a este usuario" });
+  } catch (error) { /* ... */ }
 };
 
 // Dejar de seguir
