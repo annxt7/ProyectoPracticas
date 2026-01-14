@@ -67,7 +67,6 @@ exports.getUserCollections = async (req, res) => {
 // Ver el detalle de una colección 
 exports.getCollectionDetails = async (req, res) => {
     const { id } = req.params; 
-    // Capturamos el ID del usuario desde el token (si existe)
     const viewerId = req.user ? req.user.id : null;
 
     try {
@@ -79,13 +78,15 @@ exports.getCollectionDetails = async (req, res) => {
                 u.username AS creator_username, 
                 u.avatar_url AS creator_avatar,
                 u.user_id AS creator_id,
-                c.item_count
+                c.item_count,
+                -- Añadimos la lógica para saber si el espectador la tiene guardada
+                (SELECT COUNT(*) FROM Saved_Collections WHERE user_id = ? AND collection_id = c.collection_id) AS is_saved
             FROM Collections c
             LEFT JOIN Users u ON c.user_id = u.user_id
             WHERE c.collection_id = ?
         `;
 
-        // Pasamos viewerId primero para el COUNT y luego id para el WHERE
+        // Ahora sí, pasamos viewerId para el primer "?" e id para el segundo "?"
         const [collectionRows] = await db.query(sqlCollection, [viewerId, id]);
         
         if (collectionRows.length === 0) {
@@ -94,7 +95,7 @@ exports.getCollectionDetails = async (req, res) => {
 
         const collection = collectionRows[0];
 
-        // Convertimos el conteo en un booleano para el frontend
+        // Convertimos el conteo de is_saved en booleano
         collection.is_saved = collection.is_saved > 0;
 
         const itemsSql = `
@@ -102,6 +103,7 @@ exports.getCollectionDetails = async (req, res) => {
                 i.item_id, 
                 i.item_type, 
                 i.custom_description,
+                i.music_id, i.book_id, i.movie_id, i.show_id, i.game_id, -- Importante para el refId del front
                 COALESCE(i.custom_title, m.title, b.title, mov.title, s.title, g.title) AS display_title,
                 COALESCE(i.custom_subtitle, m.artist, b.author, mov.director, g.developer, 'Varios') AS display_subtitle,
                 COALESCE(i.custom_image, m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image
