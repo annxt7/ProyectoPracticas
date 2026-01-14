@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db'); // Importa tu conexión a MariaDB
+const db = require('../config/db');
 // const { verifyToken, isAdmin } = require('../middleware/auth'); // Luego protegeremos esto
 
 // --- 1. OBTENER USUARIOS Y SOLICITUDES ---
