@@ -7,15 +7,14 @@ export const uploadFileToCloudinary = async (file) => {
   try {
    
     const options = {
-      maxSizeMB: 0.8,          
+      maxSizeMB: 0.5,          
       maxWidthOrHeight: 1200, 
       useWebWorker: true,
     };
     const compressedFile = await imageCompression(file, options);
 
-    // 3. ENVIAMOS EL ARCHIVO COMPRIMIDO
     const formData = new FormData();
-    formData.append("imagen", compressedFile); // <--- Enviamos el comprimido
+    formData.append("imagen", compressedFile); 
 
     const response = await api.post("/files/upload", formData, {
       headers: {

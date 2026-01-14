@@ -1,11 +1,11 @@
 const express= require('express');
 require('dotenv').config();
+const {uploadLimiter} = require("../middlewares/fileLimiter");
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const router = express.Router();
 const { verifyToken } = require("../middlewares/authMiddleware");
-//Configuracion
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
@@ -18,7 +18,7 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage: storage });
 
 //POST:
-router.post('/upload',verifyToken,upload.single('imagen'),(req,res)=>{
+router.post('/upload',verifyToken,uploadLimiter,upload.single('imagen'),(req,res)=>{
 try{
 res.json({
     success:true,

@@ -16,8 +16,6 @@ const searchRoutes = require('./routes/searchRoutes');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// 1. APLICAR SEGURIDAD MODULAR
-// Esto ejecuta CORS, Helmet, Rate Limit y HPP desde sus propios archivos
 applySecurity(app);
 
 // 2. MIDDLEWARES DE PARSEO
@@ -38,12 +36,10 @@ app.get("/api/health", (req, res) => {
     res.json({ status: "ok", message: "Servidor seguro y funcionando 🚀" });
 });
 
-// 5. MANEJO DE RUTAS NO ENCONTRADAS (404)
 app.use((req, res) => {
     res.status(404).json({ error: "La ruta solicitada no existe." });
 });
 
-// ARRANQUE DEL SERVIDOR
 app.listen(port, () => {
     console.log(`-------------------------------------------`);
     console.log(`✅ Servidor Tribe corriendo en: http://localhost:${port}`);

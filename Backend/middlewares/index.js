@@ -7,5 +7,5 @@ module.exports = (app) => {
     app.use(corsMiddleware);
     app.use(helmetMiddleware);
     app.use(rateLimitMiddleware);
-    app.use(hpp()); // Protección contra contaminación de parámetros
+    app.use(hpp());
 };
