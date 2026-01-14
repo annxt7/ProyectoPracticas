@@ -205,8 +205,8 @@ const Explorer = () => {
                           {col.title}
                         </h3>
                         <div className="flex items-center justify-between mt-2">
-                           <span className="text-xs font-medium text-primary/80">@{col.author || 'usuario'}</span>
-                           <span className="text-[10px] opacity-30 uppercase font-bold tracking-widest">{col.type || 'Colección'}</span>
+                          <span className="text-xs font-medium text-primary/80">@{col.author || 'usuario'}</span>
+                          <span className="text-[10px] opacity-30 uppercase font-bold tracking-widest">{col.type || 'Colección'}</span>
                         </div>
                       </div>
                     </div>
