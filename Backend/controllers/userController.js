@@ -460,7 +460,7 @@ exports.changePassword = async (req, res) => {
 };
 
 // Seguir
-xports.followUser = async (req, res) => {
+exports.followUser = async (req, res) => {
   const followerId = req.user.id; // Tú
   const followingId = req.params.id; // A quién sigues
 
