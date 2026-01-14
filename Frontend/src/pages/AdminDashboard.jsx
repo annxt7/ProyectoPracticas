@@ -123,7 +123,7 @@ const fetchData = async () => {
   const filteredData = Array.isArray(data) ? data.filter((item) => {
     const term = searchTerm.toLowerCase();
     if (activeTab === "users") return item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term);
-    if (activeTab === "collections") return item.title?.toLowerCase().includes(term);
+    if (activeTab === "collections") return item.name?.toLowerCase().includes(term);
     if (activeTab === "requests") return item.email?.toLowerCase().includes(term);
     return false;
   }) : [];
@@ -239,7 +239,7 @@ const fetchData = async () => {
                         <div className="flex items-center gap-3">
                           <div className="avatar placeholder">
                             <div className="bg-neutral text-neutral-content rounded-full w-8">
-                              <span className="text-xs">{item.username?.[0]}</span>
+                              <img src={item.avatar || `https://ui-avatars.com/api/?name=${item.username}&background=random`} alt={item.username} />
                             </div>
                           </div>
                           <div>
@@ -271,7 +271,7 @@ const fetchData = async () => {
                   {/* --- VISTA DE COLECCIONES GLOBAL --- */}
                   {activeTab === "collections" && (
                     <>
-                      <td className="font-bold">{item.title}</td>
+                      <td className="font-bold">{item.name}</td>
                       <td>
                         <div className="flex items-center gap-2 text-sm">
                            <div className="avatar w-5 h-5 rounded-full bg-base-300">
@@ -329,7 +329,7 @@ const fetchData = async () => {
                   <tbody>
                     {userCollections.map(col => (
                       <tr key={col.id}>
-                        <td className="font-bold">{col.title}</td>
+                        <td className="font-bold">{col.name}</td>
                         <td>{col.items?.length || 0}</td>
                         <td>{col.isPublic ? "Pública" : "Privada"}</td>
                         <td className="text-right">
