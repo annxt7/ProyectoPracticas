@@ -7,8 +7,6 @@ exports.getAdminData = async (req, res) => {
     const [users] = await db.query(
       'SELECT user_id as id, username, email, role, avatar_url as avatar, reset_code FROM Users ORDER BY created_at DESC'
     );
-
-    // 2. Obtener TODAS las Colecciones (Esto te faltaba)
     const [collections] = await db.query(`
       SELECT 
         c.collection_id as id, 
@@ -43,9 +41,12 @@ exports.getAdminData = async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error("Error en getAdminData:", error);
-    res.status(500).json({ error: "Error al obtener datos" });
-  }
+    console.error("DETALLE DEL ERROR:", error); 
+    res.status(500).json({ 
+      error: "Error en el servidor", 
+      sqlMessage: error.sqlMessage, 
+    });
+}
 };
 
 // POST: Aprobar reseteo de contraseña (generar código)
