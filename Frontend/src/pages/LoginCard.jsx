@@ -141,7 +141,7 @@ const AuthScreen = ({ type = "login" }) => {
           bio: response.data.bio || "Hola, soy nuevo en Tribe!",
           email: data.email,
         };
-        login(normalizeUser(response.data), token);
+        login(normalizeUser(response.data), data.response.token);
 
 
         // Redirección
