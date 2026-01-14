@@ -17,7 +17,7 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Cargar seguidos
+  // 1. Cargar lista de seguidos
   useEffect(() => {
     if (!user?.id) return;
     const fetchMyFollowing = async () => {
@@ -42,7 +42,7 @@ const Explorer = () => {
     } catch (error) { console.error(error); }
   };
 
-  // 3. Búsqueda y Filtro de Seguridad (Axel Fix)
+  // 3. Búsqueda y Filtro de Seguridad
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
@@ -79,7 +79,7 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER BUSCADOR (Siempre centrado) */}
+      {/* HEADER BUSCADOR */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -110,7 +110,7 @@ const Explorer = () => {
         </div>
       </div>
 
-      {/* GRID DE 3 COLUMNAS PARA MANTENER EL CENTRO */}
+      {/* GRID PRINCIPAL */}
       <div className="max-w-[1400px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[250px_1fr_250px] gap-8">
         
         {/* COLUMNA IZQUIERDA: TENDENCIAS */}
@@ -121,7 +121,7 @@ const Explorer = () => {
                 <TrendingUp size={14} /> Tendencias
               </h4>
               <div className="space-y-4">
-                {["Cyberpunk", "Anime", "Setup", "Gaming"].map((tag) => (
+                {["Cyberpunk", "Anime", "Minimal", "Gaming"].map((tag) => (
                   <div key={tag} className="group cursor-pointer">
                     <p className="text-xs opacity-40 group-hover:text-primary transition-colors">#{tag}</p>
                     <p className="text-[9px] font-bold opacity-20">1.2k colecciones</p>
@@ -129,16 +129,11 @@ const Explorer = () => {
                 ))}
               </div>
             </div>
-            <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
-              <Trophy className="text-primary mb-2" size={16} />
-              <p className="text-[10px] font-bold text-white opacity-60">Comunidad</p>
-              <p className="text-[9px] opacity-30 mt-1">Explora lo más guardado esta semana.</p>
-            </div>
           </div>
         </aside>
 
-        {/* COLUMNA CENTRAL: RESULTADOS (Aquí está lo que quieres centrado) */}
-        <main className="w-full max-w-2xl mx-auto">
+        {/* COLUMNA CENTRAL: RESULTADOS */}
+        <main className="w-full max-w-3xl mx-auto">
           {loading && (
             <div className="flex justify-center py-10">
               <span className="loading loading-dots loading-md text-primary/40"></span>
@@ -146,27 +141,27 @@ const Explorer = () => {
           )}
 
           {activeTab === "cuentas" && (
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {usersWithoutMyself.length > 0 ? (
                 usersWithoutMyself.map((u) => (
                   <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-all">
-                    <Link to={`/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
-                      <img src={u.img || `https://ui-avatars.com/api/?name=${u.name}&background=random`} className="w-11 h-11 rounded-full object-cover" alt="" />
+                    <Link to={`/profile/${u.id}`} className="flex items-center gap-3 min-w-0">
+                      <img src={u.img || `https://ui-avatars.com/api/?name=${u.name}&background=random`} className="w-10 h-10 rounded-full object-cover" alt="" />
                       <div className="min-w-0">
-                        <h3 className="font-bold text-sm text-white truncate">{u.name}</h3>
+                        <h3 className="font-bold text-[13px] text-white truncate">{u.name}</h3>
                         <p className="text-[10px] opacity-40">@{u.username || 'usuario'}</p>
                       </div>
                     </Link>
                     <button 
                       onClick={() => handleFollowToggle(u.id, followingIds.includes(u.id))}
-                      className={`btn btn-xs rounded-xl px-4 ${followingIds.includes(u.id) ? "btn-neutral" : "btn-primary"}`}
+                      className={`btn btn-xs rounded-lg px-3 ${followingIds.includes(u.id) ? "btn-neutral" : "btn-primary"}`}
                     >
                       {followingIds.includes(u.id) ? "Siguiendo" : "Seguir"}
                     </button>
                   </div>
                 ))
               ) : (
-                !loading && <div className="text-center py-20 opacity-20 italic text-sm">No hay resultados</div>
+                !loading && <div className="col-span-full text-center py-20 opacity-20 italic text-sm">No hay resultados</div>
               )}
             </div>
           )}
@@ -190,20 +185,20 @@ const Explorer = () => {
                   </Link>
                 ))
               ) : (
-                !loading && <div className="text-center py-20 opacity-20 italic text-sm">No hay colecciones</div>
+                !loading && <div className="col-span-full text-center py-20 opacity-20 italic text-sm">No hay colecciones</div>
               )}
             </div>
           )}
         </main>
 
-        {/* COLUMNA DERECHA: EQUILIBRIO VISUAL (Opcional: puedes poner otra cosa aquí) */}
+        {/* COLUMNA DERECHA: BALANCE */}
         <aside className="hidden lg:block">
            <div className="sticky top-48">
               <div className="p-6 rounded-2xl border border-white/5 bg-gradient-to-b from-white/[0.01] to-transparent">
                  <Sparkles className="text-primary/40 mb-3" size={18} />
-                 <h5 className="text-[10px] font-bold uppercase tracking-widest opacity-40">Sugerencia</h5>
+                 <h5 className="text-[10px] font-bold uppercase tracking-widest opacity-40">Tip</h5>
                  <p className="text-[11px] opacity-30 mt-2 leading-relaxed">
-                   Usa palabras clave como "Anime" o "Gaming" para encontrar colecciones específicas.
+                   Explora perfiles para descubrir nuevas gemas.
                  </p>
               </div>
            </div>
