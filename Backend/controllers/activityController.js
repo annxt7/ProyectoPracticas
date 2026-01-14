@@ -3,19 +3,22 @@ const db = require('../config/dbconect');
 const getNotifications = async (req, res) => {
   try {
     const userId = req.user.id; 
+    console.log("DB Query: Buscando notificaciones para User ID:", userId);
 
     const [rows] = await db.execute(`
       SELECT 
         n.id, n.type, n.content, n.target, n.image, 
         n.comment_snippet as commentSnippet,
-        n.is_read as 'read', n.created_at,
+        n.is_read as 'isRead', n.created_at,
         u.user_id as actorId, u.username as actorName, u.avatar_url as actorAvatar
       FROM Notifications n 
-      JOIN Users u ON n.actor_id = u.user_id 
+      LEFT JOIN Users u ON n.actor_id = u.user_id 
       WHERE n.user_id = ? 
       ORDER BY n.created_at DESC
     `, [userId]);
     
+    console.log(`DB Query: Se encontraron ${rows.length} filas.`);
+
     const formatted = rows.map(row => ({
       id: row.id,
       type: row.type,
@@ -23,18 +26,18 @@ const getNotifications = async (req, res) => {
       target: row.target,
       image: row.image,
       commentSnippet: row.commentSnippet,
-      read: !!row.read,
+      read: row.isRead === 1 || row.isRead === true, // Forzamos booleano
       created_at: row.created_at,
       user: {
         id: row.actorId,
-        name: row.actorName,
+        name: row.actorName || "Usuario",
         avatar: row.actorAvatar
       }
     }));
 
     res.json(formatted);
   } catch (error) {
-    console.error("Error en ActivityController:", error);
+    console.error("Error detallado en ActivityController:", error);
     res.status(500).json({ error: "No se pudo cargar la actividad" });
   }
 };
