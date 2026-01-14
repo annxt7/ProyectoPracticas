@@ -16,12 +16,14 @@ router.post("/register", registerValidator, userController.createUser);
 router.post("/google", userController.googleLogin);
 router.post("/login", userController.login);
 router.post("/follow/:id", verifyToken, userController.followUser);
+router.post("/forgot-password", userController.forgotPassword);
 router.delete("/unfollow/:id", verifyToken, userController.unfollowUser);
 
 // 4. PUTS
 router.put("/complete-profile", verifyToken, userController.completeProfile);
 router.put("/update-profile", verifyToken, userController.updateProfile);
 router.put("/change-password", verifyToken, userController.changePassword); 
+
 
 router.get("/:id", verifyToken, userController.getUserById);
 

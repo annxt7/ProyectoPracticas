@@ -12,6 +12,7 @@ const collectionRoutes = require('./routes/collectionRoutes');
 const uploadRoutes = require('./routes/uploadFileRoutes');
 const catalogRoutes = require('./routes/catalogRoutes');
 const searchRoutes = require('./routes/searchRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -30,6 +31,7 @@ app.use('/api/catalog', catalogRoutes);
 app.use('/api/files', uploadRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 4. RUTA DE SALUD (Health Check)
 app.get("/api/health", (req, res) => {

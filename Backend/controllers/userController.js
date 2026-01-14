@@ -121,6 +121,7 @@ exports.login = async (req, res) => {
       avatar: user.avatar_url,
       banner: user.banner_url,
       bio: user.bio,
+      role: user.role,
     });
   } catch (error) {
     console.error("Error login:", error);
@@ -164,6 +165,7 @@ exports.googleLogin = async (req, res) => {
         avatar_url: picture,
         banner_url: DEFAULT_BANNER,
         bio: null,
+        role: user.role,
       };
       isNewUser = true;
     }
@@ -253,7 +255,6 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ error: "Error al actualizar" });
   }
 };
-
 
 // GET: Feed de Usuarios
 exports.getUserFeed = async (req, res) => {
@@ -580,5 +581,25 @@ exports.getFollowStats = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: "Error al obtener stats" });
+  }
+};
+
+//FORGOT PASSWORD
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    // Simplemente marcamos reset_code como 'PENDIENTE'
+    const [result] = await db
+      .promise()
+      .query('UPDATE Users SET reset_code = "PENDIENTE" WHERE email = ?', [
+        email,
+      ]);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Email no encontrado" });
+
+    res.json({ message: "Solicitud enviada al admin" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 };
