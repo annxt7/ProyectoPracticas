@@ -162,7 +162,11 @@ const AuthScreen = ({ type = "login" }) => {
             },
           });
         } else {
-          navigate("/feed");
+          if (response.data.role=== 'admin') {
+            navigate("/admin");
+          } else {
+            navigate("/feed");
+          }
         }
       }
     } catch (err) {

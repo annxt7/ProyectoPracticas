@@ -81,7 +81,7 @@ console.log("Datos del usuario en el Dashboard:", user);
         setUserCollections(userCollections.filter(c => c._id !== id));
       } else {
         // Actualizar lista principal
-        setData(data.filter((item) => item._id !== id));
+        setData(data.filter((item) => item.id !== id));
       }
       alert("Eliminado correctamente.");
     } catch (error) {
@@ -99,7 +99,7 @@ console.log("Datos del usuario en el Dashboard:", user);
          alert(`CÓDIGO GENERADO: ${code}\n\nCópialo y envíalo al usuario. (En un sistema real, esto enviaría el email).`);
          
          // Actualizar estado local
-         setData(data.map(item => item._id === reqId ? {...item, status: 'completed', codeGenerated: code} : item));
+         setData(data.map(item => item.id === reqId ? {...item, status: 'completed', codeGenerated: code} : item));
        } catch (error) {
          alert("Error generando código");
        }
@@ -208,7 +208,7 @@ console.log("Datos del usuario en el Dashboard:", user);
             </thead>
             <tbody>
               {filteredData.map((item) => (
-                <tr key={item._id} className="hover:bg-base-200/50 transition-colors">
+                <tr key={item.id} className="hover:bg-base-200/50 transition-colors">
                   
                   {/* --- VISTA DE SOLICITUDES --- */}
                   {activeTab === "requests" && (
@@ -225,7 +225,7 @@ console.log("Datos del usuario en el Dashboard:", user);
                       <td className="text-right">
                         {item.status === 'pending' ? (
                           <button 
-                            onClick={() => handleGenerateCode(item._id, item.email)}
+                            onClick={() => handleGenerateCode(item.id, item.email)}
                             className="btn btn-sm btn-primary"
                           >
                             Generar Código
@@ -256,7 +256,7 @@ console.log("Datos del usuario en el Dashboard:", user);
                         </div>
                       </td>
                       <td><span className="badge badge-ghost badge-sm">{item.role}</span></td>
-                      <td className="text-xs opacity-70">ID: {item._id.slice(-4)}</td>
+                     <td className="text-xs opacity-70">ID: {item.id ? item.id.toString().slice(-4) : 'N/A'}</td>
                       <td className="text-right flex justify-end gap-2">
                          <button 
                            onClick={() => openUserCollections(item)}
@@ -266,7 +266,7 @@ console.log("Datos del usuario en el Dashboard:", user);
                            <FolderOpen size={16} /> <span className="hidden sm:inline">Colecciones</span>
                          </button>
                          <button 
-                           onClick={() => handleDelete(item._id)}
+                           onClick={() => handleDelete(item.id)}
                            className="btn btn-ghost btn-xs text-error"
                          >
                            <Trash2 size={16} />
@@ -289,7 +289,7 @@ console.log("Datos del usuario en el Dashboard:", user);
                       </td>
                       <td>{item.items?.length || 0} items</td>
                       <td className="text-right">
-                        <button onClick={() => handleDelete(item._id)} className="btn btn-ghost btn-xs text-error">
+                        <button onClick={() => handleDelete(item.id)} className="btn btn-ghost btn-xs text-error">
                           <Trash2 size={16} />
                         </button>
                       </td>
