@@ -17,7 +17,7 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Cargar lista de seguidos para los botones de Follow
+  // 1. Cargar lista de seguidos
   useEffect(() => {
     if (!user?.id) return;
     const fetchMyFollowing = async () => {
@@ -46,7 +46,7 @@ const Explorer = () => {
     }
   };
 
-  // 3. Búsqueda con Filtro de Seguridad por ID y por Nombre
+  // 3. Búsqueda con Filtro Inteligente (Solución al error de Axel)
   useEffect(() => {
     if (!user) return;
 
@@ -57,24 +57,35 @@ const Explorer = () => {
         const data = res.data;
 
         const myId = String(user.id || "");
-        // Intentamos obtener el nombre de varias fuentes por si una está vacía
-        const myName = String(user.name || user.username || user.handle || "").toLowerCase().trim();
+        
+        // Creamos una lista de "mis nombres" para comparar (Nombre real y Username)
+        const myIdentifiers = [
+          String(user.name || "").toLowerCase().trim(),
+          String(user.username || "").toLowerCase().trim(),
+          String(user.handle || "").toLowerCase().trim()
+        ].filter(Boolean); // Eliminamos vacíos
 
-        // Filtrar Usuarios (que no sea yo)
+        // Filtrar Usuarios (que no sea yo por ID)
         const filteredUsers = (data.users || []).filter(
           (u) => String(u.id) !== myId
         );
 
-        // Filtrar Colecciones (que no sean las mías)
+        // Filtrar Colecciones
         const filteredCollections = (data.collections || []).filter((col) => {
+          // Limpiamos el nombre del autor de la colección (quitando el '@' si lo trae)
+          const colAuthor = String(col.author || "").toLowerCase().trim().replace(/^@+/, "");
           const colCreatorId = String(col.user_id || col.userId || "");
-          const colAuthorName = String(col.author || "").toLowerCase().trim();
+
+          // 1. Verificamos coincidencia por ID
+          const isMyId = colCreatorId !== "" && colCreatorId === myId;
+
+          // 2. Verificamos coincidencia por CUALQUIERA de mis nombres
+          const isMyName = myIdentifiers.some(id => {
+            const cleanId = id.replace(/^@+/, "");
+            return colAuthor === cleanId;
+          });
           
-          // REGLA: Si el ID coincide O el nombre del autor coincide con el mío, se oculta
-          const isMyContent = (colCreatorId !== "" && colCreatorId === myId) || 
-                              (myName !== "" && colAuthorName === myName);
-          
-          return !isMyContent;
+          return !isMyId && !isMyName;
         });
 
         setUsersWithoutMyself(filteredUsers);
@@ -94,9 +105,9 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* BARRA DE INFORMACIÓN (Solo para verificar datos) */}
-      <div className="bg-primary/10 text-primary text-[10px] p-1 text-center font-mono border-b border-white/5">
-        SESIÓN ACTIVA: ID {user?.id || '?' } | NOMBRE: "{user?.name || user?.username || 'no detectado'}"
+      {/* BARRA DE INFORMACIÓN (Puedes quitarla después) */}
+      <div className="bg-primary/10 text-primary text-[10px] p-1 text-center font-mono border-b border-white/5 uppercase tracking-tighter">
+        Sesión: {user?.name} (@{user?.username || 'sin_user'}) | Filtrando por ID y Nombres
       </div>
 
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
@@ -118,7 +129,7 @@ const Explorer = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-3 text-sm font-bold capitalize transition-all relative ${
-                  activeTab === tab ? "text-primary" : "text-white/40 hover:text-white"
+                  activeTab === tab ? "text-primary" : "text-white/40"
                 }`}
               >
                 {tab}
