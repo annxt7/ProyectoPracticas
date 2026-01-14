@@ -17,7 +17,6 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Obtener lista de usuarios seguidos para el estado de los botones
   useEffect(() => {
     if (!user?.id) return;
     const fetchMyFollowing = async () => {
@@ -25,13 +24,12 @@ const Explorer = () => {
         const res = await api.get(`/users/following/${user.id}`);
         setFollowingIds(res.data.map(u => u.id));
       } catch (e) {
-        console.error("Error cargando seguidos:", e);
+        console.error("Error seguidos:", e);
       }
     };
     fetchMyFollowing();
   }, [user?.id]);
 
-  // 2. Acción de seguir/dejar de seguir
   const handleFollowToggle = async (targetId, isFollowing) => {
     try {
       if (isFollowing) {
@@ -41,45 +39,41 @@ const Explorer = () => {
         await api.post(`/users/follow/${targetId}`);
         setFollowingIds(prev => [...prev, targetId]);
       }
-    } catch (error) {
-      console.error("Error en follow toggle:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
-  // 3. BÚSQUEDA Y FILTRADO (Aquí está la corrección)
+  // --- LÓGICA DE BÚSQUEDA CORREGIDA ---
   useEffect(() => {
     if (!user?.id) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/search", {
-          params: { query }
-        });
-
+        const res = await api.get("/search", { params: { query } });
         const data = res.data;
-        const myId = String(user.id);
-        const myName = user.name; // Nombre del usuario logueado
 
-        // Filtrar Perfiles (que no sea el mío)
+        const myId = String(user.id);
+        const myName = String(user.name || "").toLowerCase().trim();
+
+        // 1. Filtrar Usuarios
         const filteredUsers = (data.users || []).filter(
           (u) => String(u.id) !== myId
         );
 
-        // Filtrar Colecciones (que no sean las mías)
-        // Filtramos por ID (si existe) O por nombre de autor (que sí existe en tu vista)
+        // 2. Filtrar Colecciones (Súper estricto)
         const filteredCollections = (data.collections || []).filter((col) => {
-          const creatorId = String(col.user_id || col.userId || col.creator_id || "");
-          const isMyName = col.author === myName;
+          const colCreatorId = String(col.user_id || col.userId || col.creator_id || "");
+          const colAuthorName = String(col.author || "").toLowerCase().trim();
           
-          // Si el ID coincide O el nombre del autor es el mío, se oculta
-          return creatorId !== myId && !isMyName;
+          // REGLA: Si el ID coincide O el nombre coincide, queda FUERA (false)
+          const isMine = (colCreatorId === myId) || (colAuthorName === myName && myName !== "");
+          return !isMine;
         });
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(filteredCollections);
       } catch (err) {
-        console.error("Error en búsqueda:", err);
+        console.error("Error search:", err);
       } finally {
         setLoading(false);
       }
@@ -93,7 +87,11 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* BARRA DE BÚSQUEDA STICKY */}
+      {/* --- BLOQUE DE DEBUG (ELIMINALO CUANDO FUNCIONE) --- */}
+      <div className="bg-warning text-warning-content text-[10px] p-2 text-center font-mono">
+        DEBUG: Mi ID: {user?.id} | Mi Nombre: {user?.name} | Colecciones mostradas: {collections.length}
+      </div>
+
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -103,23 +101,17 @@ const Explorer = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar en Tribe..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-10 focus:ring-2 ring-primary/50 focus:outline-none text-white transition-all"
+              className="input w-full bg-white/5 border-white/10 rounded-2xl pl-12 h-12"
             />
-            {query && (
-              <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100">
-                <X size={18} />
-              </button>
-            )}
           </div>
 
-          {/* TABS DE NAVEGACIÓN */}
           <div className="flex justify-center gap-8 border-b border-white/5">
             {["cuentas", "colecciones"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-3 text-sm font-bold capitalize transition-all relative ${
-                  activeTab === tab ? "text-primary" : "text-white/40 hover:text-white"
+                  activeTab === tab ? "text-primary" : "text-white/40"
                 }`}
               >
                 {tab}
@@ -131,61 +123,24 @@ const Explorer = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-10">
-        {/* LATERAL IZQUIERDO: TENDENCIAS */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-48 space-y-8">
-            <h4 className="text-[10px] uppercase tracking-[0.2em] opacity-40 font-bold mb-4 flex items-center gap-2">
-              <TrendingIcon size={12} /> Tendencias
-            </h4>
-            <nav className="flex flex-col gap-2">
-              {["Música", "Series", "Películas", "Juegos", "Libros"].map((tag) => (
-                <button key={tag} className="flex items-center gap-2 text-sm opacity-60 hover:opacity-100 hover:text-primary transition-all group">
-                  <Hash size={14} className="opacity-20 group-hover:opacity-100" />
-                  {tag}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </aside>
+        <aside className="hidden lg:block opacity-30 italic text-xs">Tendencias próximamente...</aside>
 
-        {/* CONTENIDO PRINCIPAL */}
         <main>
-          {loading && <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>}
+          {loading && <div className="text-center py-4">Buscando...</div>}
 
           {activeTab === "cuentas" && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {usersWithoutMyself.length > 0 ? (
-                usersWithoutMyself.map((u) => {
-                  const isFollowing = followingIds.includes(u.id);
-                  return (
-                    <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
-                      <Link to={`/profile/${u.id}`} className="flex items-center gap-3 min-w-0">
-                        <div className="avatar">
-                          <div className="w-12 h-12 rounded-full ring-2 ring-white/5 bg-white/10 overflow-hidden">
-                            <img 
-                                src={u.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random&color=fff`} 
-                                className="w-full h-full object-cover" 
-                                alt={u.name}
-                            />
-                          </div>
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-sm text-white truncate">{u.name}</h3>
-                          <p className="text-[10px] opacity-40 leading-none">{u.handle || `@${u.name.toLowerCase().replace(/\s/g, '')}`}</p>
-                        </div>
-                      </Link>
-                      <button
-                        onClick={() => handleFollowToggle(u.id, isFollowing)}
-                        className={`btn btn-xs rounded-full px-4 ${isFollowing ? "btn-neutral" : "btn-primary"}`}
-                      >
-                        {isFollowing ? "Siguiendo" : "Seguir"}
-                      </button>
-                    </div>
-                  );
-                })
-              ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No se encontraron cuentas</div>
-              )}
+              {usersWithoutMyself.map((u) => (
+                <div key={u.id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
+                  <Link to={`/profile/${u.id}`} className="flex items-center gap-3">
+                    <img src={u.img || `https://ui-avatars.com/api/?name=${u.name}`} className="w-10 h-10 rounded-full" alt="" />
+                    <span className="font-bold">{u.name}</span>
+                  </Link>
+                  <button onClick={() => handleFollowToggle(u.id, followingIds.includes(u.id))} className="btn btn-xs">
+                    {followingIds.includes(u.id) ? "Siguiendo" : "Seguir"}
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -194,24 +149,21 @@ const Explorer = () => {
               {collections.length > 0 ? (
                 collections.map((col) => (
                   <Link key={col.id} to={`/collection/${col.id}`} className="block group">
-                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all shadow-xl">
-                      <div className="aspect-video overflow-hidden bg-white/5 relative">
-                        <ItemCover src={col.cover} title={col.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="bg-white/5 rounded-3xl overflow-hidden border border-white/5">
+                      <div className="aspect-video">
+                        <ItemCover src={col.cover} title={col.title} className="w-full h-full object-cover" />
                       </div>
-                      <div className="p-5">
-                        <h3 className="font-bold text-white text-lg truncate group-hover:text-primary transition-colors">
-                          {col.title}
-                        </h3>
-                        <div className="flex items-center justify-between mt-2">
-                           <span className="text-xs font-medium text-primary/80">@{col.author || 'usuario'}</span>
-                           <span className="text-[10px] opacity-30 uppercase font-bold tracking-widest">{col.type || 'Colección'}</span>
-                        </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-white truncate">{col.title}</h3>
+                        <p className="text-xs text-primary">@{col.author}</p>
+                        {/* Esto te ayudará a ver por qué no se filtra */}
+                        <p className="text-[8px] opacity-20">ID Creador: {col.user_id || col.userId || 'null'}</p>
                       </div>
                     </div>
                   </Link>
                 ))
               ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay colecciones de otros usuarios</div>
+                !loading && <div className="text-center py-20 opacity-20">No hay otras colecciones</div>
               )}
             </div>
           )}
