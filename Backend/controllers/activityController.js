@@ -3,13 +3,14 @@ const db = require('../config/dbconect');
 const getNotifications = async (req, res) => {
   try {
     const userId = req.user.id; 
-    console.log("DB Query: Buscando notificaciones para User ID:", userId);
+    console.log("--- DEBUG BACKEND ---");
+    console.log("Buscando notificaciones para el Usuario ID:", userId);
 
     const [rows] = await db.execute(`
       SELECT 
         n.id, n.type, n.content, n.target, n.image, 
         n.comment_snippet as commentSnippet,
-        n.is_read as 'isRead', n.created_at,
+        n.is_read as 'is_read', n.created_at,
         u.user_id as actorId, u.username as actorName, u.avatar_url as actorAvatar
       FROM Notifications n 
       LEFT JOIN Users u ON n.actor_id = u.user_id 
@@ -17,7 +18,7 @@ const getNotifications = async (req, res) => {
       ORDER BY n.created_at DESC
     `, [userId]);
     
-    console.log(`DB Query: Se encontraron ${rows.length} filas.`);
+    console.log(`Filas encontradas en DB: ${rows.length}`);
 
     const formatted = rows.map(row => ({
       id: row.id,
@@ -26,7 +27,8 @@ const getNotifications = async (req, res) => {
       target: row.target,
       image: row.image,
       commentSnippet: row.commentSnippet,
-      read: row.isRead === 1 || row.isRead === true, // Forzamos booleano
+      // Forzamos conversión a booleano para React
+      read: row.is_read === 1 || row.is_read === true, 
       created_at: row.created_at,
       user: {
         id: row.actorId,
@@ -37,8 +39,8 @@ const getNotifications = async (req, res) => {
 
     res.json(formatted);
   } catch (error) {
-    console.error("Error detallado en ActivityController:", error);
-    res.status(500).json({ error: "No se pudo cargar la actividad" });
+    console.error("ERROR CRÍTICO:", error);
+    res.status(500).json({ error: "Error interno" });
   }
 };
 
