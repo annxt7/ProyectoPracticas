@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, X, TrendingUp, Hash, Search as SearchIcon, FireExtinguisher, Sparkles, Trophy } from "lucide-react"; 
+import { Search, X, TrendingUp, Hash, Search as SearchIcon, Sparkles, Trophy } from "lucide-react"; 
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom";
@@ -42,7 +42,7 @@ const Explorer = () => {
     } catch (error) { console.error(error); }
   };
 
-  // 3. Búsqueda y Filtro de Seguridad
+  // 3. Búsqueda y Filtro de Seguridad (Axel Fix)
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
@@ -79,7 +79,7 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER BUSCADOR */}
+      {/* HEADER BUSCADOR (Siempre centrado) */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -89,7 +89,7 @@ const Explorer = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar en Tribe..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-10 focus:ring-2 ring-primary/50 focus:outline-none text-white transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-10 focus:ring-2 ring-primary/50 focus:outline-none text-white transition-all h-12"
             />
           </div>
 
@@ -110,59 +110,35 @@ const Explorer = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-12">
+      {/* GRID DE 3 COLUMNAS PARA MANTENER EL CENTRO */}
+      <div className="max-w-[1400px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[250px_1fr_250px] gap-8">
         
-        {/* ASIDE IZQUIERDO: TENDENCIAS Y CATEGORÍAS */}
+        {/* COLUMNA IZQUIERDA: TENDENCIAS */}
         <aside className="hidden lg:block">
-          <div className="sticky top-48 space-y-10">
-            
-            {/* Sección Tendencias */}
+          <div className="sticky top-48 space-y-8">
             <div>
               <h4 className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-6 flex items-center gap-2">
-                <TrendingUp size={14} /> Tendencias de hoy
+                <TrendingUp size={14} /> Tendencias
               </h4>
-              <div className="space-y-5">
-                {[
-                  { tag: "Cyberpunk2077", posts: "2.4k" },
-                  { tag: "AnimeWinter", posts: "1.8k" },
-                  { tag: "ReactVite", posts: "850" },
-                  { tag: "MinimalSetup", posts: "1.2k" }
-                ].map((item) => (
-                  <div key={item.tag} className="group cursor-pointer">
-                    <p className="text-xs opacity-40 group-hover:text-primary transition-colors">#{item.tag}</p>
-                    <p className="text-[10px] font-bold opacity-20">{item.posts} colecciones</p>
+              <div className="space-y-4">
+                {["Cyberpunk", "Anime", "Setup", "Gaming"].map((tag) => (
+                  <div key={tag} className="group cursor-pointer">
+                    <p className="text-xs opacity-40 group-hover:text-primary transition-colors">#{tag}</p>
+                    <p className="text-[9px] font-bold opacity-20">1.2k colecciones</p>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Sección Categorías Rápidas */}
-            <div>
-              <h4 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-6 flex items-center gap-2">
-                <Sparkles size={14} /> Explorar por tipo
-              </h4>
-              <nav className="flex flex-col gap-3">
-                {["Música", "Cine", "Gaming", "Arte", "Tech"].map((cat) => (
-                  <button key={cat} className="flex items-center gap-3 text-sm opacity-50 hover:opacity-100 hover:translate-x-1 transition-all">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
-                    {cat}
-                  </button>
-                ))}
-              </nav>
+            <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
+              <Trophy className="text-primary mb-2" size={16} />
+              <p className="text-[10px] font-bold text-white opacity-60">Comunidad</p>
+              <p className="text-[9px] opacity-30 mt-1">Explora lo más guardado esta semana.</p>
             </div>
-
-            {/* Banner decorativo o Info */}
-            <div className="p-6 rounded-3xl bg-gradient-to-br from-primary/20 to-transparent border border-primary/10">
-              <Trophy className="text-primary mb-3" size={20} />
-              <p className="text-xs font-bold text-white mb-1">Top Creador</p>
-              <p className="text-[10px] opacity-50 leading-relaxed">@annxt7 lidera las tendencias esta semana.</p>
-            </div>
-
           </div>
         </aside>
 
-        {/* CONTENIDO PRINCIPAL */}
-        <main>
+        {/* COLUMNA CENTRAL: RESULTADOS (Aquí está lo que quieres centrado) */}
+        <main className="w-full max-w-2xl mx-auto">
           {loading && (
             <div className="flex justify-center py-10">
               <span className="loading loading-dots loading-md text-primary/40"></span>
@@ -170,19 +146,15 @@ const Explorer = () => {
           )}
 
           {activeTab === "cuentas" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-3">
               {usersWithoutMyself.length > 0 ? (
                 usersWithoutMyself.map((u) => (
                   <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-all">
                     <Link to={`/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
-                      <div className="avatar">
-                        <div className="w-12 h-12 rounded-2xl">
-                          <img src={u.img || `https://ui-avatars.com/api/?name=${u.name}&background=random`} alt="" />
-                        </div>
-                      </div>
+                      <img src={u.img || `https://ui-avatars.com/api/?name=${u.name}&background=random`} className="w-11 h-11 rounded-full object-cover" alt="" />
                       <div className="min-w-0">
                         <h3 className="font-bold text-sm text-white truncate">{u.name}</h3>
-                        <p className="text-[10px] opacity-40">@{u.username || u.name.toLowerCase().replace(/\s/g, '')}</p>
+                        <p className="text-[10px] opacity-40">@{u.username || 'usuario'}</p>
                       </div>
                     </Link>
                     <button 
@@ -194,38 +166,48 @@ const Explorer = () => {
                   </div>
                 ))
               ) : (
-                !loading && <div className="text-center py-20 opacity-20 italic text-sm">No se encontraron resultados</div>
+                !loading && <div className="text-center py-20 opacity-20 italic text-sm">No hay resultados</div>
               )}
             </div>
           )}
 
           {activeTab === "colecciones" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {collections.length > 0 ? (
                 collections.map((col) => (
                   <Link key={col.id} to={`/collection/${col.id}`} className="block group">
-                    <div className="relative bg-white/[0.02] border border-white/5 rounded-[2rem] overflow-hidden hover:border-primary/30 transition-all duration-500 shadow-2xl">
-                      <div className="aspect-[16/10] overflow-hidden">
-                        <ItemCover src={col.cover} title={col.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden hover:border-primary/30 transition-all shadow-xl">
+                      <div className="aspect-video overflow-hidden">
+                        <ItemCover src={col.cover} title={col.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                       </div>
-                      <div className="p-6">
-                        <h3 className="font-bold text-white text-xl truncate group-hover:text-primary transition-colors">
+                      <div className="p-4">
+                        <h3 className="font-bold text-white text-md truncate group-hover:text-primary transition-colors">
                           {col.title}
                         </h3>
-                        <div className="flex items-center justify-between mt-3">
-                           <span className="text-xs font-medium text-primary/60">@{col.author}</span>
-                           <span className="text-[10px] opacity-20 uppercase font-black tracking-widest">{col.type || 'Colección'}</span>
-                        </div>
+                        <p className="text-[10px] text-primary/60 mt-1">@{col.author}</p>
                       </div>
                     </div>
                   </Link>
                 ))
               ) : (
-                !loading && <div className="text-center py-20 opacity-20 italic text-sm">No se encontraron colecciones</div>
+                !loading && <div className="text-center py-20 opacity-20 italic text-sm">No hay colecciones</div>
               )}
             </div>
           )}
         </main>
+
+        {/* COLUMNA DERECHA: EQUILIBRIO VISUAL (Opcional: puedes poner otra cosa aquí) */}
+        <aside className="hidden lg:block">
+           <div className="sticky top-48">
+              <div className="p-6 rounded-2xl border border-white/5 bg-gradient-to-b from-white/[0.01] to-transparent">
+                 <Sparkles className="text-primary/40 mb-3" size={18} />
+                 <h5 className="text-[10px] font-bold uppercase tracking-widest opacity-40">Sugerencia</h5>
+                 <p className="text-[11px] opacity-30 mt-2 leading-relaxed">
+                   Usa palabras clave como "Anime" o "Gaming" para encontrar colecciones específicas.
+                 </p>
+              </div>
+           </div>
+        </aside>
 
       </div>
       <NavMobile />
