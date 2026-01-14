@@ -47,8 +47,6 @@ const CollectionPage = () => {
       try {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
-        
-        // Persistencia del botón de guardado
         setIsSaved(!!data.is_saved);
 
         setCollectionInfo({
@@ -67,7 +65,6 @@ const CollectionPage = () => {
 
         if (data.items) {
           setItems(data.items.map(item => {
-            // Identificar el ID de referencia real del catálogo
             const refId = item.music_id || item.book_id || item.movie_id || item.show_id || item.game_id;
             
             return {
@@ -93,6 +90,29 @@ const CollectionPage = () => {
 
   const isOwner = user && collectionInfo && String(user.id || user.userId) === String(collectionInfo.creatorId);
 
+const handleAddNewItem = async (newItem) => {
+  try {
+    const response = await api.post(`/collections/${id}/items`, {
+      item_type: newItem.item_type || collectionInfo.type,
+      reference_id: newItem.reference_id,
+      custom_title: newItem.title,
+      custom_subtitle: newItem.subtitle,
+      custom_image: newItem.cover,
+      custom_description: newItem.description
+    });
+    if (response.data.success) {
+      const itemParaLaVista = {
+        ...newItem,
+        id: response.data.itemId 
+      };
+      setItems(prev => [...prev, itemParaLaVista]);
+      setIsAddItemOpen(false);
+    }
+  } catch (error) {
+    console.error("Error al guardar el item:", error);
+    alert("No se pudo guardar en la base de datos");
+  }
+};
   // 2. LOGICA DE GUARDADO DE COLECCIÓN
   const handleSaveCollection = async () => {
     if (isSaved) return;
@@ -235,7 +255,7 @@ const CollectionPage = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {items.map((item) => (
             <div key={item.id} className="group flex flex-col gap-3">
-              <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-base-300 shadow-lg border border-white/5">
+              <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-300 shadow-lg border border-white/5">
                 <ItemCover src={item.cover} title={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 
                 {/* BOTÓN PLUS (ESQUINA SUPERIOR DERECHA) */}
@@ -293,7 +313,7 @@ const CollectionPage = () => {
         isOpen={isAddItemOpen} 
         onClose={() => setIsAddItemOpen(false)} 
         collectionType={collectionInfo?.type} 
-        onAddItem={(newItem) => setItems(prev => [...prev, newItem])} 
+        onAddItem={handleAddNewItem} 
       />
 
       <NavMobile />

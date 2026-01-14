@@ -4,20 +4,3 @@
 html, body, #root {
   @apply bg-base-300 text-base-content h-full;
 }
-
-/* Wrapper externo del botón de Google */
-.google-wrapper {
-  overflow: hidden;
-  border-radius: 9999px;
-  width: 282px;   /* ancho oficial del botón Google */
-  height: 44px;   /* alto oficial */
-  display: inline-block;
-}
-
-/* Asegura que el iframe no sobresalga */
-.google-wrapper iframe {
-  width: 100% !important;
-  height: 100% !important;
-  border: 0;
-  display: block;
-}

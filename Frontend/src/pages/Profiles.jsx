@@ -448,7 +448,7 @@ const Profile = () => {
               <Link
                 to={`/collection/${col.collection_id}`}
                 key={col.collection_id}
-                className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform group"
+                className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform group"
               >
                 {col.cover_url ? (
                   <img
