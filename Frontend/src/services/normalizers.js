@@ -4,5 +4,6 @@ export const normalizeUser = (u) => ({
   avatar: u.avatar || u.avatarUrl || null,
   banner: u.banner || u.bannerUrl || null,
   bio: u.bio || "",
-  email: u.email
+  email: u.email,
+  role: u.role ,
 });
