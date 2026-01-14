@@ -7,12 +7,9 @@ import {
   Search, 
   ShieldAlert, 
   LogOut,
-  ArrowLeft,
   Key,
   FolderOpen,
-  CheckCircle,
-  XCircle,
-  Copy
+ 
 } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -322,16 +319,14 @@ const fetchData = async () => {
                     <tr>
                       <th>Título</th>
                       <th>Items</th>
-                      <th>Privacidad</th>
                       <th className="text-right">Acción</th>
                     </tr>
                   </thead>
                   <tbody>
                     {userCollections.map(col => (
                       <tr key={col.id}>
-                        <td className="font-bold">{col.name}</td>
+                        <td className="font-bold">{col.collection_name}</td>
                         <td>{col.items?.length || 0}</td>
-                        <td>{col.isPublic ? "Pública" : "Privada"}</td>
                         <td className="text-right">
                           <button 
                             onClick={() => handleDelete(col.id, true)}
@@ -361,7 +356,6 @@ const fetchData = async () => {
   );
 };
 
-// Componente pequeño para los botones de las tabs
 const TabButton = ({ active, onClick, icon, label, badge }) => (
   <button
     onClick={onClick}
