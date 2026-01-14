@@ -1,6 +1,6 @@
 const express= require('express');
 require('dotenv').config();
-const {uploadLimiter} = require("../middlewares/fileLimiter");
+const uploadLimiter = require("../middlewares/fileLimiter");
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
