@@ -86,7 +86,7 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// POST: Login (Normalizado)
+// POST: Login 
 exports.login = async (req, res) => {
   const { identifier, password } = req.body;
   if (!identifier || !password)
@@ -129,7 +129,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// POST: Google Login (Normalizado)
+// POST: Google Login 
 exports.googleLogin = async (req, res) => {
   const { token } = req.body;
   if (!token) return res.status(400).json({ error: "No token" });
@@ -140,24 +140,17 @@ exports.googleLogin = async (req, res) => {
     );
     const { email, name, picture, sub: googleId } = googleResponse.data;
 
-    const [existing] = await db.query("SELECT * FROM Users WHERE email = ?", [
-      email,
-    ]);
-    let user,
-      isNewUser = false;
+    const [existing] = await db.query("SELECT * FROM Users WHERE email = ?", [email]);
+    let user;
+    let isNewUser = false;
 
     if (existing.length > 0) {
-      user = existing[0];
+      user = existing[0]; // Aquí ya obtenemos el user con su ROLE de la DB
     } else {
-      const sql =
-        "INSERT INTO Users (username, email, avatar_url, google_id, banner_url) VALUES (?, ?, ?, ?, ?)";
-      const [result] = await db.query(sql, [
-        name,
-        email,
-        picture,
-        googleId,
-        DEFAULT_BANNER,
-      ]);
+      const sql = "INSERT INTO Users (username, email, avatar_url, google_id, banner_url, role) VALUES (?, ?, ?, ?, ?, ?)";
+      const [result] = await db.query(sql, [name, email, picture, googleId, DEFAULT_BANNER, 'user']);
+      
+      // Construimos el objeto para el nuevo usuario
       user = {
         user_id: result.insertId,
         username: name,
@@ -165,17 +158,19 @@ exports.googleLogin = async (req, res) => {
         avatar_url: picture,
         banner_url: DEFAULT_BANNER,
         bio: null,
-        role: user.role,
+        role: 'user' // Por defecto
       };
       isNewUser = true;
     }
 
+    // --- CORRECCIÓN 1: INCLUIR EL ROLE EN EL JWT ---
     const appToken = jwt.sign(
-      { id: user.user_id, username: user.username },
+      { id: user.user_id, username: user.username, role: user.role }, // <-- IMPORTANTE
       process.env.JWT_SECRET,
       { expiresIn: "5h" }
     );
 
+    // --- CORRECCIÓN 2: INCLUIR EL ROLE EN LA RESPUESTA ---
     res.status(200).json({
       success: true,
       token: appToken,
@@ -187,6 +182,7 @@ exports.googleLogin = async (req, res) => {
         banner: user.banner_url,
         bio: user.bio,
         email: user.email,
+        role: user.role // <-- ESTO ES LO QUE NECESITA EL FRONTEND
       },
     });
   } catch (error) {
@@ -194,7 +190,6 @@ exports.googleLogin = async (req, res) => {
     res.status(401).json({ error: "Error auth" });
   }
 };
-
 // PUT: Update Profile
 exports.updateProfile = async (req, res) => {
   if (!req.user || !req.user.id) {
