@@ -20,6 +20,11 @@ const port = process.env.PORT || 3000;
 applySecurity(app);
 
 // 2. MIDDLEWARES DE PARSEO
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  next();
+});
 app.use(express.json({ limit: '10kb' })); 
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
@@ -49,8 +54,3 @@ app.listen(port, () => {
     console.log(`-------------------------------------------`);
 });
 
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  next();
-});

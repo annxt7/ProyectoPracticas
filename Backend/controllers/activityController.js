@@ -1,71 +1,84 @@
-const db = require('../config/dbconect'); 
+const db = require("../config/dbconect");
 
-const getNotifications = async (req, res) => {
+// GET: Obtener todas las notificaciones del usuario logueado
+exports.getNotifications = async (req, res) => {
   try {
-    // 1. Extraemos los datos del usuario del token
+    // El ID viene del middleware verifyToken (auth)
     const userId = req.user.id; 
-    const username = req.user.username || req.user.name;
 
-    console.log("======= DEBUG ACTIVIDAD =======");
-    console.log("Petición recibida de:", { userId, username });
-
-    // 2. Consulta robusta: Buscamos por ID o por Username para asegurar
-    const [rows] = await db.execute(`
+    // Consultamos las notificaciones y unimos con la tabla Users para obtener datos del 'actor'
+    const sql = `
       SELECT 
-        n.id, n.type, n.content, n.target, n.image, 
-        n.comment_snippet as commentSnippet,
-        n.is_read as 'is_read', n.created_at,
-        u_actor.username as actorName, 
-        u_actor.avatar_url as actorAvatar
+        n.id, 
+        n.type, 
+        n.content, 
+        n.is_read, 
+        n.created_at,
+        u.username AS actorName,
+        u.avatar_url AS actorAvatar
       FROM Notifications n
-      INNER JOIN Users u_owner ON n.user_id = u_owner.user_id
-      LEFT JOIN Users u_actor ON n.actor_id = u_actor.user_id
-      WHERE u_owner.user_id = ? OR u_owner.username = ?
+      LEFT JOIN Users u ON n.actor_id = u.user_id
+      WHERE n.user_id = ?
       ORDER BY n.created_at DESC
-    `, [userId, username]);
-    
-    console.log(`Resultado SQL: ${rows.length} notificaciones encontradas.`);
+    `;
 
-    // 3. Formateo de datos para el Frontend
-    const formatted = rows.map(row => ({
-      id: row.id,
-      type: row.type,
-      content: row.content,
-      target: row.target,
-      image: row.image,
-      commentSnippet: row.commentSnippet,
-      // Sincronización de lectura (booleano)
-      read: Boolean(row.is_read), 
-      created_at: row.created_at,
+    const [rows] = await db.query(sql, [userId]);
+
+    // MAPEO DE CONCORDANCIA: 
+    // Transformamos los datos para que el Frontend reciba lo que necesita
+    const formattedNotifications = rows.map(n => ({
+      id: n.id,
+      type: n.type,
+      content: n.content,
+      read: n.is_read === 1, // Convertimos tinyint(1) a booleano real
+      created_at: n.created_at,
       user: {
-        name: row.actorName || "Usuario",
-        avatar: row.actorAvatar
+        name: n.actorName || "Usuario",
+        avatar: n.actorAvatar
       }
     }));
 
-    res.json(formatted);
+    console.log(`✅ Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
+    res.json(formattedNotifications);
   } catch (error) {
-    console.error("❌ ERROR EN ACTIVITY:", error);
-    res.status(500).json({ error: "Error interno" });
+    console.error("Error en getNotifications:", error);
+    res.status(500).json({ error: "Error al sincronizar notificaciones" });
   }
 };
 
-const markAllAsRead = async (req, res) => {
+// PUT: Marcar una notificación como leída
+exports.markAsRead = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
   try {
-    await db.execute('UPDATE Notifications SET is_read = 1 WHERE user_id = ?', [req.user.id]);
-    res.json({ success: true });
+    // Aseguramos que solo el dueño de la notificación pueda marcarla como leída
+    const [result] = await db.query(
+      "UPDATE Notifications SET is_read = 1 WHERE id = ? AND user_id = ?",
+      [id, userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Notificación no encontrada o no autorizada" });
+    }
+
+    res.json({ success: true, message: "Notificación actualizada" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Error al actualizar" });
   }
 };
 
-const markAsRead = async (req, res) => {
+// PUT: Marcar todas como leídas
+exports.markAllAsRead = async (req, res) => {
+  const userId = req.user.id;
+
   try {
-    await db.execute('UPDATE Notifications SET is_read = 1 WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    res.json({ success: true });
+    await db.query(
+      "UPDATE Notifications SET is_read = 1 WHERE user_id = ?",
+      [userId]
+    );
+    res.json({ success: true, message: "Todas las notificaciones marcadas como leídas" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Error al actualizar todas" });
   }
 };
-
-module.exports = { getNotifications, markAllAsRead, markAsRead };
