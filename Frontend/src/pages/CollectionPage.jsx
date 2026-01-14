@@ -62,6 +62,7 @@ const CollectionPage = () => {
             likes: data.likes || 0 
           },
         });
+        console.log("DATA ITEMS:", data);
 
         if (data.items) {
           setItems(data.items.map(item => {
