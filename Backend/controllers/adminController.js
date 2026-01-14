@@ -10,7 +10,7 @@ exports.getAdminData = async (req, res) => {
     const [collections] = await db.query(`
       SELECT 
         c.collection_id as id, 
-        c.name, 
+        c.collection_name as name, 
         u.username as owner_username, 
         u.avatar_url as owner_avatar
       FROM Collections c
