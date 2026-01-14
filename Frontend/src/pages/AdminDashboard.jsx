@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userCollections, setUserCollections] = useState([]);
   const [loadingModal, setLoadingModal] = useState(false);
-
+console.log("Datos del usuario en el Dashboard:", user);
   // Verificación de Admin
   useEffect(() => {
     if (!user || user.role !== "admin") {
