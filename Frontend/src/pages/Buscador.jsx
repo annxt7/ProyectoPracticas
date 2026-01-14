@@ -17,7 +17,7 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Cargar IDs de seguidos
+  // 1. Obtener lista de usuarios seguidos para el estado de los botones
   useEffect(() => {
     if (!user?.id) return;
     const fetchMyFollowing = async () => {
@@ -25,13 +25,13 @@ const Explorer = () => {
         const res = await api.get(`/users/following/${user.id}`);
         setFollowingIds(res.data.map(u => u.id));
       } catch (e) {
-        console.error("Error cargando mis seguidos", e);
+        console.error("Error cargando seguidos:", e);
       }
     };
     fetchMyFollowing();
   }, [user?.id]);
 
-  // 2. Lógica Follow/Unfollow
+  // 2. Acción de seguir/dejar de seguir
   const handleFollowToggle = async (targetId, isFollowing) => {
     try {
       if (isFollowing) {
@@ -42,11 +42,11 @@ const Explorer = () => {
         setFollowingIds(prev => [...prev, targetId]);
       }
     } catch (error) {
-      console.error("Error follow toggle:", error);
+      console.error("Error en follow toggle:", error);
     }
   };
 
-  // 3. Búsqueda con Filtrado Robusto
+  // 3. BÚSQUEDA Y FILTRADO (Aquí está la corrección)
   useEffect(() => {
     if (!user?.id) return;
 
@@ -59,23 +59,27 @@ const Explorer = () => {
 
         const data = res.data;
         const myId = String(user.id);
+        const myName = user.name; // Nombre del usuario logueado
 
-        // FILTRO USUARIOS: Quitarnos a nosotros mismos
+        // Filtrar Perfiles (que no sea el mío)
         const filteredUsers = (data.users || []).filter(
           (u) => String(u.id) !== myId
         );
 
-        // FILTRO COLECCIONES: Comprobamos todas las posibles variantes de nombre de ID
-        // Si el backend envía user_id, creator_id o author_id, esto lo capturará.
+        // Filtrar Colecciones (que no sean las mías)
+        // Filtramos por ID (si existe) O por nombre de autor (que sí existe en tu vista)
         const filteredCollections = (data.collections || []).filter((col) => {
-            const creatorId = String(col.user_id || col.userId || col.creator_id || col.author_id || "");
-            return creatorId !== myId;
+          const creatorId = String(col.user_id || col.userId || col.creator_id || "");
+          const isMyName = col.author === myName;
+          
+          // Si el ID coincide O el nombre del autor es el mío, se oculta
+          return creatorId !== myId && !isMyName;
         });
 
         setUsersWithoutMyself(filteredUsers);
         setCollections(filteredCollections);
       } catch (err) {
-        console.error("Error cargando búsqueda:", err);
+        console.error("Error en búsqueda:", err);
       } finally {
         setLoading(false);
       }
@@ -83,13 +87,13 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, user?.id]);
+  }, [query, user?.id, user?.name]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
 
-      {/* HEADER BUSCADOR */}
+      {/* BARRA DE BÚSQUEDA STICKY */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/80 backdrop-blur-md border-b border-white/5 pt-6">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
@@ -108,6 +112,7 @@ const Explorer = () => {
             )}
           </div>
 
+          {/* TABS DE NAVEGACIÓN */}
           <div className="flex justify-center gap-8 border-b border-white/5">
             {["cuentas", "colecciones"].map((tab) => (
               <button
@@ -126,6 +131,7 @@ const Explorer = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-10">
+        {/* LATERAL IZQUIERDO: TENDENCIAS */}
         <aside className="hidden lg:block">
           <div className="sticky top-48 space-y-8">
             <h4 className="text-[10px] uppercase tracking-[0.2em] opacity-40 font-bold mb-4 flex items-center gap-2">
@@ -142,6 +148,7 @@ const Explorer = () => {
           </div>
         </aside>
 
+        {/* CONTENIDO PRINCIPAL */}
         <main>
           {loading && <div className="text-center py-4 opacity-50 text-xs italic">Buscando...</div>}
 
@@ -154,17 +161,17 @@ const Explorer = () => {
                     <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
                       <Link to={`/profile/${u.id}`} className="flex items-center gap-3 min-w-0">
                         <div className="avatar">
-                          <div className="w-12 h-12 rounded-full ring-2 ring-white/5 bg-white/10">
+                          <div className="w-12 h-12 rounded-full ring-2 ring-white/5 bg-white/10 overflow-hidden">
                             <img 
                                 src={u.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random&color=fff`} 
-                                className="w-12 h-12 rounded-full object-cover" 
+                                className="w-full h-full object-cover" 
                                 alt={u.name}
                             />
                           </div>
                         </div>
                         <div className="min-w-0">
                           <h3 className="font-bold text-sm text-white truncate">{u.name}</h3>
-                          <p className="text-[10px] opacity-40 leading-none">{u.handle || `@${u.name.toLowerCase()}`}</p>
+                          <p className="text-[10px] opacity-40 leading-none">{u.handle || `@${u.name.toLowerCase().replace(/\s/g, '')}`}</p>
                         </div>
                       </Link>
                       <button
@@ -177,7 +184,7 @@ const Explorer = () => {
                   );
                 })
               ) : (
-                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No hay cuentas</div>
+                !loading && <div className="col-span-full text-center py-20 opacity-20 italic">No se encontraron cuentas</div>
               )}
             </div>
           )}
