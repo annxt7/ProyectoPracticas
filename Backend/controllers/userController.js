@@ -195,16 +195,17 @@ exports.googleLogin = async (req, res) => {
 
 // PUT: Update Profile
 exports.updateProfile = async (req, res) => {
-  if (!req.user || !req.user.id)
+  if (!req.user || !req.user.id) {
     return res.status(401).json({ error: "No autorizado" });
+  }
 
   const userId = req.user.id;
-  const { bio, avatarUrl, bannerUrl } = req.body; // El frontend envía avatarUrl/bannerUrl (nombres de variable)
+  const { bio, avatarUrl, bannerUrl } = req.body;
 
   try {
-    let fields = [],
-      values = [];
-    // Mapeamos lo que llega del front a las columnas de la DB
+    const fields = [];
+    const values = [];
+
     if (bio !== undefined) {
       fields.push("bio = ?");
       values.push(bio);
@@ -218,27 +219,41 @@ exports.updateProfile = async (req, res) => {
       values.push(bannerUrl);
     }
 
-    if (fields.length === 0)
+    if (!fields.length) {
       return res.status(400).json({ error: "Nada que actualizar" });
+    }
 
     values.push(userId);
     await db.query(
       `UPDATE Users SET ${fields.join(", ")} WHERE user_id = ?`,
       values
     );
+
+    const [rows] = await db.query(
+      `
+      SELECT 
+        user_id AS id,
+        username,
+        email,
+        bio,
+        avatar_url AS avatar,
+        banner_url AS banner
+      FROM Users
+      WHERE user_id = ?
+      `,
+      [userId]
+    );
+
     res.json({
       success: true,
-      user: {
-        bio,
-        avatar: avatarUrl,
-        banner: bannerUrl,
-      },
+      user: rows[0],
     });
   } catch (error) {
     console.error("Error update:", error);
     res.status(500).json({ error: "Error al actualizar" });
   }
 };
+
 
 // GET: Feed de Usuarios
 exports.getUserFeed = async (req, res) => {

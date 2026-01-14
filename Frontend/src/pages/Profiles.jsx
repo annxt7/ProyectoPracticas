@@ -109,39 +109,42 @@ const Profile = () => {
   }, [targetId, isMe]);
 
   // --- HANDLERS ---
-  const handleSaveBio = async (e) => {
-    e.preventDefault();
-    try {
-      await api.put("/users/update-profile", { bio: newDescription });
-      updateUser({ bio: newDescription });
-      setIsEditing(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+ const handleSaveBio = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await api.put("/users/update-profile", {
+      bio: newDescription,
+    });
 
-  const handleFileUpload = async (e, type) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setIsUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("imagen", file);
-      const res = await api.post("/files/upload", fd);
-      const payload =
-        type === "avatar"
-          ? { avatarUrl: res.data.url }
-          : { bannerUrl: res.data.url };
-      await api.put("/users/update-profile", payload);
-      updateUser(
-        type === "avatar" ? { avatar: res.data.url } : { banner: res.data.url }
-      );
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsUploading(false);
-    }
-  };
+    updateUser(res.data.user);
+    setIsEditing(false);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
+const handleFileUpload = async (e, type) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  setIsUploading(true);
+  try {
+    const fd = new FormData();
+    fd.append("imagen", file);
+    const uploadRes = await api.post("/files/upload", fd);
+    const payload =
+      type === "avatar"
+        ? { avatarUrl: uploadRes.data.url }
+        : { bannerUrl: uploadRes.data.url };
+    const updateRes = await api.put("/users/update-profile", payload);
+    updateUser(updateRes.data.user);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setIsUploading(false);
+  }
+};
+
 
   const handleDeleteCollection = async (e, collection_id) => {
     e.preventDefault();

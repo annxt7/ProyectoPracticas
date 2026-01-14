@@ -1,19 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
-import GoogleSignIn from '../components/GoogleSignIn';
-import fotoLogin from '../assets/foto-login.jpg';
-import Logo from '../assets/LogoClaro.png';
+import React, { useEffect, useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import GoogleSignIn from "../components/GoogleSignIn";
+import fotoLogin from "../assets/foto-login.jpg";
+import Logo from "../assets/LogoClaro.png";
 import api from "../services/api";
-import { useAuth } from '../context/AuthContext'; // Importamos el contexto
+import { useAuth } from "../context/AuthContext"; 
+import { normalizeUser } from "../services/normalizers";
 
-const SITE_KEY = '6LdZWC0sAAAAAEuorDFJYAuZWVbR_zGL-FTmgHHh';
-
-// --- ESQUEMAS DE VALIDACIÓN (ZOD) ---
+const SITE_KEY = "6LdZWC0sAAAAAEuorDFJYAuZWVbR_zGL-FTmgHHh";
 const loginSchema = z.object({
   identifier: z.string().min(3, "Mínimo 3 caracteres").max(50).trim(),
   password: z.string().min(1, "La contraseña es requerida"),
@@ -23,37 +21,54 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
 });
 
-const registerSchema = z.object({
-  username: z.string().min(4, "Mínimo 4 caracteres").max(20).regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guiones bajos").trim(),
-  email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
-  password: z.string()
-    .min(8, "Mínimo 8 caracteres")
-    .regex(/[A-Z]/, "Una mayúscula")
-    .regex(/[a-z]/, "Una minúscula")
-    .regex(/[0-9]/, "Un número")
-    .regex(/[^a-zA-Z0-9]/, "Un carácter especial"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Las contraseñas no coinciden",
-  path: ["confirmPassword"],
-});
+const registerSchema = z
+  .object({
+    username: z
+      .string()
+      .min(4, "Mínimo 4 caracteres")
+      .max(20)
+      .regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guiones bajos")
+      .trim(),
+    email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
+    password: z
+      .string()
+      .min(8, "Mínimo 8 caracteres")
+      .regex(/[A-Z]/, "Una mayúscula")
+      .regex(/[a-z]/, "Una minúscula")
+      .regex(/[0-9]/, "Un número")
+      .regex(/[^a-zA-Z0-9]/, "Un carácter especial"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
 
-const AuthScreen = ({ type = 'login' }) => {
+const AuthScreen = ({ type = "login" }) => {
   const navigate = useNavigate();
   const { login } = useAuth(); // Usamos la función login del contexto
-  
-  const isLogin = type === 'login';
-  const isForgot = type === 'forgot';
-  const isRegister = type === 'register';
+
+  const isLogin = type === "login";
+  const isForgot = type === "forgot";
+  const isRegister = type === "register";
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const recaptchaRef = useRef(null);
 
-  const currentSchema = isForgot ? forgotPasswordSchema : (isLogin ? loginSchema : registerSchema);
+  const currentSchema = isForgot
+    ? forgotPasswordSchema
+    : isLogin
+    ? loginSchema
+    : registerSchema;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(currentSchema),
   });
 
@@ -65,10 +80,17 @@ const AuthScreen = ({ type = 'login' }) => {
 
   // Carga de reCAPTCHA solo en registro
   useEffect(() => {
-    if (isRegister && typeof window.grecaptcha !== 'undefined' && recaptchaRef.current) {
+    if (
+      isRegister &&
+      typeof window.grecaptcha !== "undefined" &&
+      recaptchaRef.current
+    ) {
       if (recaptchaRef.current.children.length === 0) {
         try {
-          window.grecaptcha.render(recaptchaRef.current, { 'sitekey': SITE_KEY, 'theme': 'dark' });
+          window.grecaptcha.render(recaptchaRef.current, {
+            sitekey: SITE_KEY,
+            theme: "dark",
+          });
         } catch (error) {
           console.error("Error reCAPTCHA:", error);
         }
@@ -82,10 +104,10 @@ const AuthScreen = ({ type = 'login' }) => {
     setSuccess(null);
 
     let captchaToken = null;
-    
+
     if (isRegister) {
       if (window.grecaptcha) {
-          captchaToken = window.grecaptcha.getResponse();
+        captchaToken = window.grecaptcha.getResponse();
       }
       if (!captchaToken) {
         setError("Por favor, completa el reCAPTCHA.");
@@ -95,16 +117,15 @@ const AuthScreen = ({ type = 'login' }) => {
     }
 
     try {
-      let endpoint = isRegister ? '/users/register' : '/users/login';
-      if (isForgot) endpoint = '/users/forgot-password';
+      let endpoint = isRegister ? "/users/register" : "/users/login";
+      if (isForgot) endpoint = "/users/forgot-password";
 
       const payload = { ...data };
-      if (isRegister) payload['g-recaptcha-response'] = captchaToken;
+      if (isRegister) payload["g-recaptcha-response"] = captchaToken;
 
       const response = await api.post(endpoint, payload);
-    
+
       if (response.data.success) {
-        
         // CASO 1: RECUPERAR CONTRASEÑA
         if (isForgot) {
           setSuccess("Enlace enviado con éxito. Revisa tu correo.");
@@ -113,37 +134,36 @@ const AuthScreen = ({ type = 'login' }) => {
         }
 
         // CASO 2: LOGIN O REGISTRO EXITOSO
-        // Aquí construimos el objeto de usuario consistente
         const userData = {
-            id: response.data.userId, // Asegúrate de que el backend devuelve 'userId'
-            username: response.data.username,
-            avatar: response.data.avatar,
-            email: data.email // A veces es útil tenerlo
+          id: response.data.userId,
+          username: response.data.username,
+          banner: response.data.banner || null,
+          bio: response.data.bio || "Hola, soy nuevo en Tribe!",
+          email: data.email,
         };
+        login(normalizeUser(response.data), token);
 
-        // ¡CRUCIAL! Guardamos sesión en Contexto y LocalStorage AHORA
-        login(userData, response.data.token);
 
         // Redirección
         if (isRegister) {
-          // Vamos al onboarding. Como ya hicimos login, el usuario ya existe en el contexto,
-          // pero pasamos el state por si acaso queremos usar datos inmediatos.
-          navigate('/onboarding', { 
-            state: { 
+          navigate("/onboarding", {
+            state: {
               userId: response.data.userId,
               username: response.data.username,
-              googleAvatar: null 
-            } 
+              googleAvatar: null,
+            },
           });
         } else {
           // Login normal
-          navigate('/feed');
+          navigate("/feed");
         }
       }
-
     } catch (err) {
       console.error("Error submit:", err);
-      setError(err.response?.data?.error || 'Error de conexión o credenciales inválidas.');
+      setError(
+        err.response?.data?.error ||
+          "Error de conexión o credenciales inválidas."
+      );
       if (isRegister && window.grecaptcha) window.grecaptcha.reset();
     } finally {
       if (!isForgot) setLoading(false); // En forgot dejamos el loading o mensaje de éxito
@@ -153,37 +173,36 @@ const AuthScreen = ({ type = 'login' }) => {
   const handleGoogleSuccess = async (idToken) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await api.post('/users/google', { token: idToken });
+      const response = await api.post("/users/google", { token: idToken });
       const { token, user, isNewUser } = response.data;
-      
-      // Mapeamos los datos para que coincidan con la estructura de tu app
       const userData = {
         id: user.userId,
         username: user.username,
-        avatar: user.avatar,
-        email: user.email
+        avatar: user.avatar || null,
+        banner: user.banner || null,
+        bio: user.bio || "Hola, soy nuevo en Tribe!",
+        email: user.email,
       };
 
       // Guardamos sesión
       login(userData, token);
 
       if (isNewUser) {
-        navigate('/onboarding', { 
-          state: { 
-            userId: user.userId, 
+        navigate("/onboarding", {
+          state: {
+            userId: user.userId,
             username: user.username,
-            googleAvatar: user.avatar 
-          } 
+            googleAvatar: user.avatar,
+          },
         });
       } else {
-        navigate('/feed');
+        navigate("/feed");
       }
-
     } catch (err) {
       console.error("Error en Google Auth:", err);
-      setError(err.response?.data?.error || 'Error al conectar con Google.');
+      setError(err.response?.data?.error || "Error al conectar con Google.");
     } finally {
       setLoading(false);
     }
@@ -192,23 +211,37 @@ const AuthScreen = ({ type = 'login' }) => {
   return (
     <div className="min-h-screen flex w-full bg-base-100">
       {/* SECCIÓN IZQUIERDA (IMAGEN) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative" style={{ backgroundImage: `url(${fotoLogin})` }}>
+      <div
+        className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative"
+        style={{ backgroundImage: `url(${fotoLogin})` }}
+      >
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         <div className="relative z-10 p-16 flex flex-col h-full text-white justify-end pb-24">
           <img src={Logo} alt="Logo" className="w-32 h-auto mb-6" />
           <h1 className="text-4xl font-bold mb-4">Tribe</h1>
-          <p className="text-xl max-w-md font-medium text-gray-200">Organiza lo que te inspira y conéctate a través de tus colecciones.</p>
+          <p className="text-xl max-w-md font-medium text-gray-200">
+            Organiza lo que te inspira y conéctate a través de tus colecciones.
+          </p>
         </div>
       </div>
 
       {/* SECCIÓN DERECHA (FORMULARIO) */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative overflow-y-auto">
-        <Link to="/" className="absolute top-8 left-8 btn btn-ghost btn-sm gap-2 text-base-content/60">← Inicio</Link>
+        <Link
+          to="/"
+          className="absolute top-8 left-8 btn btn-ghost btn-sm gap-2 text-base-content/60"
+        >
+          ← Inicio
+        </Link>
 
         <div className="w-full max-w-md space-y-8 mt-10 lg:mt-0">
           <div className="text-center lg:text-left">
             <h2 className="text-4xl font-extrabold tracking-tight font-serif text-base-content">
-              {isForgot ? 'Recuperar acceso' : isLogin ? 'Bienvenido de nuevo' : 'Únete a Tribe'}
+              {isForgot
+                ? "Recuperar acceso"
+                : isLogin
+                ? "Bienvenido de nuevo"
+                : "Únete a Tribe"}
             </h2>
             <p className="mt-2 text-base-content/60">
               {isRegister && "Empieza a crear tu primera colección hoy."}
@@ -219,66 +252,181 @@ const AuthScreen = ({ type = 'login' }) => {
             {/* INPUTS SEGÚN EL TIPO */}
             {isForgot && (
               <div className="form-control">
-                <label className="label"><span className="label-text font-bold">Correo electrónico</span></label>
-                <input {...register("email")} type="email" placeholder="tu@email.com" className={`input input-bordered w-full ${errors.email ? 'input-error' : ''}`} />
-                {errors.email && <span className="text-error text-xs mt-1 block">{errors.email.message}</span>}
+                <label className="label">
+                  <span className="label-text font-bold">
+                    Correo electrónico
+                  </span>
+                </label>
+                <input
+                  {...register("email")}
+                  type="email"
+                  placeholder="tu@email.com"
+                  className={`input input-bordered w-full ${
+                    errors.email ? "input-error" : ""
+                  }`}
+                />
+                {errors.email && (
+                  <span className="text-error text-xs mt-1 block">
+                    {errors.email.message}
+                  </span>
+                )}
               </div>
             )}
 
             {isRegister && (
               <>
                 <div className="form-control">
-                  <label className="label"><span className="label-text font-bold">Nombre de usuario</span></label>
-                  <input {...register("username")} type="text" placeholder="ej. pixel_collector" className={`input input-bordered w-full ${errors.username ? 'input-error' : ''}`} />
-                  {errors.username && <span className="text-error text-xs mt-1 block">{errors.username.message}</span>}
+                  <label className="label">
+                    <span className="label-text font-bold">
+                      Nombre de usuario
+                    </span>
+                  </label>
+                  <input
+                    {...register("username")}
+                    type="text"
+                    placeholder="ej. pixel_collector"
+                    className={`input input-bordered w-full ${
+                      errors.username ? "input-error" : ""
+                    }`}
+                  />
+                  {errors.username && (
+                    <span className="text-error text-xs mt-1 block">
+                      {errors.username.message}
+                    </span>
+                  )}
                 </div>
                 <div className="form-control">
-                  <label className="label"><span className="label-text font-bold">Correo electrónico</span></label>
-                  <input {...register("email")} type="email" placeholder="hola@ejemplo.com" className={`input input-bordered w-full ${errors.email ? 'input-error' : ''}`} />
-                  {errors.email && <span className="text-error text-xs mt-1 block">{errors.email.message}</span>}
+                  <label className="label">
+                    <span className="label-text font-bold">
+                      Correo electrónico
+                    </span>
+                  </label>
+                  <input
+                    {...register("email")}
+                    type="email"
+                    placeholder="hola@ejemplo.com"
+                    className={`input input-bordered w-full ${
+                      errors.email ? "input-error" : ""
+                    }`}
+                  />
+                  {errors.email && (
+                    <span className="text-error text-xs mt-1 block">
+                      {errors.email.message}
+                    </span>
+                  )}
                 </div>
               </>
             )}
 
             {isLogin && (
               <div className="form-control">
-                <label className="label"><span className="label-text font-bold">Usuario o Correo</span></label>
-                <input {...register("identifier")} type="text" placeholder="usuario o email" className={`input input-bordered w-full ${errors.identifier ? 'input-error' : ''}`} />
-                {errors.identifier && <span className="text-error text-xs mt-1 block">{errors.identifier.message}</span>}
+                <label className="label">
+                  <span className="label-text font-bold">Usuario o Correo</span>
+                </label>
+                <input
+                  {...register("identifier")}
+                  type="text"
+                  placeholder="usuario o email"
+                  className={`input input-bordered w-full ${
+                    errors.identifier ? "input-error" : ""
+                  }`}
+                />
+                {errors.identifier && (
+                  <span className="text-error text-xs mt-1 block">
+                    {errors.identifier.message}
+                  </span>
+                )}
               </div>
             )}
 
             {(isLogin || isRegister) && (
               <div className="form-control">
                 <div className="flex justify-between items-center mb-1">
-                  <label className="label"><span className="label-text font-bold">Contraseña</span></label>
-                  {isLogin && <Link to="/forgot-password" className="text-xs text-primary hover:underline">¿Olvidaste tu contraseña?</Link>}
+                  <label className="label">
+                    <span className="label-text font-bold">Contraseña</span>
+                  </label>
+                  {isLogin && (
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-primary hover:underline"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  )}
                 </div>
-                <input {...register("password")} type="password" placeholder="••••••••" className={`input input-bordered w-full ${errors.password ? 'input-error' : ''}`} />
-                {errors.password && <span className="text-error text-xs mt-1 block">{errors.password.message}</span>}
+                <input
+                  {...register("password")}
+                  type="password"
+                  placeholder="••••••••"
+                  className={`input input-bordered w-full ${
+                    errors.password ? "input-error" : ""
+                  }`}
+                />
+                {errors.password && (
+                  <span className="text-error text-xs mt-1 block">
+                    {errors.password.message}
+                  </span>
+                )}
               </div>
             )}
 
             {isRegister && (
               <div className="form-control">
-                <label className="label"><span className="label-text font-bold">Repetir contraseña</span></label>
-                <input {...register("confirmPassword")} type="password" placeholder="••••••••" className={`input input-bordered w-full ${errors.confirmPassword ? 'input-error' : ''}`} />
-                {errors.confirmPassword && <span className="text-error text-xs mt-1 block">{errors.confirmPassword.message}</span>}
-                
+                <label className="label">
+                  <span className="label-text font-bold">
+                    Repetir contraseña
+                  </span>
+                </label>
+                <input
+                  {...register("confirmPassword")}
+                  type="password"
+                  placeholder="••••••••"
+                  className={`input input-bordered w-full ${
+                    errors.confirmPassword ? "input-error" : ""
+                  }`}
+                />
+                {errors.confirmPassword && (
+                  <span className="text-error text-xs mt-1 block">
+                    {errors.confirmPassword.message}
+                  </span>
+                )}
+
                 <div className="mt-6 flex justify-center">
-                    <div ref={recaptchaRef} className="g-recaptcha" data-theme="dark"></div>
+                  <div
+                    ref={recaptchaRef}
+                    className="g-recaptcha"
+                    data-theme="dark"
+                  ></div>
                 </div>
               </div>
             )}
 
             {/* MENSAJES DE ERROR / ÉXITO */}
-            {error && <div className="alert alert-error text-sm py-2 rounded-lg">{error}</div>}
-            {success && <div className="alert alert-success text-sm py-2 rounded-lg">{success}</div>}
+            {error && (
+              <div className="alert alert-error text-sm py-2 rounded-lg">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="alert alert-success text-sm py-2 rounded-lg">
+                {success}
+              </div>
+            )}
 
-            <button type="submit" className="btn btn-primary w-full text-lg rounded-full mt-4" disabled={loading}>
+            <button
+              type="submit"
+              className="btn btn-primary w-full text-lg rounded-full mt-4"
+              disabled={loading}
+            >
               <span className="flex items-center gap-2">
-                {loading ? <span className="loading loading-spinner"></span> : null}
-                {isForgot ? 'Enviar enlace' : isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                {loading ? (
+                  <span className="loading loading-spinner"></span>
+                ) : null}
+                {isForgot
+                  ? "Enviar enlace"
+                  : isLogin
+                  ? "Iniciar Sesión"
+                  : "Crear Cuenta"}
                 {!loading && <ArrowRight size={20} />}
               </span>
             </button>
@@ -286,20 +434,46 @@ const AuthScreen = ({ type = 'login' }) => {
 
           {!isForgot && (
             <>
-              <div className="divider text-base-content/50 text-sm">O continúa con</div>
+              <div className="divider text-base-content/50 text-sm">
+                O continúa con
+              </div>
               <div className="flex justify-center">
-                 <GoogleSignIn onGoogleSuccess={handleGoogleSuccess} isLogin={isLogin} />
+                <GoogleSignIn
+                  onGoogleSuccess={handleGoogleSuccess}
+                  isLogin={isLogin}
+                />
               </div>
             </>
           )}
 
           <p className="text-center text-sm">
             {isForgot ? (
-              <Link to="/login" className="font-bold text-primary hover:underline">Volver al inicio de sesión</Link>
+              <Link
+                to="/login"
+                className="font-bold text-primary hover:underline"
+              >
+                Volver al inicio de sesión
+              </Link>
             ) : isLogin ? (
-              <>¿No tienes cuenta? <Link to="/register" className="font-bold text-primary hover:underline">Regístrate</Link></>
+              <>
+                ¿No tienes cuenta?{" "}
+                <Link
+                  to="/register"
+                  className="font-bold text-primary hover:underline"
+                >
+                  Regístrate
+                </Link>
+              </>
             ) : (
-              <>¿Ya eres miembro? <Link to="/login" className="font-bold text-primary hover:underline">Inicia sesión</Link></>
+              <>
+                ¿Ya eres miembro?{" "}
+                <Link
+                  to="/login"
+                  className="font-bold text-primary hover:underline"
+                >
+                  Inicia sesión
+                </Link>
+              </>
             )}
           </p>
         </div>
