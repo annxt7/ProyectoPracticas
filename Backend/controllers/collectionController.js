@@ -79,9 +79,7 @@ exports.getCollectionDetails = async (req, res) => {
                 u.username AS creator_username, 
                 u.avatar_url AS creator_avatar,
                 u.user_id AS creator_id,
-                -- ESTA LÍNEA ES LA CLAVE:
-                (SELECT COUNT(*) FROM Saved_Collections sc 
-                WHERE sc.collection_id = c.collection_id AND sc.user_id = ?) AS is_saved
+                c.item_count
             FROM Collections c
             LEFT JOIN Users u ON c.user_id = u.user_id
             WHERE c.collection_id = ?

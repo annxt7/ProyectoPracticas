@@ -603,7 +603,6 @@ exports.forgotPassword = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
-    // El ID viene del middleware verifyToken (req.user.id)
     const userId = req.user.id; 
 
     const [rows] = await db.query(

@@ -58,7 +58,7 @@ const CollectionPage = () => {
           creatorId: data.creator_id,
           creatorName: data.creator_username,
           stats: { 
-            items: data.items ? data.items.length : 0, 
+            items: data.item_count || 0, 
             likes: data.likes || 0 
           },
         });
@@ -74,7 +74,7 @@ const CollectionPage = () => {
               cover: item.display_image || item.custom_image,
               item_type: item.item_type,
               reference_id: refId,
-              is_custom: !refId // Si no hay refId, es un item manual
+              is_custom: !refId 
             };
           }));
         }
@@ -173,7 +173,7 @@ const handleAddNewItem = async (newItem) => {
       <div className="relative">
         <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-25">
           <img src={isEditing ? editForm.cover : collectionInfo.cover} className="w-full h-full object-cover blur-3xl" alt="" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-base-100"></div>
+          <div className="absolute inset-0 bg-linear-to-b from-transparent to-base-100"></div>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 pt-8">

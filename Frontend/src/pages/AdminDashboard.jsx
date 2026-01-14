@@ -277,7 +277,7 @@ const fetchData = async () => {
                            {item.owner?.username}
                         </div>
                       </td>
-                      <td>{item.items?.length || 0} items</td>
+                      <td>{item.item_count || 0} items</td>
                       <td className="text-right">
                         <button onClick={() => handleDelete(item.id)} className="btn btn-ghost btn-xs text-error">
                           <Trash2 size={16} />

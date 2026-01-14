@@ -12,7 +12,8 @@ exports.getAdminData = async (req, res) => {
         c.collection_id as id, 
         c.collection_name as name, 
         u.username as owner_username, 
-        u.avatar_url as owner_avatar
+        u.avatar_url as owner_avatar,
+        c.item_count
       FROM Collections c
       LEFT JOIN Users u ON c.user_id = u.user_id
       WHERE u.role != 'admin'
