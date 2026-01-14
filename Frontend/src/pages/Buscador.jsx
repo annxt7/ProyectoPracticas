@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, X, TrendingUp, Hash } from "lucide-center"; // Asegúrate de tener lucide-react
+import { Search, X, TrendingUp, Hash } from "lucide-react"; // Asegúrate de tener lucide-react
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import { Link } from "react-router-dom";
