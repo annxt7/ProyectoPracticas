@@ -33,7 +33,7 @@ exports.getAdminData = async (req, res) => {
       requests, 
       collections: collections.map(col => ({
         id: col.id,
-        title: col.title,
+        name: col.name,
         owner: {
           username: col.owner_username,
           avatar: col.owner_avatar
