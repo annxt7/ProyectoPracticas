@@ -61,7 +61,6 @@ console.log("Datos del usuario en el Dashboard:", user);
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   // --- LÓGICA DE ELIMINACIÓN GENÉRICA ---
@@ -71,8 +70,8 @@ console.log("Datos del usuario en el Dashboard:", user);
     try {
       // Si estamos borrando desde el modal, es una colección
       const endpoint = (activeTab === "users" && !isModal) 
-        ? `/users/${id}` 
-        : `/collections/${id}`;
+        ? `/admin/User/${id}` 
+        : `/admin/Collections/${id}`;
 
       await api.delete(endpoint);
       
