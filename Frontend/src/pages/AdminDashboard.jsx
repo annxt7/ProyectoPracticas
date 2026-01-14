@@ -118,13 +118,15 @@ const fetchData = async () => {
   };
 
   // Filtrado
-  const filteredData = Array.isArray(data) ? data.filter((item) => {
-    const term = searchTerm.toLowerCase();
-    if (activeTab === "users") return item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term);
-    if (activeTab === "collections") return item.name?.toLowerCase().includes(term);
-    if (activeTab === "requests") return item.email?.toLowerCase().includes(term);
-    return false;
-  }) : [];
+ const filteredData = Array.isArray(data) ? data.filter((item) => {
+  const term = searchTerm.toLowerCase();
+  const isNotAdmin = item.role !== "admin" && item.owner?.role !== "admin";
+  const matchesSearch = 
+    (activeTab === "users" && (item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term))) ||
+    (activeTab === "requests" && item.email?.toLowerCase().includes(term)) ||
+    (activeTab === "collections" && item.name?.toLowerCase().includes(term));
+  return isNotAdmin && matchesSearch;
+}) : [];
 
   if (!user || user.role !== "admin") return null;
 
