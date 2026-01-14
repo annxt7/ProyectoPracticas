@@ -11,6 +11,7 @@ import Collection from "./pages/CollectionPage.jsx";
 import CreateCollection from "./pages/CreateCollection.jsx";
 import OnboardingPage from "./pages/OnBoarding.jsx";
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/collection/:id" element={<Collection />} />
           <Route path="/create-collection" element={<CreateCollection />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Routes>
     </>
