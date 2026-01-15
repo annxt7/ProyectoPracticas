@@ -61,7 +61,7 @@ const Explorer = () => {
           };
         }).filter(u => u.id !== myId);
 
-        // MAPEO COLECCIONES (Quitamos @ extra y filtramos las tuyas)
+        // MAPEO COLECCIONES 
         const cleanCollections = (data.collections || []).map(c => {
           const rawAuthor = c.author || c.username || "usuario";
           return {
