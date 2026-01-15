@@ -99,7 +99,7 @@ const fetchData = async () => {
   };
 
   const openUserCollections = async (userObj) => {
-    console.log("Abriendo colecciones para el usuario:", userObj);
+    
     setSelectedUser(userObj);
     setLoadingModal(true);
   
@@ -107,6 +107,7 @@ const fetchData = async () => {
 
     try {
       const res = await api.get(`/collections/user/${userObj.id}`); 
+      console.log("Colecciones recibidas:", res.data);
       setUserCollections(res.data);
     } catch (error) {
       console.error("Error cargando colecciones del usuario");
