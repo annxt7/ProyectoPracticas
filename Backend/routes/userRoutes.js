@@ -24,7 +24,7 @@ router.delete("/unfollow/:id", verifyToken, userController.unfollowUser);
 // 4. PUTS
 router.put("/complete-profile", verifyToken, userController.completeProfile);
 router.put("/update-profile", verifyToken, userController.updateProfile);
-router.put("/change-password", verifyToken, userController.changePassword); 
+
 
 router.get("/me", verifyToken, userController.getMe);
 router.get("/:id", verifyToken, userController.getUserById);
