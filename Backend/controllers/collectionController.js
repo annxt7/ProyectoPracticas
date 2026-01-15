@@ -54,7 +54,13 @@ exports.createCollection = async (req, res) => {
 exports.getUserCollections = async (req, res) => {
     const { userId } = req.params;
     try {
-        const sql = "SELECT * FROM Collections WHERE user_id = ?";
+        // Hacemos un JOIN para traer el username del autor de la colección
+        const sql = `
+            SELECT c.*, u.username 
+            FROM Collections c
+            JOIN Users u ON c.user_id = u.user_id
+            WHERE c.user_id = ?
+        `;
         const [rows] = await db.query(sql, [userId]);
         res.json(rows);
     } catch (error) {
