@@ -154,7 +154,7 @@ const Feed = () => {
                         id: targetId,
                         name: u.username || u.name,
                         handle: u.handle,
-                        img: u.avatar || u.avatar_url,
+                        img: u.img,
                       }}
                       isFollowing={isFollowingThis}
                       onFollowToggle={() => handleFollowToggle(targetId, isFollowingThis)}
