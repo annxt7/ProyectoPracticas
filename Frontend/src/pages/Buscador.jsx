@@ -17,20 +17,20 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Cargar seguidos con normalización total
+  // 1. CARGAR SEGUIDOS (Usando following_id de tu SQL)
   const fetchMyFollowing = useCallback(async () => {
     if (!user?.id) return;
     try {
       const res = await api.get(`/users/following/${user.id}`);
-      // Guardamos IDs como números limpios buscando en cualquier campo posible
-      const ids = res.data.map(f => Number(f.following_id || f.followed_id || f.user_id || f.id));
+      // Mapeamos siguiendo tu estructura de tabla Follows
+      const ids = res.data.map(f => Number(f.following_id));
       setFollowingIds(ids);
     } catch (e) { console.error("Error seguidos:", e); }
   }, [user?.id]);
 
   useEffect(() => { fetchMyFollowing(); }, [fetchMyFollowing]);
 
-  // 2. BUSCADOR CON FILTRADO REDUNDANTE
+  // 2. BUSCADOR CON FILTRADO BASADO EN COLLECTIONPAGE
   useEffect(() => {
     if (!user?.id) return;
     
@@ -38,57 +38,48 @@ const Explorer = () => {
       setLoading(true);
       try {
         const res = await api.get("/search", { params: { query } });
-        const myId = Number(user.id);
-        const myName = String(user.username || "").toLowerCase().trim();
+        const myId = String(user.id);
 
-        // --- PROCESAR USUARIOS ---
+        // --- USUARIOS ---
         const cleanUsers = (res.data.users || []).map(u => ({
-          // Intentamos capturar el ID de cualquier propiedad
-          id: Number(u.user_id || u.id || u.id_user),
-          username: u.username || u.name || "Usuario",
-          avatar: u.avatar_url || u.avatar || u.img || ""
-        })).filter(u => {
-          // Filtro doble: Por ID y por Nombre
-          const isMe = u.id === myId || (u.username.toLowerCase().trim() === myName && myName !== "");
-          return !isMe;
-        });
+          id: u.user_id || u.id,
+          username: u.username,
+          avatar: u.avatar_url
+        })).filter(u => String(u.id) !== myId);
 
-        // --- PROCESAR COLECCIONES ---
+        // --- COLECCIONES (Usando creator_id como en tu archivo) ---
         const cleanCollections = (res.data.collections || []).map(c => ({
-          id: Number(c.collection_id || c.id),
-          // Buscamos el ID del creador en todas estas variantes
-          creatorId: Number(c.user_id || c.userId || c.creator_id || c.owner_id),
-          title: c.collection_name || c.title || "Sin título",
-          cover: c.cover_url || c.cover || c.image,
-          author: c.username || c.creator_username || c.author || "usuario"
-        })).filter(c => {
-          // FILTRO ULTRA-ESTRICTO:
-          // Si el ID del creador coincide O el nombre del autor es el mío, se elimina
-          const isMyCol = c.creatorId === myId || (c.author.toLowerCase().trim() === myName && myName !== "");
-          return !isMyCol;
-        });
+          id: c.collection_id || c.id,
+          creatorId: c.creator_id || c.user_id, // Aquí estaba el fallo
+          title: c.collection_name || c.title,
+          cover: c.cover_url,
+          creatorName: c.creator_username || c.username
+        })).filter(c => String(c.creatorId) !== myId); // FILTRO DEFINITIVO
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
-      } catch (err) { console.error("Error search:", err); } 
-      finally { setLoading(false); }
+      } catch (err) { 
+        console.error("Error search:", err); 
+      } finally { 
+        setLoading(false); 
+      }
     };
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, user?.id, user?.username]);
+  }, [query, user?.id]);
 
   const handleFollowToggle = async (targetId, isFollowing) => {
-    const id = Number(targetId);
+    const numericId = Number(targetId);
     try {
       if (isFollowing) {
-        await api.delete(`/users/unfollow/${id}`);
-        setFollowingIds(prev => prev.filter(item => item !== id));
+        await api.delete(`/users/unfollow/${numericId}`);
+        setFollowingIds(prev => prev.filter(id => id !== numericId));
       } else {
-        await api.post(`/users/follow/${id}`);
-        setFollowingIds(prev => [...prev, id]);
+        await api.post(`/users/follow/${numericId}`);
+        setFollowingIds(prev => [...prev, numericId]);
       }
-    } catch (error) { console.error("Error toggle:", error); }
+    } catch (error) { console.error(error); }
   };
 
   return (
@@ -102,7 +93,7 @@ const Explorer = () => {
             <input
               type="text" value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar en Tribe..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 focus:outline-none focus:border-primary/50 text-white"
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 focus:outline-none focus:border-primary/50"
             />
           </div>
           <div className="flex justify-center gap-10 mt-4 font-bold text-sm">
@@ -113,27 +104,27 @@ const Explorer = () => {
       </div>
 
       <main className="max-w-4xl mx-auto p-4 mt-4">
-        {loading && <div className="text-center py-10 opacity-20">Buscando...</div>}
+        {loading && <div className="text-center py-10 opacity-20 italic font-serif">Buscando en la biblioteca...</div>}
 
         {activeTab === "cuentas" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {users.map(u => {
-              const isFollowing = followingIds.includes(u.id);
+              const isFollowing = followingIds.includes(Number(u.id));
               return (
                 <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5">
                   <Link to={`/profile/${u.id}`} className="flex items-center gap-3">
                     <img 
                       src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random`} 
-                      className="w-12 h-12 rounded-full object-cover bg-white/10" alt="" 
+                      className="w-12 h-12 rounded-full object-cover bg-base-300" alt="" 
                     />
                     <div>
-                      <p className="font-bold text-sm text-white">{u.username}</p>
-                      <p className="text-[10px] opacity-40">@{u.username.toLowerCase()}</p>
+                      <p className="font-bold text-sm">{u.username}</p>
+                      <p className="text-[10px] opacity-40">@{String(u.username).toLowerCase()}</p>
                     </div>
                   </Link>
                   <button 
                     onClick={() => handleFollowToggle(u.id, isFollowing)}
-                    className={`btn btn-xs px-4 rounded-lg font-bold transition-all ${isFollowing ? "bg-white/10 text-white" : "btn-primary"}`}
+                    className={`btn btn-xs px-4 rounded-lg font-bold ${isFollowing ? "btn-neutral opacity-50" : "btn-primary"}`}
                   >
                     {isFollowing ? "Siguiendo" : "Seguir"}
                   </button>
@@ -147,13 +138,13 @@ const Explorer = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {collections.map(col => (
               <Link key={col.id} to={`/collection/${col.id}`} className="group">
-                <div className="bg-white/[0.03] rounded-3xl overflow-hidden border border-white/5 group-hover:border-primary/50 transition-all">
+                <div className="bg-white/[0.03] rounded-3xl overflow-hidden border border-white/5 group-hover:border-primary/50 transition-all shadow-xl">
                   <div className="aspect-video">
                     <ItemCover src={col.cover} title={col.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="p-4">
-                    <h3 className="font-bold text-white truncate">{col.title}</h3>
-                    <p className="text-[10px] text-primary mt-1">@{col.author.toLowerCase()}</p>
+                    <h3 className="font-bold text-white truncate font-serif text-lg">{col.title}</h3>
+                    <p className="text-[10px] text-primary mt-1 font-bold uppercase tracking-widest">por {col.creatorName}</p>
                   </div>
                 </div>
               </Link>
@@ -161,6 +152,7 @@ const Explorer = () => {
           </div>
         )}
       </main>
+
       <NavMobile />
     </div>
   );
