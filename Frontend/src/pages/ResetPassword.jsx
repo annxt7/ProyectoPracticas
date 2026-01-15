@@ -55,16 +55,24 @@ const ResetPasswordScreen = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     setError(null);
+    console.log("Enviando datos de recuperación:", {
+      email: data.email,
+      code: data.code,
+      password: "🔒 (Oculta)"
+    });
+
     try {
-      await api.post("/users/reset-password", {
+      const response = await api.post("/users/reset-password", {
         email: data.email,
         code: data.code,
         newPassword: data.password
       });
       
+      console.log("Respuesta del servidor:", response.data);
       alert("¡Contraseña actualizada! Ahora puedes iniciar sesión.");
       navigate("/login");
     } catch (err) {
+      console.error("Error capturado en el submit:", err.response?.data || err.message);
       setError(err.response?.data?.error || "Código inválido o expirado.");
     } finally {
       setLoading(false);

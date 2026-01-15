@@ -593,23 +593,38 @@ exports.requestPasswordReset = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
     const { email, code, newPassword } = req.body;
+    console.log("== DEBUG RESET PASSWORD ==");
+    console.log("Email:", email);
+    console.log("Código recibido:", code);
+
     try {
-        const [user] = await db.query(
-            "SELECT * FROM Users WHERE email = ? AND reset_code = ?",
+        // 1. Verificamos si existe la solicitud aprobada con ese código en Password_Requests
+        const [request] = await db.query(
+            "SELECT * FROM Password_Requests WHERE email = ? AND code = ? AND status = 'completed'",
             [email, code]
         );
 
-        if (user.length === 0) {
-            return res.status(400).json({ error: "Código o email incorrectos." });
+        console.log("Solicitud encontrada:", request.length > 0 ? "SÍ" : "NO");
+
+        if (request.length === 0) {
+            return res.status(400).json({ error: "Código o email incorrectos o solicitud no aprobada." });
         }
-         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        
-        await db.query(
-            "UPDATE Users SET password = ?, reset_code = NULL WHERE email = ?",
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const [updateResult] = await db.query(
+            "UPDATE Users SET password_hash = ? WHERE email = ?",
             [hashedPassword, email] 
         );
+
+        console.log("Resultado update Users:", updateResult.affectedRows > 0 ? "ÉXITO" : "FALLO (Email no existe en Users)");
+
+        if (updateResult.affectedRows === 0) {
+            return res.status(404).json({ error: "No se encontró el usuario para actualizar." });
+        }
+        await db.query("DELETE FROM Password_Requests WHERE email = ?", [email]);
+
         res.json({ message: "Contraseña actualizada con éxito." });
     } catch (error) {
+        console.error("ERROR CRÍTICO EN RESET:", error);
         res.status(500).json({ error: "Error al actualizar contraseña" });
     }
 };
