@@ -30,7 +30,6 @@ const AdminDashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userCollections, setUserCollections] = useState([]);
   const [loadingModal, setLoadingModal] = useState(false);
-console.log("Datos del usuario en el Dashboard:", user);
   // Verificación de Admin
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -331,7 +330,7 @@ const fetchData = async () => {
                         <td>{col.item_count || 0}</td>
                         <td className="text-right">
                           <button 
-                            onClick={() => handleDelete(col.id, true)}
+                            onClick={() => handleDelete(col.collection_id, true)}
                             className="btn btn-xs btn-error btn-outline"
                           >
                             Eliminar
