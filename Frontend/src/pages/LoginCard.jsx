@@ -58,23 +58,12 @@ const AuthScreen = ({ type = "login" }) => {
   const [success, setSuccess] = useState(null);
   const recaptchaRef = useRef(null);
   
-  // ESTADOS NUEVOS
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
 
-  const currentSchema = isForgot
-    ? forgotPasswordSchema
-    : isLogin
-    ? loginSchema
-    : registerSchema;
+  const currentSchema = isForgot ? forgotPasswordSchema : isLogin ? loginSchema : registerSchema;
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm({
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm({
     resolver: zodResolver(currentSchema),
   });
 
@@ -102,20 +91,11 @@ const AuthScreen = ({ type = "login" }) => {
   }, [type, reset]);
 
   useEffect(() => {
-    if (
-      isRegister &&
-      typeof window.grecaptcha !== "undefined" &&
-      recaptchaRef.current
-    ) {
+    if (isRegister && typeof window.grecaptcha !== "undefined" && recaptchaRef.current) {
       if (recaptchaRef.current.children.length === 0) {
         try {
-          window.grecaptcha.render(recaptchaRef.current, {
-            sitekey: SITE_KEY,
-            theme: "dark",
-          });
-        } catch (error) {
-          console.error("Error reCAPTCHA:", error);
-        }
+          window.grecaptcha.render(recaptchaRef.current, { sitekey: SITE_KEY, theme: "dark" });
+        } catch (err) { console.error("Error reCAPTCHA:", err); }
       }
     }
   }, [isRegister]);
@@ -125,82 +105,55 @@ const AuthScreen = ({ type = "login" }) => {
     setError(null);
     setSuccess(null);
 
-    let captchaToken = null;
-    if (isRegister) {
-      if (window.grecaptcha) captchaToken = window.grecaptcha.getResponse();
-      if (!captchaToken) {
-        setError("Por favor, completa el reCAPTCHA.");
-        setLoading(false);
+    try {
+      if (isForgot) {
+        // Enviar solo la solicitud al admin
+        await api.post("/users/forgot-password", data);
+        setSuccess("Solicitud enviada. Contacta con el administrador para recibir tu código.");
         return;
       }
-    }
 
-    try {
-      let endpoint = isRegister ? "/users/register" : "/users/login";
-      if (isForgot) endpoint = "/users/forgot-password";
+      let captchaToken = null;
+      if (isRegister && window.grecaptcha) {
+        captchaToken = window.grecaptcha.getResponse();
+        if (!captchaToken) {
+          setError("Por favor, completa el reCAPTCHA.");
+          setLoading(false);
+          return;
+        }
+      }
 
+      const endpoint = isRegister ? "/users/register" : "/users/login";
       const payload = { ...data };
       if (isRegister) payload["g-recaptcha-response"] = captchaToken;
 
       const response = await api.post(endpoint, payload);
 
       if (response.data.success) {
-        if (isForgot) {
-          setSuccess("Enlace enviado con éxito. Revisa tu correo.");
-          setLoading(false);
-          return;
-        }
-
         login(normalizeUser(response.data), response.data.token);
-
         if (isRegister) {
-          navigate("/onboarding", {
-            state: {
-              userId: response.data.userId,
-              username: response.data.username,
-              googleAvatar: null,
-            },
-          });
+          navigate("/onboarding", { state: { userId: response.data.userId, username: response.data.username } });
         } else {
-          if (response.data.role=== 'admin') {
-            navigate("/admin");
-          } else {
-            navigate("/feed");
-          }
+          navigate(response.data.role === 'admin' ? "/admin" : "/feed");
         }
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Error de conexión o credenciales inválidas.");
+      setError(err.response?.data?.error || "Error de conexión.");
       if (isRegister && window.grecaptcha) window.grecaptcha.reset();
     } finally {
-      if (!isForgot) setLoading(false);
+      setLoading(false);
     }
   };
 
   const handleGoogleSuccess = async (idToken) => {
     setLoading(true);
-    setError(null);
     try {
       const response = await api.post("/users/google", { token: idToken });
       const { token, user, isNewUser } = response.data;
-      const userData = {
-        id: user.userId,
-        username: user.username,
-        avatar: user.avatar || null,
-        banner: user.banner || null,
-        bio: user.bio || "Hola, soy nuevo en Tribe!",
-        email: user.email,
-      };
-      login(userData, token);
-      if (isNewUser) {
-        navigate("/onboarding", {
-          state: { userId: user.userId, username: user.username, googleAvatar: user.avatar },
-        });
-      } else {
-        navigate("/feed");
-      }
+      login(user, token);
+      navigate(isNewUser ? "/onboarding" : "/feed");
     } catch (err) {
-      setError(err.response?.data?.error || "Error al conectar con Google.");
+      setError("Error al conectar con Google.");
     } finally {
       setLoading(false);
     }
@@ -208,31 +161,22 @@ const AuthScreen = ({ type = "login" }) => {
 
   return (
     <div className="min-h-screen flex w-full bg-base-100">
-      {/* SECCIÓN IZQUIERDA */}
-      <div
-        className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative"
-        style={{ backgroundImage: `url(${fotoLogin})` }}
-      >
+      <div className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative" style={{ backgroundImage: `url(${fotoLogin})` }}>
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent"></div>
         <div className="relative z-10 p-16 flex flex-col h-full text-white justify-end pb-24">
           <img src={Logo} alt="Logo" className="w-32 h-auto mb-6" />
           <h1 className="text-4xl font-bold mb-4">Tribe</h1>
-          <p className="text-xl max-w-md font-medium text-gray-200">
-            Organiza lo que te inspira y conéctate a través de tus colecciones.
-          </p>
+          <p className="text-xl max-w-md font-medium text-gray-200">Organiza lo que te inspira y conéctate.</p>
         </div>
       </div>
 
-      {/* SECCIÓN DERECHA */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative overflow-y-auto">
-        <Link to="/" className="absolute top-8 left-8 btn btn-ghost btn-sm gap-2 text-base-content/60">
-          ← Inicio
-        </Link>
+        <Link to="/" className="absolute top-8 left-8 btn btn-ghost btn-sm gap-2 text-base-content/60">← Inicio</Link>
 
         <div className="w-full max-w-md space-y-8 mt-10 lg:mt-0">
           <div className="text-center lg:text-left">
             <h2 className="text-4xl font-extrabold tracking-tight font-serif text-base-content">
-              {isForgot ? "Recuperar acceso" : isLogin ? "Bienvenido de nuevo" : "Únete a Tribe"}
+              {isForgot ? "Solicitar Código" : isLogin ? "Bienvenido de nuevo" : "Únete a Tribe"}
             </h2>
           </div>
 
@@ -249,13 +193,11 @@ const AuthScreen = ({ type = "login" }) => {
               <>
                 <div className="form-control">
                   <label className="label"><span className="label-text font-bold">Nombre de usuario</span></label>
-                  <input {...register("username")} type="text" placeholder="ej. pixel_collector" className={`input input-bordered w-full ${errors.username ? "input-error" : ""}`} />
-                  {errors.username && <span className="text-error text-xs mt-1 block">{errors.username.message}</span>}
+                  <input {...register("username")} type="text" placeholder="ej. pixel_collector" className="input input-bordered w-full" />
                 </div>
                 <div className="form-control">
                   <label className="label"><span className="label-text font-bold">Correo electrónico</span></label>
-                  <input {...register("email")} type="email" placeholder="hola@ejemplo.com" className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`} />
-                  {errors.email && <span className="text-error text-xs mt-1 block">{errors.email.message}</span>}
+                  <input {...register("email")} type="email" placeholder="hola@ejemplo.com" className="input input-bordered w-full" />
                 </div>
               </>
             )}
@@ -263,8 +205,7 @@ const AuthScreen = ({ type = "login" }) => {
             {isLogin && (
               <div className="form-control">
                 <label className="label"><span className="label-text font-bold">Usuario o Correo</span></label>
-                <input {...register("identifier")} type="text" placeholder="usuario o email" className={`input input-bordered w-full ${errors.identifier ? "input-error" : ""}`} />
-                {errors.identifier && <span className="text-error text-xs mt-1 block">{errors.identifier.message}</span>}
+                <input {...register("identifier")} type="text" placeholder="usuario o email" className="input input-bordered w-full" />
               </div>
             )}
 
@@ -274,66 +215,43 @@ const AuthScreen = ({ type = "login" }) => {
                   <label className="label"><span className="label-text font-bold">Contraseña</span></label>
                   {isLogin && <Link to="/forgot-password" size="xs" className="text-xs text-primary hover:underline">¿Olvidaste tu contraseña?</Link>}
                 </div>
-                
-                {/* INPUT CON OJO */}
                 <div className="relative">
-                  <input 
-                    {...register("password")} 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••" 
-                    className={`input input-bordered w-full pr-10 ${errors.password ? "input-error" : ""}`} 
-                  />
-                  <button 
-                    type="button" 
-                    className="absolute inset-y-0 right-3 flex items-center text-base-content/40 hover:text-primary transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+                  <input {...register("password")} type={showPassword ? "text" : "password"} placeholder="••••••••" className="input input-bordered w-full pr-10" />
+                  <button type="button" className="absolute inset-y-0 right-3 flex items-center text-base-content/40" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-
-                {/* INDICADOR DE FUERZA (Solo en registro) */}
                 {isRegister && watchedPassword.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    <div className="flex gap-1 h-1 w-full bg-base-300 rounded-full overflow-hidden">
-                       <div 
-                        className={`h-full transition-all duration-500 ${
-                          passwordStrength <= 20 ? 'bg-error' : passwordStrength <= 60 ? 'bg-warning' : 'bg-success'
-                        }`}
-                        style={{ width: `${passwordStrength}%` }}
-                       ></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                        <Requirement met={watchedPassword.length >= 8} label="8+ caracteres" />
-                        <Requirement met={/[A-Z]/.test(watchedPassword)} label="Una mayúscula" />
-                        <Requirement met={/[0-9]/.test(watchedPassword)} label="Un número" />
-                        <Requirement met={/[^a-zA-Z0-9]/.test(watchedPassword)} label="Especial (!@#)" />
-                    </div>
+                  <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1">
+                    <Requirement met={watchedPassword.length >= 8} label="8+ caracteres" />
+                    <Requirement met={/[A-Z]/.test(watchedPassword)} label="Mayúscula" />
+                    <Requirement met={/[0-9]/.test(watchedPassword)} label="Número" />
+                    <Requirement met={/[^a-zA-Z0-9]/.test(watchedPassword)} label="Especial" />
                   </div>
                 )}
-                
-                {errors.password && <span className="text-error text-xs mt-1 block">{errors.password.message}</span>}
               </div>
             )}
 
             {isRegister && (
               <div className="form-control">
                 <label className="label"><span className="label-text font-bold">Repetir contraseña</span></label>
-                <input {...register("confirmPassword")} type={showPassword ? "text" : "password"} placeholder="••••••••" className={`input input-bordered w-full ${errors.confirmPassword ? "input-error" : ""}`} />
-                {errors.confirmPassword && <span className="text-error text-xs mt-1 block">{errors.confirmPassword.message}</span>}
-                <div className="mt-6 flex justify-center">
-                  <div ref={recaptchaRef} className="g-recaptcha" data-theme="dark"></div>
-                </div>
+                <input {...register("confirmPassword")} type={showPassword ? "text" : "password"} className="input input-bordered w-full" />
+                <div className="mt-6 flex justify-center"><div ref={recaptchaRef}></div></div>
               </div>
             )}
 
-            {error && <div className="alert alert-error text-sm py-2 rounded-lg">{error}</div>}
-            {success && <div className="alert alert-success text-sm py-2 rounded-lg">{success}</div>}
+            {error && <div className="alert alert-error text-sm py-2">{error}</div>}
+            {success && (
+              <div className="alert alert-success text-sm py-2 flex flex-col items-start gap-2">
+                <span>{success}</span>
+                <Link to="/reset-password" style={{ color: "black" }} className="btn btn-xs btn-outline">Ya tengo mi código →</Link>
+              </div>
+            )}
 
-            <button type="submit" className="btn btn-primary w-full text-lg rounded-full mt-4" disabled={loading}>
+            <button type="submit" className="btn btn-primary w-full text-lg rounded-full" disabled={loading}>
               <span className="flex items-center gap-2">
                 {loading && <span className="loading loading-spinner"></span>}
-                {isForgot ? "Enviar enlace" : isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
+                {isForgot ? "Enviar Solicitud" : isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
                 {!loading && <ArrowRight size={20} />}
               </span>
             </button>
@@ -341,21 +259,15 @@ const AuthScreen = ({ type = "login" }) => {
 
           {!isForgot && (
             <>
-              <div className="divider text-base-content/50 text-sm">O continúa con</div>
-              <div className="flex justify-center">
-                <GoogleSignIn onGoogleSuccess={handleGoogleSuccess} isLogin={isLogin} />
-              </div>
+              <div className="divider text-sm">O continúa con</div>
+              <div className="flex justify-center"><GoogleSignIn onGoogleSuccess={handleGoogleSuccess} isLogin={isLogin} /></div>
             </>
           )}
 
           <p className="text-center text-sm">
-            {isForgot ? (
-              <Link to="/login" className="font-bold text-primary hover:underline">Volver al inicio de sesión</Link>
-            ) : isLogin ? (
-              <>¿No tienes cuenta? <Link to="/register" className="font-bold text-primary hover:underline">Regístrate</Link></>
-            ) : (
-              <>¿Ya eres miembro? <Link to="/login" className="font-bold text-primary hover:underline">Inicia sesión</Link></>
-            )}
+            {isForgot ? <Link to="/login" className="font-bold text-primary">Volver al login</Link> : 
+             isLogin ? <>¿No tienes cuenta? <Link to="/register" className="font-bold text-primary">Regístrate</Link></> : 
+             <>¿Ya eres miembro? <Link to="/login" className="font-bold text-primary">Inicia sesión</Link></>}
           </p>
         </div>
       </div>
@@ -364,9 +276,8 @@ const AuthScreen = ({ type = "login" }) => {
 };
 
 const Requirement = ({ met, label }) => (
-  <div className={`flex items-center gap-2 text-[10px] uppercase font-bold transition-colors ${met ? 'text-success' : 'text-base-content/30'}`}>
-    {met ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
-    {label}
+  <div className={`flex items-center gap-2 text-[10px] uppercase font-bold ${met ? 'text-success' : 'text-base-content/30'}`}>
+    {met ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />} {label}
   </div>
 );
 

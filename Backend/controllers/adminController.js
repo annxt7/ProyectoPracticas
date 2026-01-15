@@ -2,64 +2,74 @@ const db = require("../config/dbconect");
 
 // GET: Obtener todos los usuarios y solicitudes pendientes
 exports.getAdminData = async (req, res) => {
-  try {
-    // 1. Obtener Usuarios
-    const [users] = await db.query(
-      'SELECT user_id as id, username, email, role, avatar_url as avatar, reset_code FROM Users ORDER BY created_at DESC'
-    );
-    const [collections] = await db.query(`
-      SELECT 
-        c.collection_id as id, 
-        c.collection_name as name, 
-        u.username as owner_username, 
-        u.avatar_url as owner_avatar,
-        c.item_count
-      FROM Collections c
-      LEFT JOIN Users u ON c.user_id = u.user_id
-      WHERE u.role != 'admin'
-      ORDER BY c.created_at DESC
-    `);
+    try {
+       //Usuarios
+        const [users] = await db.query(`
+            SELECT 
+                user_id AS id, 
+                username, 
+                email, 
+                role, 
+                avatar_url AS avatar 
+            FROM Users
+        `);
 
-    // 3. Procesar las solicitudes de pass
-    const requests = users
-      .filter(u => u.reset_code === 'PENDIENTE')
-      .map(u => ({
-        id: u.id,
-        email: u.email,
-        status: 'pending',
-        date: 'Reciente' 
-      }));
+        //Solicitudes
+        const [requests] = await db.query(`
+            SELECT 
+                id, 
+                email, 
+                status, 
+                code AS codeGenerated, 
+                DATE_FORMAT(created_at, '%d/%m/%Y %H:%i') AS date 
+            FROM Password_Requests 
+            ORDER BY created_at DESC
+        `);
 
-    res.json({ 
-      users,
-      requests, 
-      collections: collections.map(col => ({
-        id: col.id,
-        name: col.name,
-        item_count: col.item_count || 0,
-        owner: {
-          username: col.owner_username,
-          avatar: col.owner_avatar
-        }
-      }))
-    });
-  } catch (error) {
-    console.error("DETALLE DEL ERROR:", error); 
-    res.status(500).json({ 
-      error: "Error en el servidor", 
-      sqlMessage: error.sqlMessage, 
-    });
-}
+        // Coleccione
+        const [collections] = await db.query(`
+            SELECT 
+                c.collection_id AS id, 
+                c.collection_name AS name, 
+                c.item_count, 
+                u.username AS owner_username,
+                u.avatar_url AS owner_avatar,
+                u.role AS owner_role
+            FROM Collections c
+            LEFT JOIN Users u ON c.user_id = u.user_id
+        `);
+
+        const formattedCollections = collections.map(col => ({
+            id: col.id,
+            name: col.name,
+            item_count: col.item_count,
+            owner: {
+                username: col.owner_username,
+                avatar: col.owner_avatar,
+                role: col.owner_role
+            }
+        }));
+
+        res.json({
+            users,
+            requests,
+            collections: formattedCollections
+        });
+
+    } catch (error) {
+        console.error("Error en getAdminData:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
 };
 
 // POST: Aprobar reseteo de contraseña (generar código)
 exports.approveReset = async (req, res) => {
-  const { userId, code } = req.body;
+  const { requestId, code } = req.body;
   try {
     await db.query(
-      'UPDATE Users SET reset_code = ? WHERE user_id = ?',
-      [code, userId]
-    );
+            "UPDATE Password_Requests SET code = ?, status = 'completed' WHERE id = ?", 
+            [code, requestId]
+        );
     res.json({ success: true, message: "Código generado con éxito" });
   } catch (error) {
     res.status(500).json({ error: "Error al generar código" });

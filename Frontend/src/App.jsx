@@ -12,6 +12,7 @@ import CreateCollection from "./pages/CreateCollection.jsx";
 import OnboardingPage from "./pages/OnBoarding.jsx";
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
+import ResetPasswordScreen from "./pages/ResetPassword.jsx";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/login" element={<AuthScreen />} />
         <Route path="/register" element={<AuthScreen type="register" />} />
         <Route path="/forgot-password" element={<AuthScreen type="forgot" />} />
+        <Route path="/reset-password" element={<ResetPasswordScreen />} />
         //Rutas Privadas
         <Route element={<ProtectedRoute />}>
           <Route path="/explorer" element={<Explorer />} />

@@ -82,21 +82,21 @@ const fetchData = async () => {
 };
 
   // --- LÓGICA DE SOLICITUDES DE CONTRASEÑA ---
-  const handleGenerateCode = async (reqId, email) => {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase(); // Genera ej: X7K9P2
-    if(window.confirm(`¿Generar código de recuperación para ${email}?`)) {
-       try {
-         // Aquí llamarías a tu API: api.post('/auth/approve-reset', { reqId, code })
-         alert(`CÓDIGO GENERADO: ${code}\n\nCópialo y envíalo al usuario. (En un sistema real, esto enviaría el email).`);
-         
-         // Actualizar estado local
-         setData(data.map(item => item.id === reqId ? {...item, status: 'completed', codeGenerated: code} : item));
-       } catch (error) {
-         alert("Error generando código");
-       }
-    }
-  };
-
+const handleGenerateCode = async (requestId) => {
+  const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  
+  try {
+    await api.post("/admin/approve-reset", {
+      requestId: requestId,
+      code: generatedCode
+    });
+    fetchData(); 
+    alert("Código generado: " + generatedCode);
+  } catch (error) {
+    console.error("Error al aprobar:", error);
+    alert("No se pudo generar el código");
+  }
+};
   const openUserCollections = async (userObj) => {
     
     setSelectedUser(userObj);

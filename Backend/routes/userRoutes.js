@@ -15,8 +15,10 @@ router.get("/follow-stats/:id", verifyToken, userController.getFollowStats);
 router.post("/register", registerValidator, userController.createUser);
 router.post("/google", userController.googleLogin);
 router.post("/login", userController.login);
+router.post("/forgot-password", userController.requestPasswordReset);
 router.post("/follow/:id", verifyToken, userController.followUser);
 router.post("/forgot-password", userController.forgotPassword);
+router.post("/reset-password", userController.resetPassword);
 router.delete("/unfollow/:id", verifyToken, userController.unfollowUser);
 
 // 4. PUTS

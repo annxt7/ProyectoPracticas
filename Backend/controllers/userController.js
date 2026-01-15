@@ -578,27 +578,41 @@ exports.getFollowStats = async (req, res) => {
   }
 };
 
-//FORGOT PASSWORD
-exports.forgotPassword = async (req, res) => {
-  const { email } = req.body;
-  try {
-    // Simplemente marcamos reset_code como 'PENDIENTE'
-    const [result] = await db
-      .promise()
-      .query('UPDATE Users SET reset_code = "PENDIENTE" WHERE email = ?', [
-        email,
-      ]);
-
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Email no encontrado" });
-
-    res.json({ message: "Solicitud enviada al admin" });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+exports.requestPasswordReset = async (req, res) => {
+    const { email } = req.body;
+    try {
+        await db.query(
+            "INSERT INTO Password_Requests (email, status) VALUES (?, 'pending')",
+            [email]
+        );
+        res.json({ message: "Solicitud enviada al administrador." });
+    } catch (error) {
+        res.status(500).json({ error: "Error al enviar solicitud" });
+    }
 };
 
-// userController.js
+exports.resetPassword = async (req, res) => {
+    const { email, code, newPassword } = req.body;
+    try {
+        const [user] = await db.query(
+            "SELECT * FROM Users WHERE email = ? AND reset_code = ?",
+            [email, code]
+        );
+
+        if (user.length === 0) {
+            return res.status(400).json({ error: "Código o email incorrectos." });
+        }
+         const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        await db.query(
+            "UPDATE Users SET password = ?, reset_code = NULL WHERE email = ?",
+            [hashedPassword, email] 
+        );
+        res.json({ message: "Contraseña actualizada con éxito." });
+    } catch (error) {
+        res.status(500).json({ error: "Error al actualizar contraseña" });
+    }
+};
 
 exports.getMe = async (req, res) => {
   try {
