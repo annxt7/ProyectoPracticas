@@ -17,20 +17,18 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. CARGAR SEGUIDOS (Usando following_id de tu SQL)
   const fetchMyFollowing = useCallback(async () => {
     if (!user?.id) return;
     try {
       const res = await api.get(`/users/following/${user.id}`);
-      // Mapeamos siguiendo tu estructura de tabla Follows
-      const ids = res.data.map(f => Number(f.following_id));
+      // Intentamos capturar el ID de cualquier forma posible
+      const ids = res.data.map(f => Number(f.following_id || f.followed_id || f.user_id || f.id));
       setFollowingIds(ids);
     } catch (e) { console.error("Error seguidos:", e); }
   }, [user?.id]);
 
   useEffect(() => { fetchMyFollowing(); }, [fetchMyFollowing]);
 
-  // 2. BUSCADOR CON FILTRADO BASADO EN COLLECTIONPAGE
   useEffect(() => {
     if (!user?.id) return;
     
@@ -38,23 +36,27 @@ const Explorer = () => {
       setLoading(true);
       try {
         const res = await api.get("/search", { params: { query } });
-        const myId = String(user.id);
+        
+        // --- LOG DE CONTROL: Mira esto en la consola F12 si sigue fallando ---
+        console.log("Respuesta del servidor:", res.data);
 
-        // --- USUARIOS ---
+        const myId = Number(user.id);
+
+        // MAPEO DE USUARIOS: Buscamos todas las variantes de nombres de columnas
         const cleanUsers = (res.data.users || []).map(u => ({
-          id: u.user_id || u.id,
-          username: u.username,
-          avatar: u.avatar_url
-        })).filter(u => String(u.id) !== myId);
+          id: Number(u.user_id || u.id || u.id_usuario),
+          name: u.username || u.nombre || u.name || "Usuario",
+          avatar: u.avatar_url || u.avatar || u.img || ""
+        })).filter(u => u.id !== myId);
 
-        // --- COLECCIONES (Usando creator_id como en tu archivo) ---
+        // MAPEO DE COLECCIONES: Buscamos todas las variantes
         const cleanCollections = (res.data.collections || []).map(c => ({
-          id: c.collection_id || c.id,
-          creatorId: c.creator_id || c.user_id, // Aquí estaba el fallo
-          title: c.collection_name || c.title,
-          cover: c.cover_url,
-          creatorName: c.creator_username || c.username
-        })).filter(c => String(c.creatorId) !== myId); // FILTRO DEFINITIVO
+          id: Number(c.collection_id || c.id || c.id_coleccion),
+          creatorId: Number(c.user_id || c.creator_id || c.userId || c.id_usuario),
+          title: c.collection_name || c.title || c.nombre || "Sin título",
+          cover: c.cover_url || c.cover || c.imagen,
+          author: c.creator_username || c.username || c.nombre_usuario || "usuario"
+        })).filter(c => c.creatorId !== myId);
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
@@ -70,61 +72,58 @@ const Explorer = () => {
   }, [query, user?.id]);
 
   const handleFollowToggle = async (targetId, isFollowing) => {
-    const numericId = Number(targetId);
+    const id = Number(targetId);
     try {
       if (isFollowing) {
-        await api.delete(`/users/unfollow/${numericId}`);
-        setFollowingIds(prev => prev.filter(id => id !== numericId));
+        await api.delete(`/users/unfollow/${id}`);
+        setFollowingIds(prev => prev.filter(fid => fid !== id));
       } else {
-        await api.post(`/users/follow/${numericId}`);
-        setFollowingIds(prev => [...prev, numericId]);
+        await api.post(`/users/follow/${id}`);
+        setFollowingIds(prev => [...prev, id]);
       }
     } catch (error) { console.error(error); }
   };
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10 bg-base-100 text-white font-sans">
+    <div className="min-h-screen pb-24 md:pb-10 bg-[#0f111a] text-white">
       <NavDesktop />
       
-      <div className="sticky top-0 md:top-16 z-40 bg-base-100/90 backdrop-blur-md p-4 border-b border-white/5">
+      <div className="sticky top-0 md:top-16 z-40 bg-[#0f111a]/90 backdrop-blur-md p-4 border-b border-white/5">
         <div className="max-w-2xl mx-auto">
           <div className="relative">
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20" size={18} />
             <input
               type="text" value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar en Tribe..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 focus:outline-none focus:border-primary/50"
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 focus:outline-none"
             />
           </div>
-          <div className="flex justify-center gap-10 mt-4 font-bold text-sm">
-            <button onClick={() => setActiveTab("cuentas")} className={activeTab === "cuentas" ? "text-primary border-b-2 border-primary pb-2" : "opacity-40"}>Cuentas</button>
-            <button onClick={() => setActiveTab("colecciones")} className={activeTab === "colecciones" ? "text-primary border-b-2 border-primary pb-2" : "opacity-40"}>Colecciones</button>
+          <div className="flex justify-center gap-10 mt-4">
+            <button onClick={() => setActiveTab("cuentas")} className={`pb-2 text-sm font-bold ${activeTab === "cuentas" ? "text-primary border-b-2 border-primary" : "opacity-40"}`}>Cuentas</button>
+            <button onClick={() => setActiveTab("colecciones")} className={`pb-2 text-sm font-bold ${activeTab === "colecciones" ? "text-primary border-b-2 border-primary" : "opacity-40"}`}>Colecciones</button>
           </div>
         </div>
       </div>
 
       <main className="max-w-4xl mx-auto p-4 mt-4">
-        {loading && <div className="text-center py-10 opacity-20 italic font-serif">Buscando en la biblioteca...</div>}
-
         {activeTab === "cuentas" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {users.map(u => {
-              const isFollowing = followingIds.includes(Number(u.id));
+              const isFollowing = followingIds.includes(u.id);
               return (
-                <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5">
+                <div key={u.id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
                   <Link to={`/profile/${u.id}`} className="flex items-center gap-3">
-                    <img 
-                      src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random`} 
-                      className="w-12 h-12 rounded-full object-cover bg-base-300" alt="" 
-                    />
+                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-white/10">
+                      {u.avatar ? <img src={u.avatar} className="w-full h-full object-cover" /> : <span className="font-bold text-primary">{u.name[0]}</span>}
+                    </div>
                     <div>
-                      <p className="font-bold text-sm">{u.username}</p>
-                      <p className="text-[10px] opacity-40">@{String(u.username).toLowerCase()}</p>
+                      <p className="font-bold text-sm">{u.name}</p>
+                      <p className="text-[10px] opacity-40">@{u.name.toLowerCase().replace(/\s/g, '')}</p>
                     </div>
                   </Link>
                   <button 
                     onClick={() => handleFollowToggle(u.id, isFollowing)}
-                    className={`btn btn-xs px-4 rounded-lg font-bold ${isFollowing ? "btn-neutral opacity-50" : "btn-primary"}`}
+                    className={`btn btn-xs px-4 rounded-lg ${isFollowing ? "btn-neutral" : "btn-primary"}`}
                   >
                     {isFollowing ? "Siguiendo" : "Seguir"}
                   </button>
@@ -135,24 +134,19 @@ const Explorer = () => {
         )}
 
         {activeTab === "colecciones" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-4">
             {collections.map(col => (
-              <Link key={col.id} to={`/collection/${col.id}`} className="group">
-                <div className="bg-white/[0.03] rounded-3xl overflow-hidden border border-white/5 group-hover:border-primary/50 transition-all shadow-xl">
-                  <div className="aspect-video">
-                    <ItemCover src={col.cover} title={col.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-white truncate font-serif text-lg">{col.title}</h3>
-                    <p className="text-[10px] text-primary mt-1 font-bold uppercase tracking-widest">por {col.creatorName}</p>
-                  </div>
+              <Link key={col.id} to={`/collection/${col.id}`} className="bg-white/5 rounded-2xl overflow-hidden border border-white/5">
+                <ItemCover src={col.cover} title={col.title} className="aspect-video object-cover" />
+                <div className="p-3">
+                  <h3 className="font-bold text-xs truncate">{col.title}</h3>
+                  <p className="text-[9px] text-primary">por {col.author}</p>
                 </div>
               </Link>
             ))}
           </div>
         )}
       </main>
-
       <NavMobile />
     </div>
   );
