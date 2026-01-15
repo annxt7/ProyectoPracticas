@@ -6,7 +6,7 @@ import NavDesktop from "../components/NavDesktop";
 import ItemCover from "../components/ItemCover";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import { normalizeUser, normalizeCollection } from "../utils/normalizer";
+import { normalizeUser, normalizeCollection } from "../services/normalizer";
 
 const Explorer = () => {
   const [query, setQuery] = useState("");
