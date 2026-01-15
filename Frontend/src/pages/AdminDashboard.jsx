@@ -70,7 +70,7 @@ const fetchData = async () => {
     const type = activeTab === "users" && !isModal ? "User" : "Collections";
     await api.delete(`/admin/${type}/${id}`);
     if (isModal) {
-      setUserCollections(prev => prev.filter(c => String( c.id) !== String(id)));
+      setUserCollections(prev => prev.filter(c => String( c.collection_id) !== String(id)));
     } else {
       setData(prev => prev.filter(item => String(item.id ) !== String(id)));
     }
