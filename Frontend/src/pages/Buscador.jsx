@@ -137,7 +137,7 @@ const Explorer = () => {
             {users.map(u => {
               const isFollowing = followingIds.includes(u.id);
               return (
-                <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:bg-white/[0.05] transition-all">
+                <div key={u.id} className="flex items-center justify-between p-4 bg-white/0.03 rounded-2xl border border-white/5 hover:bg-white/[0.05] transition-all">
                   <Link to={`/profile/${u.id}`} className="flex items-center gap-3 min-w-0">
                     <img src={u.img || `https://ui-avatars.com/api/?name=${u.name}&background=random`} className="w-12 h-12 rounded-full object-cover" alt="" />
                     <div className="min-w-0">
