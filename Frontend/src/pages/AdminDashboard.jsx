@@ -328,7 +328,7 @@ const fetchData = async () => {
                     {userCollections.map(col => (
                       <tr key={col.id}>
                         <td className="font-bold">{col.collection_name}</td>
-                        <td>{col.items?.length || 0}</td>
+                        <td>{col.item_count || 0}</td>
                         <td className="text-right">
                           <button 
                             onClick={() => handleDelete(col.id, true)}
