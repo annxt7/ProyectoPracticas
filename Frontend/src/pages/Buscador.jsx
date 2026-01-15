@@ -17,20 +17,20 @@ const Explorer = () => {
 
   const { user } = useAuth();
 
-  // 1. Obtener seguidos (Normalizando IDs para el botón)
+  // 1. Cargar seguidos con normalización total
   const fetchMyFollowing = useCallback(async () => {
     if (!user?.id) return;
     try {
       const res = await api.get(`/users/following/${user.id}`);
-      // Mapeamos buscando following_id (tu SQL) o id/user_id (posible JSON)
-      const ids = res.data.map(f => Number(f.following_id || f.user_id || f.id));
+      // Guardamos IDs como números limpios buscando en cualquier campo posible
+      const ids = res.data.map(f => Number(f.following_id || f.followed_id || f.user_id || f.id));
       setFollowingIds(ids);
     } catch (e) { console.error("Error seguidos:", e); }
   }, [user?.id]);
 
   useEffect(() => { fetchMyFollowing(); }, [fetchMyFollowing]);
 
-  // 2. BUSCADOR CON FILTRADO Y MAPEO DEFENSIVO
+  // 2. BUSCADOR CON FILTRADO REDUNDANTE
   useEffect(() => {
     if (!user?.id) return;
     
@@ -39,22 +39,34 @@ const Explorer = () => {
       try {
         const res = await api.get("/search", { params: { query } });
         const myId = Number(user.id);
+        const myName = String(user.username || "").toLowerCase().trim();
 
         // --- PROCESAR USUARIOS ---
         const cleanUsers = (res.data.users || []).map(u => ({
-          id: Number(u.user_id || u.id),
+          // Intentamos capturar el ID de cualquier propiedad
+          id: Number(u.user_id || u.id || u.id_user),
           username: u.username || u.name || "Usuario",
           avatar: u.avatar_url || u.avatar || u.img || ""
-        })).filter(u => u.id !== myId);
+        })).filter(u => {
+          // Filtro doble: Por ID y por Nombre
+          const isMe = u.id === myId || (u.username.toLowerCase().trim() === myName && myName !== "");
+          return !isMe;
+        });
 
         // --- PROCESAR COLECCIONES ---
         const cleanCollections = (res.data.collections || []).map(c => ({
           id: Number(c.collection_id || c.id),
-          creatorId: Number(c.user_id || c.userId || c.creator_id),
+          // Buscamos el ID del creador en todas estas variantes
+          creatorId: Number(c.user_id || c.userId || c.creator_id || c.owner_id),
           title: c.collection_name || c.title || "Sin título",
           cover: c.cover_url || c.cover || c.image,
           author: c.username || c.creator_username || c.author || "usuario"
-        })).filter(c => c.creatorId !== myId); // FILTRO: No mostrar mis colecciones
+        })).filter(c => {
+          // FILTRO ULTRA-ESTRICTO:
+          // Si el ID del creador coincide O el nombre del autor es el mío, se elimina
+          const isMyCol = c.creatorId === myId || (c.author.toLowerCase().trim() === myName && myName !== "");
+          return !isMyCol;
+        });
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
@@ -64,18 +76,19 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, user?.id]);
+  }, [query, user?.id, user?.username]);
 
   const handleFollowToggle = async (targetId, isFollowing) => {
+    const id = Number(targetId);
     try {
       if (isFollowing) {
-        await api.delete(`/users/unfollow/${targetId}`);
-        setFollowingIds(prev => prev.filter(id => id !== targetId));
+        await api.delete(`/users/unfollow/${id}`);
+        setFollowingIds(prev => prev.filter(item => item !== id));
       } else {
-        await api.post(`/users/follow/${targetId}`);
-        setFollowingIds(prev => [...prev, targetId]);
+        await api.post(`/users/follow/${id}`);
+        setFollowingIds(prev => [...prev, id]);
       }
-    } catch (error) { console.error(error); }
+    } catch (error) { console.error("Error toggle:", error); }
   };
 
   return (
@@ -89,7 +102,7 @@ const Explorer = () => {
             <input
               type="text" value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar en Tribe..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 focus:outline-none focus:border-primary/50"
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 focus:outline-none focus:border-primary/50 text-white"
             />
           </div>
           <div className="flex justify-center gap-10 mt-4 font-bold text-sm">
@@ -120,7 +133,7 @@ const Explorer = () => {
                   </Link>
                   <button 
                     onClick={() => handleFollowToggle(u.id, isFollowing)}
-                    className={`btn btn-xs px-4 rounded-lg font-bold ${isFollowing ? "btn-neutral opacity-50" : "btn-primary"}`}
+                    className={`btn btn-xs px-4 rounded-lg font-bold transition-all ${isFollowing ? "bg-white/10 text-white" : "btn-primary"}`}
                   >
                     {isFollowing ? "Siguiendo" : "Seguir"}
                   </button>
