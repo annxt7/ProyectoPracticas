@@ -465,17 +465,18 @@ exports.followUser = async (req, res) => {
   const followingId = req.params.id; // A quién sigues
 
   try {
-    // 1. Lógica existente para seguir...
-    await db.query("INSERT INTO Followers (follower_id, following_id) VALUES (?, ?)", [followerId, followingId]);
+    await db.query("INSERT INTO Follows (follower_id, following_id) VALUES (?, ?)", [followerId, followingId]);
 
-    // 2. CREAR LA NOTIFICACIÓN (Esto es lo que te falta)
     await db.query(
       "INSERT INTO Notifications (user_id, actor_id, type, content) VALUES (?, ?, 'follow', 'ha empezado a seguirte')",
-      [followingId, followerId] // El dueño de la notificación es el seguido
+      [followingId, followerId] 
     );
 
     res.json({ message: "Ahora sigues a este usuario" });
-  } catch (error) { /* ... */ }
+  } catch (error) {
+    res.status(500).json({ error: "Error al dejar de seguir" });  
+    
+  }
 };
 
 // Dejar de seguir

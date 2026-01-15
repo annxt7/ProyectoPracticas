@@ -18,7 +18,7 @@ module.exports = {
           "base-300": "#e5e6e6",         // Hovers/Divisores
           "base-content": "#1f2937",      // Texto principal
         },
-        // TEMA DARK (El que tenías, pero optimizado)
+      
         tribeDark: {
           "primary": "#661ae6",
           "secondary": "#d926aa",
