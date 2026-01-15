@@ -99,6 +99,7 @@ const fetchData = async () => {
   };
 
   const openUserCollections = async (userObj) => {
+    console.log("Abriendo colecciones para el usuario:", userObj);
     setSelectedUser(userObj);
     setLoadingModal(true);
   
