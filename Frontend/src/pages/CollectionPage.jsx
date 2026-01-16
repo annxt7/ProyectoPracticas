@@ -126,7 +126,7 @@ const handleAddNewItem = async (newItem) => {
     }
   };
 
-  // 3. LOGICA DE EDICIÓN
+  //  EDICIÓN
   const handleSaveEditing = async () => {
     setIsUploading(true);
     try {
@@ -170,7 +170,6 @@ const handleAddNewItem = async (newItem) => {
     <div className="min-h-screen pb-24 bg-base-100 text-base-content">
       <NavDesktop />
 
-      {/* --- HERO SECTION CON BLUR --- */}
       <div className="relative">
         <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-25">
           <img src={isEditing ? editForm.cover : collectionInfo.cover} className="w-full h-full object-cover blur-3xl" alt="" />
