@@ -1,4 +1,4 @@
-const express= require('express');
+const express = require('express');
 require('dotenv').config();
 const uploadLimiter = require("../middlewares/fileLimiter");
 const multer = require('multer');
@@ -18,16 +18,19 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
-//POST:
-router.post('/upload',verifyToken,uploadLimiter,upload.single('imagen'),(req,res)=>{
-try{
-res.json({
-    success:true,
-    url:req.file.path
-});
-}catch(error){
-res.status(500).json({success:false, error: error.message});
-}
+// POST: /api/files/upload
+router.post('/upload', verifyToken, uploadLimiter, upload.single('imagen'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "No se ha subido ningún archivo" });
+    }
+    res.json({
+      success: true,
+      url: req.file.path 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
-module.exports=router
+module.exports = router;

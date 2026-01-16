@@ -470,23 +470,19 @@ const CollectionPage = () => {
         </div>
       </main>
 
-      {/* --- MODALES CON LÓGICA DE COINCIDENCIA EXACTA --- */}
       {selectedItemForSave && (
         <AddToCollectionModal
           isOpen={!!selectedItemForSave}
           onClose={() => setSelectedItemForSave(null)}
           item={{
-            // Intentamos pasar el ID del catálogo original
             id: selectedItemForSave.reference_id,
             type: selectedItemForSave.item_type,
             title: selectedItemForSave.title,
             subtitle: selectedItemForSave.author,
-            // Pasamos la imagen en todas las variantes posibles
             image: selectedItemForSave.cover,
             display_image: selectedItemForSave.cover,
             custom_image: selectedItemForSave.cover,
             cover: selectedItemForSave.cover,
-            // Flag para indicar si es una entrada manual
             is_custom: selectedItemForSave.is_custom,
           }}
         />
