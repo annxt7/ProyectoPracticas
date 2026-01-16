@@ -146,7 +146,7 @@ const Explorer = () => {
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-white/5 border border-white/10">
                       <img
                         src={
-                          u.img ||
+                          u.avatar ||
                           `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`
                         }
                         className="w-full h-full object-cover"
