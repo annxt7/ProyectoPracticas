@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 const GRADIENTS = [
   "bg-gradient-to-br from-rose-400 to-orange-300",
@@ -13,65 +13,52 @@ const GRADIENTS = [
 const ItemCover = ({ src, title, className = "" }) => {
   const [imgError, setImgError] = useState(false);
 
-  // Si la prop src cambia (por ejemplo, al navegar entre colecciones), intentamos cargar la imagen de nuevo
-  useEffect(() => {
-    setImgError(false);
-  }, [src]);
+  // 1. Normalización del título
+  const safeTitle = typeof title === "string" ? title.trim() : String(title || "");
 
-  // Aseguramos que el título sea siempre un string limpio
-  const safeTitle = typeof title === "string" ? title.trim() : "";
+  // 2. Limpieza de URL (Forzar HTTPS para evitar bloqueos del navegador)
+  const cleanSrc = src && src !== "null" && src !== "undefined" 
+    ? src.replace("http://", "https://") 
+    : null;
 
-  // Lógica de iniciales ultra-segura
+  // 3. Lógica de Iniciales (Máximo 2 letras)
   const getInitials = (text) => {
-    if (!text) return "??";
-    
+    if (!text) return "?";
     const words = text.split(/\s+/).filter(w => w.length > 0);
-    
-    if (words.length >= 2) {
-      // Primera letra de la primera palabra + Primera letra de la segunda
-      return (words[0][0] + words[1][0]).toUpperCase();
-    } else if (words.length === 1) {
-      // Dos primeras letras de la única palabra
-      return words[0].substring(0, 2).toUpperCase();
-    }
-    return "??";
+    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+    return text.substring(0, 2).toUpperCase();
   };
 
   const getGradient = (text) => {
-    if (!text) return GRADIENTS[0];
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
       hash = text.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const index = Math.abs(hash) % GRADIENTS.length;
-    return GRADIENTS[index];
+    return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
   };
 
-  // Solo intentamos renderizar la imagen si hay un src válido y no ha dado error
-  const shouldShowImage = src && src !== "" && src !== "null" && src !== "undefined" && !imgError;
+  // Renderizado condicional basado en si hay imagen y si cargó bien
+  const showFallback = !cleanSrc || imgError;
 
-  if (shouldShowImage) {
-    return (
-      <img
-        src={src}
-        alt={safeTitle}
-        referrerPolicy="no-referrer"
-        className={`w-full h-full object-cover transition-opacity duration-300 ${className}`}
-        onError={() => setImgError(true)} 
-        loading="lazy"
-      />
-    );
-  }
-
-  // Renderizado del "Fallback" (el cuadro con color e iniciales)
   return (
-    <div 
-      className={`w-full h-full flex items-center justify-center text-white p-2 text-center select-none overflow-hidden ${getGradient(safeTitle)} ${className}`}
-      title={safeTitle} // Tooltip para ver el título completo al pasar el ratón
-    >
-      <span className="font-bold text-2xl md:text-3xl lg:text-4xl drop-shadow-lg opacity-90 tracking-tighter">
-        {getInitials(safeTitle)}
-      </span>
+    <div className={`relative flex items-center justify-center overflow-hidden select-none ${className} ${showFallback ? getGradient(safeTitle) : "bg-neutral"}`}>
+      
+      {cleanSrc && !imgError && (
+        <img
+          src={cleanSrc}
+          alt={safeTitle}
+          className="w-full h-full object-cover transition-opacity duration-500"
+          referrerPolicy="no-referrer"
+          onError={() => setImgError(true)}
+          // Eliminamos el onLoad que causaba el cascading render
+        />
+      )}
+
+      {showFallback && (
+        <span className="font-bold text-white drop-shadow-md uppercase tracking-tighter">
+          {getInitials(safeTitle)}
+        </span>
+      )}
     </div>
   );
 };
