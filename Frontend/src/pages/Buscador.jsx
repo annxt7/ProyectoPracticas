@@ -18,13 +18,13 @@ const Explorer = () => {
 
   const { user: currentUser } = useAuth();
 
-  // Cargar seguidos 
+  // Cargar seguidos
   useEffect(() => {
     if (!currentUser?.id) return;
     const fetchFollowing = async () => {
       try {
         const res = await api.get(`/users/following/${currentUser.id}`);
-        const ids = res.data.map(u => normalizeUser(u).id);
+        const ids = res.data.map((u) => normalizeUser(u).id);
         setFollowingIds(ids);
       } catch (err) {
         console.error("Error al cargar seguidos:", err);
@@ -34,14 +34,19 @@ const Explorer = () => {
   }, [currentUser?.id]);
 
   useEffect(() => {
-
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await api.get(`/search?query=${encodeURIComponent(query)}`);
+        console.log("Respuesta del buscador:", res.data);
         const data = res.data;
-        const cleanUsers = (data.users || []).map(u => normalizeUser(u));
-        const cleanCollections = (data.collections || []).map(c => normalizeCollection(c));
+        const myId = Number(currentUser?.id);
+        const cleanUsers = (data.users || [])
+          .map((u) => normalizeUser(u))
+          .filter((u) => Number(u.id) !== myId); 
+        const cleanCollections = (data.collections || [])
+          .map((c) => normalizeCollection(c))
+          .filter((c) => Number(c.creatorId) !== myId); 
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
@@ -54,17 +59,17 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query]); 
+  }, [query]);
 
   const handleFollowToggle = async (targetId, isFollowing) => {
     const id = Number(targetId);
     try {
       if (isFollowing) {
         await api.delete(`/users/unfollow/${id}`);
-        setFollowingIds(prev => prev.filter(fid => fid !== id));
+        setFollowingIds((prev) => prev.filter((fid) => fid !== id));
       } else {
         await api.post(`/users/follow/${id}`);
-        setFollowingIds(prev => [...prev, id]);
+        setFollowingIds((prev) => [...prev, id]);
       }
     } catch (err) {
       console.error("Error al seguir/dejar de seguir:", err);
@@ -74,11 +79,14 @@ const Explorer = () => {
   return (
     <div className="min-h-screen pb-24 bg-base-100 text-base-content font-sans">
       <NavDesktop />
-      
+
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/90 backdrop-blur-md p-4 border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20" size={18} />
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20"
+              size={18}
+            />
             <input
               type="text"
               value={query}
@@ -87,21 +95,23 @@ const Explorer = () => {
               className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-10 outline-none focus:border-primary/50 transition-all text-sm"
             />
             {query && (
-              <X 
-                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-40 cursor-pointer hover:opacity-100" 
-                size={16} 
-                onClick={() => setQuery("")} 
+              <X
+                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-40 cursor-pointer hover:opacity-100"
+                size={16}
+                onClick={() => setQuery("")}
               />
             )}
           </div>
 
           <div className="flex justify-center gap-12">
-            {["cuentas", "colecciones"].map(tab => (
+            {["cuentas", "colecciones"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-2 text-xs font-bold uppercase tracking-widest transition-all ${
-                  activeTab === tab ? "text-primary border-b-2 border-primary" : "opacity-30 hover:opacity-100"
+                  activeTab === tab
+                    ? "text-primary border-b-2 border-primary"
+                    : "opacity-30 hover:opacity-100"
                 }`}
               >
                 {tab}
@@ -120,27 +130,41 @@ const Explorer = () => {
 
         {activeTab === "cuentas" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {users.map(u => {
+            {users.map((u) => {
               const isFollowing = followingIds.includes(u.id);
               const isMe = u.id === currentUser?.id; // Identificamos si soy yo
 
               return (
-                <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
-                  <Link to={isMe ? "/profile/me" : `/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
+                <div
+                  key={u.id}
+                  className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
+                >
+                  <Link
+                    to={isMe ? "/profile/me" : `/profile/${u.id}`}
+                    className="flex items-center gap-4 min-w-0"
+                  >
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-white/5 border border-white/10">
-                      <img 
-                        src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`} 
+                      <img
+                        src={
+                          u.avatar ||
+                          `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`
+                        }
                         className="w-full h-full object-cover"
                         alt={u.username}
                       />
                     </div>
                     <div className="min-w-0">
                       <p className="font-bold text-sm truncate uppercase tracking-tighter text-white/90">
-                        @{u.username} {isMe && <span className="text-[10px] text-primary ml-1">(TÚ)</span>}
+                        @{u.username}{" "}
+                        {isMe && (
+                          <span className="text-[10px] text-primary ml-1">
+                            (TÚ)
+                          </span>
+                        )}
                       </p>
                     </div>
                   </Link>
-                  
+
                   {/* Solo mostramos botón seguir si NO soy yo */}
                   {!isMe && (
                     <button
@@ -160,18 +184,23 @@ const Explorer = () => {
 
         {activeTab === "colecciones" && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {collections.map(col => (
+            {collections.map((col) => (
               <Link key={col.id} to={`/collection/${col.id}`} className="group">
                 <div className="flex flex-col gap-3">
                   <div className="aspect-video rounded-2xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-primary/40 transition-all relative">
-                    <ItemCover src={col.cover} title={col.title} className="group-hover:scale-105 transition-transform duration-500" />
+                    <ItemCover
+                      src={col.cover}
+                      title={col.title}
+                      className="group-hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
                   <div className="px-1">
                     <h3 className="font-bold truncate text-[13px] text-white/90 group-hover:text-primary">
                       {col.title}
                     </h3>
                     <p className="text-[10px] text-primary font-black uppercase tracking-widest">
-                      @{col.author} {col.creatorId === currentUser?.id && "(Mía)"}
+                      @{col.author}{" "}
+                      {col.creatorId === currentUser?.id && "(Mía)"}
                     </p>
                   </div>
                 </div>
