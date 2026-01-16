@@ -354,6 +354,7 @@ exports.getActivityFeed = async (req, res) => {
   const userId = req.user.id;
 
   try {
+    //Seguidos
     const sqlFollowing = `
             SELECT 
                 c.collection_id, 
@@ -361,20 +362,23 @@ exports.getActivityFeed = async (req, res) => {
                 c.collection_type, 
                 c.cover_url, 
                 c.created_at, 
+                c.likes, -- Usamos tu columna de la tabla Collections
                 u.user_id, 
                 u.username, 
                 u.avatar_url,
-                'created' as action_type
+                'created' as action_type,
+                -- Comprobamos si el usuario actual le dio like
+                (SELECT COUNT(*) FROM Collection_Likes WHERE user_id = ? AND collection_id = c.collection_id) AS has_liked
             FROM Collections c
             JOIN Users u ON c.user_id = u.user_id
-          JOIN Follows f ON c.user_id = f.following_id
-          WHERE f.follower_id = ? AND c.is_private = 0
+            JOIN Follows f ON c.user_id = f.following_id
+            WHERE f.follower_id = ? AND c.is_private = 0
             ORDER BY c.created_at DESC
             LIMIT 20
         `;
+    let [rows] = await db.query(sqlFollowing, [userId, userId]);
 
-    let [rows] = await db.query(sqlFollowing, [userId]);
-
+    // 2. Si no hay seguidos, consulta global
     if (rows.length === 0) {
       const sqlGlobal = `
                 SELECT 
@@ -383,20 +387,28 @@ exports.getActivityFeed = async (req, res) => {
                     c.collection_type, 
                     c.cover_url, 
                     c.created_at, 
+                    c.likes,
                     u.user_id, 
                     u.username, 
                     u.avatar_url,
-                    'created_global' as action_type
+                    'created_global' as action_type,
+                    -- Comprobamos si el usuario actual le dio like
+                    (SELECT COUNT(*) FROM Collection_Likes WHERE user_id = ? AND collection_id = c.collection_id) AS has_liked
                 FROM Collections c
                 JOIN Users u ON c.user_id = u.user_id
                 WHERE c.is_private = 0
                 ORDER BY c.created_at DESC
                 LIMIT 20
             `;
-      [rows] = await db.query(sqlGlobal);
+      [rows] = await db.query(sqlGlobal, [userId]);
     }
 
-    res.json(rows);
+    const results = rows.map(row => ({
+      ...row,
+      has_liked: row.has_liked > 0
+    }));
+
+    res.json(results);
   } catch (error) {
     console.error("Error en Activity Feed:", error);
     res.status(500).json({ error: "Error cargando el feed" });

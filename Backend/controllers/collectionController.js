@@ -85,31 +85,31 @@ exports.getCollectionDetails = async (req, res) => {
                 u.avatar_url AS creator_avatar,
                 u.user_id AS creator_id,
                 c.item_count,
-                -- Añadimos la lógica para saber si el espectador la tiene guardada
-                (SELECT COUNT(*) FROM Saved_Collections WHERE user_id = ? AND collection_id = c.collection_id) AS is_saved
+                //¿guardada?
+                (SELECT COUNT(*) FROM Saved_Collections WHERE user_id = ? AND collection_id = c.collection_id) AS is_saved,
+                --¿likeada?
+                (SELECT COUNT(*) FROM Collection_Likes WHERE user_id = ? AND collection_id = c.collection_id) AS has_liked
             FROM Collections c
             LEFT JOIN Users u ON c.user_id = u.user_id
             WHERE c.collection_id = ?
         `;
-
-        // Ahora sí, pasamos viewerId para el primer "?" e id para el segundo "?"
-        const [collectionRows] = await db.query(sqlCollection, [viewerId, id]);
+        
+        const [collectionRows] = await db.query(sqlCollection, [viewerId, viewerId, id]);
         
         if (collectionRows.length === 0) {
             return res.status(404).json({ error: "Colección no encontrada" });
         }
 
         const collection = collectionRows[0];
-
-        // Convertimos el conteo de is_saved en booleano
         collection.is_saved = collection.is_saved > 0;
+        collection.has_liked = collection.has_liked > 0; 
 
         const itemsSql = `
             SELECT 
                 i.item_id, 
                 i.item_type, 
                 i.custom_description,
-                i.music_id, i.book_id, i.movie_id, i.show_id, i.game_id, -- Importante para el refId del front
+                i.music_id, i.book_id, i.movie_id, i.show_id, i.game_id,
                 COALESCE(i.custom_title, m.title, b.title, mov.title, s.title, g.title) AS display_title,
                 COALESCE(i.custom_subtitle, m.artist, b.author, mov.director, g.developer, 'Varios') AS display_subtitle,
                 COALESCE(i.custom_image, m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image
@@ -303,4 +303,51 @@ exports.deleteSavedCollection = async (req, res) => {
         console.error('No se ha podido eliminar la colección guardada:', error);
         res.status(500).json({ error: "Error de servidor" });
     };
+};
+exports.toggleLikeCollection = async (req, res) => {
+  const userId = req.user.id;
+  const collectionId = req.params.id;
+
+  try {
+    // 1. Verificamos si el usuario ya le dio like en la tabla intermedia
+    const [exists] = await db.query(
+      "SELECT * FROM Collection_Likes WHERE user_id = ? AND collection_id = ?",
+      [userId, collectionId]
+    );
+
+    if (exists.length > 0) {
+      // Quitar like
+      await db.query(
+        "DELETE FROM Collection_Likes WHERE user_id = ? AND collection_id = ?",
+        [userId, collectionId]
+      );
+      await db.query(
+        "UPDATE Collections SET likes = GREATEST(0, likes - 1) WHERE collection_id = ?",
+        [collectionId]
+      );
+      
+      return res.json({ success: true, liked: false });
+    } else {
+      await db.query(
+        "INSERT INTO Collection_Likes (user_id, collection_id) VALUES (?, ?)",
+        [userId, collectionId]
+      );
+      await db.query(
+        "UPDATE Collections SET likes = likes + 1 WHERE collection_id = ?",
+        [collectionId]
+      );
+      const [owner] = await db.query("SELECT user_id FROM Collections WHERE collection_id = ?", [collectionId]);
+      if (owner[0].user_id !== userId) {
+        await db.query(
+          "INSERT INTO Notifications (user_id, actor_id, type, content) VALUES (?, ?, 'like', 'le ha dado like a tu colección')",
+          [owner[0].user_id, userId]
+        );
+      }
+
+      return res.json({ success: true, liked: true });
+    }
+  } catch (error) {
+    console.error("Error en toggleLikeCollection:", error);
+    res.status(500).json({ error: "Error al procesar el like" });
+  }
 };
