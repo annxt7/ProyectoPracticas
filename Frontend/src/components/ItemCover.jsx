@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 const GRADIENTS = [
   "bg-gradient-to-br from-rose-400 to-orange-300",
@@ -13,47 +13,44 @@ const GRADIENTS = [
 const ItemCover = ({ src, title, className = "" }) => {
   const [imgError, setImgError] = useState(false);
 
-  // 1. Limpieza de título: Si no hay título, usamos un placeholder para el hash del color
-  const displayTitle = title?.trim() || "Colección";
+  // Normalizamos el título para evitar errores si es null/undefined
+  const displayTitle = title?.trim() || "Sin Título";
 
-  // 2. Generación de iniciales ultra-segura
-  const getInitials = () => {
-    if (!title || title.trim().length === 0) return "??";
-    const words = title.trim().split(/\s+/);
-    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
-    return words[0].substring(0, 2).toUpperCase();
-  };
-
-  // 3. Selección de color basada en el título (o en el placeholder)
-  const getGradient = () => {
+  // Usamos useMemo para el gradiente e iniciales para que no cambien en cada renderizado
+  const { gradient, initials } = useMemo(() => {
     let hash = 0;
-    const text = displayTitle;
-    for (let i = 0; i < text.length; i++) {
-      hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < displayTitle.length; i++) {
+      hash = displayTitle.charCodeAt(i) + ((hash << 5) - hash);
     }
-    return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
-  };
+    const index = Math.abs(hash) % GRADIENTS.length;
+    
+    const words = displayTitle.split(/\s+/).filter(w => w.length > 0);
+    const textInitials = words.length >= 2 
+      ? (words[0][0] + words[1][0]).toUpperCase()
+      : displayTitle.substring(0, 2).toUpperCase();
 
-  // 4. Limpieza de URL
-  const cleanSrc = src && src !== "null" && src !== "undefined" ? src : null;
+    return { gradient: GRADIENTS[index], initials: textInitials || "??" };
+  }, [displayTitle]);
+
+  // Si no hay src o hubo error, mostramos el degradado
+  const showFallback = !src || src === "null" || src === "undefined" || imgError;
 
   return (
-    <div className={`relative flex items-center justify-center overflow-hidden select-none ${className} ${(!cleanSrc || imgError) ? getGradient() : "bg-neutral"}`}>
-      
-      {cleanSrc && !imgError && (
+    <div className={`relative flex items-center justify-center overflow-hidden select-none ${className} ${showFallback ? gradient : "bg-neutral"}`}>
+      {!showFallback && (
         <img
-          key={src} // El 'key' fuerza a React a tratarlo como imagen nueva si cambia el src sin usar useEffect
-          src={cleanSrc}
+          src={src}
           alt={displayTitle}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
+          // Al fallar la imagen, simplemente activamos el fallback sin bucles
           onError={() => setImgError(true)}
         />
       )}
 
-      {(!cleanSrc || imgError) && (
-        <span className="font-bold text-white drop-shadow-md uppercase tracking-tighter">
-          {getInitials()}
+      {showFallback && (
+        <span className="font-bold text-white drop-shadow-md uppercase tracking-tighter text-xl md:text-2xl">
+          {initials}
         </span>
       )}
     </div>
