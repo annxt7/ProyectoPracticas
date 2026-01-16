@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-// Lista de degradados elegantes (Estilo moderno)
 const GRADIENTS = [
   "bg-gradient-to-br from-rose-400 to-orange-300",
   "bg-gradient-to-br from-indigo-400 to-cyan-400",
@@ -14,30 +13,28 @@ const GRADIENTS = [
 const ItemCover = ({ src, title, className = "" }) => {
   const [imgError, setImgError] = useState(false);
 
-  // Reiniciamos el error si cambia la fuente (por si se corrige la URL dinámicamente)
+  // Si la prop src cambia (por ejemplo, al navegar entre colecciones), intentamos cargar la imagen de nuevo
   useEffect(() => {
     setImgError(false);
   }, [src]);
 
-  // CORRECCIÓN DE SEGURIDAD: Convertimos a String para evitar crash si es null/undefined
-  const safeTitle = title ? String(title) : "";
+  // Aseguramos que el título sea siempre un string limpio
+  const safeTitle = typeof title === "string" ? title.trim() : "";
 
-  // 1. Lógica para obtener las iniciales (Máximo 2 letras)
+  // Lógica de iniciales ultra-segura
   const getInitials = (text) => {
-    if (!text) return "?";
-    // .trim() fallaba si text era null. Ahora usamos 'safeTitle' que es seguro.
-    const words = text.trim().split(" ");
+    if (!text) return "??";
     
-    // Si no hay palabras válidas
-    if (words.length === 0 || !words[0]) return "?";
-
-    if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+    const words = text.split(/\s+/).filter(w => w.length > 0);
     
-    // Aseguramos que existe la segunda palabra antes de acceder a ella
-    const firstInitial = words[0][0] || "";
-    const secondInitial = (words[1] && words[1][0]) ? words[1][0] : words[0][1] || "";
-    
-    return (firstInitial + secondInitial).toUpperCase();
+    if (words.length >= 2) {
+      // Primera letra de la primera palabra + Primera letra de la segunda
+      return (words[0][0] + words[1][0]).toUpperCase();
+    } else if (words.length === 1) {
+      // Dos primeras letras de la única palabra
+      return words[0].substring(0, 2).toUpperCase();
+    }
+    return "??";
   };
 
   const getGradient = (text) => {
@@ -50,7 +47,10 @@ const ItemCover = ({ src, title, className = "" }) => {
     return GRADIENTS[index];
   };
 
-  if (src && !imgError) {
+  // Solo intentamos renderizar la imagen si hay un src válido y no ha dado error
+  const shouldShowImage = src && src !== "" && src !== "null" && src !== "undefined" && !imgError;
+
+  if (shouldShowImage) {
     return (
       <img
         src={src}
@@ -63,9 +63,13 @@ const ItemCover = ({ src, title, className = "" }) => {
     );
   }
 
+  // Renderizado del "Fallback" (el cuadro con color e iniciales)
   return (
-    <div className={`w-full h-full flex flex-col items-center justify-center text-white p-4 text-center select-none ${getGradient(safeTitle)} ${className}`}>
-      <span className="font-serif font-bold text-5xl md:text-6xl drop-shadow-md opacity-90 tracking-tighter">
+    <div 
+      className={`w-full h-full flex items-center justify-center text-white p-2 text-center select-none overflow-hidden ${getGradient(safeTitle)} ${className}`}
+      title={safeTitle} // Tooltip para ver el título completo al pasar el ratón
+    >
+      <span className="font-bold text-2xl md:text-3xl lg:text-4xl drop-shadow-lg opacity-90 tracking-tighter">
         {getInitials(safeTitle)}
       </span>
     </div>
