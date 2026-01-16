@@ -32,6 +32,7 @@ const CollectionPage = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+
   // Estados
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -41,27 +42,30 @@ const CollectionPage = () => {
     description: "",
     cover: "",
   });
+
   // Modales
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedItemForSave, setSelectedItemForSave] = useState(null);
 
-  //Cargar los datos
+  // Cargar los datos
   useEffect(() => {
     const fetchCollection = async () => {
       setLoading(true);
       try {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
+
         setIsSaved(!!data.is_saved);
         setIsLiked(!!data.has_liked);
-        setLikeCount(data.likes);
+        setLikeCount(data.likes || 0);
 
+        // Normalización de la información de la colección
         setCollectionInfo({
           id: data.collection_id || data.id,
-          title: data.collection_name || data.title,
+          title: data.collection_name || data.title || "Sin título",
           description: data.collection_description || data.description || "",
           type: data.collection_type || data.type,
-          cover: data.cover_url || data.collection_image,
+          cover: data.cover_url || data.collection_image || "",
           creatorId: data.creator_id,
           creatorName: data.creator_username,
           stats: {
@@ -69,6 +73,7 @@ const CollectionPage = () => {
           },
         });
 
+        // Mapeo corregido de los items para asegurar que las imágenes y títulos carguen
         if (data.items) {
           setItems(
             data.items.map((item) => {
@@ -81,12 +86,9 @@ const CollectionPage = () => {
 
               return {
                 id: item.item_id || item.id,
-                title: item.display_title || item.custom_title || "Sin título",
-                author:
-                  item.display_subtitle ||
-                  item.custom_subtitle ||
-                  "Desconocido",
-                cover: item.display_image || item.custom_image,
+                title: item.display_title || item.custom_title || item.title || "Sin título",
+                author: item.display_subtitle || item.custom_subtitle || item.subtitle || "Desconocido",
+                cover: item.display_image || item.custom_image || item.image_url,
                 item_type: item.item_type,
                 reference_id: refId,
                 is_custom: !refId,
@@ -100,6 +102,7 @@ const CollectionPage = () => {
         setLoading(false);
       }
     };
+
     if (id) fetchCollection();
   }, [id]);
 
@@ -118,6 +121,7 @@ const CollectionPage = () => {
         custom_image: newItem.cover,
         custom_description: newItem.description,
       });
+
       if (response.data.success) {
         const itemParaLaVista = {
           ...newItem,
@@ -147,8 +151,10 @@ const CollectionPage = () => {
     setIsUploading(true);
     try {
       let finalCoverUrl = collectionInfo.cover;
+
       if (fileToUpload) {
         const formData = new FormData();
+        // IMPORTANTE: Asegúrate de que el backend espere "imagen"
         formData.append("imagen", fileToUpload);
         const uploadRes = await api.post("/files/upload", formData);
         finalCoverUrl = uploadRes.data.url;
@@ -167,7 +173,9 @@ const CollectionPage = () => {
         cover: finalCoverUrl,
       }));
       setIsEditing(false);
+      setFileToUpload(null);
     } catch (error) {
+      console.error("Error al actualizar:", error);
       alert("Error al actualizar");
     } finally {
       setIsUploading(false);
@@ -217,17 +225,16 @@ const CollectionPage = () => {
         <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-25">
           <img
             src={isEditing ? editForm.cover : collectionInfo.cover}
+            key={isEditing ? editForm.cover : collectionInfo.cover}
             className="w-full h-full object-cover blur-3xl"
             alt=""
           />
-          <div className="absolute inset-0 bg-linear-to-b from-transparent to-base-100"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-base-100"></div>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 pt-8">
           <Link
-            to={
-              isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`
-            }
+            to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`}
             className="inline-flex items-center gap-2 text-sm opacity-60 hover:opacity-100 mb-8 transition-all"
           >
             <ArrowLeft size={16} />{" "}
@@ -239,7 +246,8 @@ const CollectionPage = () => {
             <div className="relative group w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-base-300">
               <ItemCover
                 src={isEditing ? editForm.cover : collectionInfo.cover}
-                title={collectionInfo.title}
+                title={isEditing ? editForm.title : collectionInfo.title}
+                key={isEditing ? editForm.cover : collectionInfo.cover}
                 className="w-full h-full object-cover"
               />
               {isEditing && (
@@ -332,7 +340,7 @@ const CollectionPage = () => {
                           className="btn btn-primary btn-sm rounded-full px-6"
                           disabled={isUploading}
                         >
-                          Guardar
+                          {isUploading ? "Guardando..." : "Guardar"}
                         </button>
                         <button
                           onClick={() => setIsEditing(false)}
@@ -411,7 +419,6 @@ const CollectionPage = () => {
         </div>
       </div>
 
-      {/* --- GRID DE ITEMS --- */}
       <main className="max-w-6xl mx-auto px-4 mt-16">
         <h2 className="text-xl font-bold mb-8 flex items-center gap-4">
           Contenido <div className="h-px flex-1 bg-white/5"></div>
@@ -420,14 +427,14 @@ const CollectionPage = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {items.map((item) => (
             <div key={item.id} className="group flex flex-col gap-3">
-              <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-300 shadow-lg border border-white/5">
+              <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-base-300 shadow-lg border border-white/5">
                 <ItemCover
                   src={item.cover}
                   title={item.title}
+                  key={item.cover} // Forzamos reset si cambia la imagen
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
 
-                {/* BOTÓN PLUS (ESQUINA SUPERIOR DERECHA) */}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                   {isOwner ? (
                     <button
