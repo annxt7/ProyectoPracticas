@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { Heart, UserPlus, MessageSquare, Bell, Info, Filter as FilterIcon } from "lucide-react";
+import { Heart, UserPlus, MessageSquare, Bell, Info, Filter as FilterIcon, CheckCheck } from "lucide-react";
 import api from "../services/api.js";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
@@ -7,22 +7,14 @@ import NavDesktop from "../components/NavDesktop";
 const Activity = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
 
-  // 1. Carga de datos sincronizada con tu server.js
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      
-      // CAMBIO CLAVE: Usamos /users/me porque tu server tiene app.use('/api/users', userRoutes)
-      const userRes = await api.get("/users/me");
-      setCurrentUser(userRes.data);
-
-      // Usamos /activity porque tu server tiene app.use('/api/activity', activityRoutes)
       const res = await api.get("/activity");
       
-      // Mapeamos is_read (0/1 de MariaDB) a read (boolean de React)
+      // Mapeo de is_read (0/1) a booleano para el estado de React
       const mappedData = (res.data || []).map(n => ({
         ...n,
         read: n.is_read === 1
@@ -40,7 +32,21 @@ const Activity = () => {
     fetchData(); 
   }, [fetchData]);
 
-  // 2. Lógica de Filtrado para tipos de MariaDB
+  // FUNCIÓN PARA MARCAR COMO LEÍDO
+  const markAsRead = async (id) => {
+    try {
+      // Llamada al endpoint de tu backend
+      await api.put(`/activity/${id}/read`);
+      
+      // Actualizamos el estado local para que la UI reaccione al instante
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      );
+    } catch (err) {
+      console.error("Error al marcar como leído:", err);
+    }
+  };
+
   const filteredNotifications = useMemo(() => {
     return notifications.filter(n => {
       const isInteraction = n.type === 'like_collection' || n.type === 'comment';
@@ -57,19 +63,14 @@ const Activity = () => {
     <div className="min-h-screen pb-28 md:pb-10 bg-base-100 text-white font-sans">
       <NavDesktop />
       
-      {/* Indicador de conexión real */}
-      {currentUser && (
-        <div className="bg-primary/10 text-primary text-[10px] py-1 text-center border-b border-primary/20 font-bold uppercase tracking-tighter">
-          Conectado como: {currentUser.username} (ID: {currentUser.id})
-        </div>
-      )}
-
       <header className="sticky top-0 z-30 bg-base-100/80 backdrop-blur-md border-b border-white/5 py-4">
-        <div className="max-w-2xl mx-auto px-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-            <Bell size={20} />
+        <div className="max-w-2xl mx-auto px-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+              <Bell size={20} />
+            </div>
+            <h2 className="text-xl font-bold">Actividad</h2>
           </div>
-          <h2 className="text-xl font-bold">Actividad</h2>
         </div>
       </header>
 
@@ -104,11 +105,17 @@ const Activity = () => {
         {/* Feed de Notificaciones */}
         <main className="max-w-2xl w-full mx-auto">
           {loading ? (
-            <div className="flex justify-center py-20"><span className="loading loading-spinner text-primary"></span></div>
+            <div className="flex justify-center py-20">
+              <span className="loading loading-spinner text-primary"></span>
+            </div>
           ) : filteredNotifications.length > 0 ? (
             <div className="space-y-3">
               {filteredNotifications.map(n => (
-                <NotificationItem key={n.id} data={n} />
+                <NotificationItem 
+                  key={n.id} 
+                  data={n} 
+                  onMarkRead={() => markAsRead(n.id)} 
+                />
               ))}
             </div>
           ) : (
@@ -119,18 +126,23 @@ const Activity = () => {
           )}
         </main>
 
-        {/* Info lateral (Lo que pedías en image_e2adf2.png) */}
+        {/* Panel de Resumen (Limpio de IDs) */}
         <aside className="hidden lg:block">
           <div className="p-6 rounded-[2rem] bg-white/[0.03] border border-white/5 text-center">
-            <h4 className="text-[10px] uppercase tracking-widest opacity-30 font-bold mb-6">Info</h4>
-            <div className="text-sm font-mono space-y-2">
+            <h4 className="text-[10px] uppercase tracking-widest opacity-30 font-bold mb-6">Resumen</h4>
+            <div className="text-sm space-y-4">
               <div className="flex flex-col">
-                <span className="text-[10px] opacity-30">USUARIO ID</span>
-                <span className="text-primary">{currentUser?.id || '?'}</span>
+                <span className="text-2xl font-bold text-primary">
+                  {notifications.filter(n => !n.read).length}
+                </span>
+                <span className="text-[10px] opacity-30 uppercase">Pendientes</span>
               </div>
+              <div className="h-[1px] bg-white/5 w-10 mx-auto"></div>
               <div className="flex flex-col">
-                <span className="text-[10px] opacity-30">REGISTROS</span>
-                <span>{notifications.length}</span>
+                <span className="text-xl font-bold">
+                  {notifications.length}
+                </span>
+                <span className="text-[10px] opacity-30 uppercase">Total avisos</span>
               </div>
             </div>
           </div>
@@ -142,7 +154,7 @@ const Activity = () => {
   );
 };
 
-const NotificationItem = ({ data }) => {
+const NotificationItem = ({ data, onMarkRead }) => {
   const getIcon = () => {
     switch (data.type) {
       case 'follow': return { icon: UserPlus, color: 'text-blue-400' };
@@ -154,9 +166,14 @@ const NotificationItem = ({ data }) => {
   const { icon: Icon, color } = getIcon();
 
   return (
-    <div className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
-      data.read ? "bg-transparent border-transparent opacity-40" : "bg-white/[0.05] border-white/10"
-    }`}>
+    <div 
+      onClick={!data.read ? onMarkRead : undefined}
+      className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+        data.read 
+          ? "bg-transparent border-transparent opacity-40 hover:opacity-60" 
+          : "bg-white/[0.05] border-white/10 hover:border-primary/30"
+      }`}
+    >
       <div className="relative flex-none">
         <img 
           src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}&background=random`} 
@@ -167,13 +184,23 @@ const NotificationItem = ({ data }) => {
           <Icon size={12} strokeWidth={3} />
         </div>
       </div>
+      
       <div className="flex-1 min-w-0">
-        <p className="text-sm">
-          <span className="font-bold">{data.user?.name}</span> {data.content}
+        <p className="text-sm leading-tight">
+          <span className="font-bold">@{data.user?.name.toLowerCase()}</span> {data.content}
         </p>
-        <span className="text-[10px] opacity-30">{new Date(data.created_at).toLocaleDateString()}</span>
+        <span className="text-[10px] opacity-30">
+          {new Intl.RelativeTimeFormat('es', { numeric: 'auto' }).format(-Math.round((new Date() - new Date(data.created_at)) / 86400000), 'day')}
+        </span>
       </div>
-      {!data.read && <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#570df8]"></div>}
+
+      <div className="flex-none">
+        {!data.read ? (
+          <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#570df8]"></div>
+        ) : (
+          <CheckCheck size={14} className="opacity-20" />
+        )}
+      </div>
     </div>
   );
 };
