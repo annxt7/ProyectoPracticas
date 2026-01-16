@@ -9,12 +9,11 @@ const Activity = () => {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
 
-  // Carga inicial de datos desde el Backend
+  // Carga inicial de datos
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get("/activity");
-      // El backend ya devuelve 'read' (booleano) y la estructura mapeada
       setNotifications(res.data);
     } catch (err) {
       console.error("❌ Error de sincronización:", err.response?.data || err.message);
@@ -27,7 +26,6 @@ const Activity = () => {
     fetchData(); 
   }, [fetchData]);
 
-  // MARCAR UNA COMO LEÍDA (Persistente en DB)
   const markAsRead = async (id) => {
     try {
       await api.put(`/activity/${id}/read`);
@@ -39,7 +37,6 @@ const Activity = () => {
     }
   };
 
-  // MARCAR TODAS COMO LEÍDAS (Persistente en DB)
   const markAllAsRead = async () => {
     try {
       await api.put("/activity/read-all");
@@ -49,7 +46,6 @@ const Activity = () => {
     }
   };
 
-  // Lógica de Filtrado
   const filteredNotifications = useMemo(() => {
     return notifications.filter(n => {
       const isInteraction = n.type === 'like_collection' || n.type === 'comment';
@@ -63,10 +59,12 @@ const Activity = () => {
   }, [notifications, activeFilter]);
 
   return (
-    <div className="min-h-screen pb-28 md:pb-10 bg-base-100 text-white font-sans">
+    // CAMBIO: 'text-base-content' permite que el texto sea negro en light y blanco en dark
+    <div className="min-h-screen pb-28 md:pb-10 bg-base-100 text-base-content font-sans transition-colors duration-300">
       <NavDesktop />
       
-      <header className="sticky top-0 z-30 bg-base-100/80 backdrop-blur-md border-b border-white/5 py-4">
+      {/* Header con blur adaptativo */}
+      <header className="sticky top-0 z-30 bg-base-100/80 backdrop-blur-md border-b border-base-content/10 py-4">
         <div className="max-w-2xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -75,13 +73,12 @@ const Activity = () => {
             <h2 className="text-xl font-bold tracking-tight">Actividad</h2>
           </div>
 
-          {/* Botón intuitivo para marcar todas */}
           {notifications.some(n => !n.read) && (
             <button 
               onClick={markAllAsRead}
-              className="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-white transition-colors"
+              className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70 transition-all"
             >
-              Limpiar pendientes
+              Marcar todo como leído
             </button>
           )}
         </div>
@@ -89,7 +86,7 @@ const Activity = () => {
 
       <div className="max-w-[1200px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] gap-8">
         
-        {/* Filtros Lateral */}
+        {/* Filtros Lateral (Adaptativos) */}
         <aside className="hidden lg:block space-y-6">
           <section>
             <h4 className="text-[10px] uppercase tracking-widest text-primary font-bold mb-4 flex items-center gap-2">
@@ -105,7 +102,9 @@ const Activity = () => {
                   key={f.id} 
                   onClick={() => setActiveFilter(f.id)}
                   className={`text-left text-xs p-3 rounded-xl transition-all ${
-                    activeFilter === f.id ? 'bg-primary/20 text-primary font-bold' : 'opacity-40 hover:opacity-100'
+                    activeFilter === f.id 
+                      ? 'bg-primary text-primary-content font-bold shadow-lg shadow-primary/20' 
+                      : 'hover:bg-base-200 opacity-60 hover:opacity-100'
                   }`}
                 >
                   {f.label}
@@ -118,7 +117,9 @@ const Activity = () => {
         {/* Feed Principal */}
         <main className="max-w-2xl w-full mx-auto">
           {loading ? (
-            <div className="flex justify-center py-20"><span className="loading loading-spinner text-primary"></span></div>
+            <div className="flex justify-center py-20">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
           ) : filteredNotifications.length > 0 ? (
             <div className="space-y-3">
               {filteredNotifications.map(n => (
@@ -130,26 +131,26 @@ const Activity = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-24 bg-white/[0.02] rounded-[3rem] border border-dashed border-white/10">
-              <Info className="mx-auto mb-4 opacity-10" size={40} />
-              <p className="opacity-30 text-sm">No hay actividad por aquí</p>
+            <div className="text-center py-24 bg-base-200/50 rounded-[3rem] border border-dashed border-base-content/10">
+              <Info className="mx-auto mb-4 opacity-20" size={40} />
+              <p className="opacity-40 text-sm">No hay actividad por aquí</p>
             </div>
           )}
         </main>
 
-        {/* Resumen Lateral (Sin IDs técnicos) */}
+        {/* Resumen Lateral */}
         <aside className="hidden lg:block">
-          <div className="p-6 rounded-[2rem] bg-white/[0.03] border border-white/5 text-center">
-            <h4 className="text-[10px] uppercase tracking-widest opacity-30 font-bold mb-6">Estado</h4>
+          <div className="p-6 rounded-[2rem] bg-base-200 border border-base-content/5 text-center shadow-sm">
+            <h4 className="text-[10px] uppercase tracking-widest opacity-40 font-bold mb-6">Estado</h4>
             <div className="space-y-4">
               <div className="flex flex-col">
-                <span className="text-3xl font-bold text-primary">
+                <span className="text-4xl font-black text-primary">
                   {notifications.filter(n => !n.read).length}
                 </span>
-                <span className="text-[9px] opacity-40 uppercase font-black">Nuevos avisos</span>
+                <span className="text-[9px] opacity-60 uppercase font-black tracking-tighter">Pendientes</span>
               </div>
-              <div className="h-[1px] bg-white/5 w-8 mx-auto"></div>
-              <p className="text-[11px] opacity-40 leading-relaxed px-2">
+              <div className="h-[1px] bg-base-content/10 w-8 mx-auto"></div>
+              <p className="text-[11px] opacity-50 leading-relaxed px-2">
                 Mantente al día con quienes interactúan con tus colecciones.
               </p>
             </div>
@@ -162,12 +163,12 @@ const Activity = () => {
   );
 };
 
-// Componente de Item Individual
+// Componente Item de Notificación Adaptado
 const NotificationItem = ({ data, onMarkRead }) => {
   const getIcon = () => {
     switch (data.type) {
-      case 'follow': return { icon: UserPlus, color: 'text-blue-400' };
-      case 'like_collection': return { icon: Heart, color: 'text-pink-500' };
+      case 'follow': return { icon: UserPlus, color: 'text-info' };
+      case 'like_collection': return { icon: Heart, color: 'text-error' };
       default: return { icon: MessageSquare, color: 'text-primary' };
     }
   };
@@ -179,35 +180,35 @@ const NotificationItem = ({ data, onMarkRead }) => {
       onClick={onMarkRead}
       className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
         data.read 
-          ? "bg-transparent border-transparent opacity-40 grayscale-[0.5]" 
-          : "bg-white/[0.05] border-white/10 hover:border-primary/40 hover:bg-white/[0.08]"
+          ? "bg-transparent border-transparent opacity-50 grayscale-[0.3]" 
+          : "bg-base-200 border-base-content/5 hover:border-primary/40 hover:bg-base-300"
       }`}
     >
       <div className="relative flex-none">
         <img 
           src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}&background=random`} 
-          className="w-12 h-12 rounded-full object-cover border border-white/10"
+          className="w-12 h-12 rounded-full object-cover border border-base-content/10 shadow-sm"
           alt=""
         />
-        <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-base-100 flex items-center justify-center border border-white/5 ${color}`}>
+        <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-base-100 flex items-center justify-center border border-base-content/10 shadow-sm ${color}`}>
           <Icon size={12} strokeWidth={3} />
         </div>
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 text-base-content">
         <p className="text-sm leading-snug">
-          <span className="font-bold">@{data.user?.name.toLowerCase()}</span> {data.content}
+          <span className="font-bold">@{data.user?.name?.toLowerCase().replace(/\s+/g, '')}</span> {data.content}
         </p>
-        <span className="text-[10px] opacity-30 font-medium">
+        <span className="text-[10px] opacity-50 font-medium">
           {new Date(data.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
         </span>
       </div>
 
       <div className="flex-none">
         {!data.read ? (
-          <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_#570df8] animate-pulse"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(var(--p),0.5)] animate-pulse"></div>
         ) : (
-          <CheckCircle size={14} className="opacity-10" />
+          <CheckCircle size={14} className="opacity-20" />
         )}
       </div>
     </div>
