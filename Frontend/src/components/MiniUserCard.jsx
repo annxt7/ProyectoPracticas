@@ -19,7 +19,7 @@ const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
             <div className="w-10 h-10 rounded-full ring-2 ring-white/5 bg-white/10 overflow-hidden">
               <img
                 src={
-                  user.avatar_url ||
+                  user.img ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`
                 }
                 alt={user.name}
