@@ -10,8 +10,6 @@ exports.searchTribe = async (req, res, next) => {
     try {
         logger.info(`Iniciando búsqueda - Query: "${query || 'general'}" - IP: ${req.ip}`);
 
-        // 1. OBTENER USUARIOS
-
         const [users] = await db.query(`
             SELECT 
                 user_id AS id, 
@@ -26,21 +24,20 @@ exports.searchTribe = async (req, res, next) => {
         `, [searchTerm]);
 
         // 2. OBTENER COLECCIONES
-        const [collections] = await db.query(`
-            SELECT 
-                c.collection_id AS id, 
-                c.collection_name AS title, 
-                c.cover_url AS cover,
-                CONCAT('@', u.username) AS author,
-                (SELECT COUNT(*) FROM Items WHERE collection_id = c.collection_id) AS itemsCount
-            FROM Collections c
-            JOIN Users u ON c.user_id = u.user_id
-            WHERE c.collection_name LIKE ? 
-            LIMIT 20
-        `, [searchTerm]);
+       const [collections] = await db.query(`
+    SELECT 
+        c.collection_id AS id, 
+        c.collection_name AS title, 
+        c.cover_url AS cover,
+        c.user_id, -- <--- AÑADE ESTO AQUÍ
+        CONCAT('@', u.username) AS author,
+        (SELECT COUNT(*) FROM Items WHERE collection_id = c.collection_id) AS itemsCount
+    FROM Collections c
+    JOIN Users u ON c.user_id = u.user_id
+    WHERE c.collection_name LIKE ? 
+    LIMIT 20
+`, [searchTerm]);
 
-        // Si todo va bien, enviamos el JSON puro
-        // El frontend recibirá un objeto con dos arrays: { users: [], collections: [] }
         res.status(200).json({ 
             success: true,
             users, 
@@ -48,18 +45,13 @@ exports.searchTribe = async (req, res, next) => {
         });
 
     } catch (error) {
-        // REGISTRO DE ERROR: Esto irá directamente a logs/error.log
         logger.error(`Error en searchController: ${error.message} | Query: ${query}`);
-        
-        // Pasamos el error al middleware global (el que creamos anteriormente)
-        // Esto evita que el servidor se caiga y envía una respuesta limpia al cliente
         next(error); 
     }
 };
 
 exports.getSuggestedUsers = async (req, res) => {
     try {
-        // Obtenemos 3 usuarios al azar que no sean el actual (opcional)
         const [rows] = await db.query(`
             SELECT 
                 user_id AS id, 

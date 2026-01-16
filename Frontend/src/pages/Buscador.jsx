@@ -44,22 +44,9 @@ const Explorer = () => {
         const cleanUsers = (data.users || [])
           .map((u) => normalizeUser(u))
           .filter((u) => Number(u.id) !== myId);
-        // const cleanCollections = (data.collections || [])
-        //   .map((c) => normalizeCollection(c))
-        //   .filter((c) => Number(c.creatorId) !== myId);
         const cleanCollections = (data.collections || [])
-          .map((c) => {
-            const n = normalizeCollection(c);
-            console.log("Colección normalizada:", n); // Mira aquí si existe 'creatorId'
-            return n;
-          })
-          .filter((c) => {
-            const isMine = Number(c.creatorId) === myId;
-            console.log(
-              `¿Es mía? ${isMine} | ID Creador: ${c.creatorId} | Mi ID: ${myId}`
-            );
-            return !isMine;
-          });
+          .map((c) => normalizeCollection(c))
+          .filter((c) => c.author !== currentUser?.username);
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
@@ -159,7 +146,7 @@ const Explorer = () => {
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-white/5 border border-white/10">
                       <img
                         src={
-                          u.img ||
+                          u.avatar ||
                           `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`
                         }
                         className="w-full h-full object-cover"
