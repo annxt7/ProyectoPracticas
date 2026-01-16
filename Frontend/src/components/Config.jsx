@@ -1,27 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  X, ShieldCheck, FileText, Info, LogOut, Heart, 
-  Users, Coffee, Lock, CheckCircle2, AlertCircle, 
-  Settings, Zap, Palette  // He añadido Palette
-} from 'lucide-react';
+import { X, ShieldCheck, FileText, Info, LogOut, Heart, Users, Coffee, Lock, CheckCircle2, AlertCircle, Settings, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext'; // Importante importar tu hook
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const SettingsModal = ({ isOpen, onClose }) => {
   const { logout } = useAuth();
-  const { theme, setTheme } = useTheme(); // Usamos el contexto de tema
   const navigate = useNavigate();
-
-  const availableThemes = [
-    { id: 'dark', name: 'Tribe Dark', color: '#121212' },
-    { id: 'light', name: 'Tribe Light', color: '#ffffff' },
-    { id: 'cupcake', name: 'Cupcake', color: '#faf7f5' },
-    { id: 'retro', name: 'Retro', color: '#ece3ca' },
-    { id: 'cyberpunk', name: 'Cyberpunk', color: '#ffee00' },
-    { id: 'aqua', name: 'Aqua', color: '#09ecf3' }
-  ];
 
   // Estados para Cambio de Contraseña
   const [passwords, setPasswords] = useState({ current: '', next: '' });
@@ -62,12 +47,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
-      <div className="bg-base-100 border border-white/10 w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-[#121212] border border-white/10 w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in duration-200 flex flex-col max-h-[90vh]">
         
         {/* CABECERA */}
         <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
           <div>
-            <h2 className="text-2xl font-bold flex items-center gap-3 text-base-content">
+            <h2 className="text-2xl font-bold flex items-center gap-3">
               <Settings className="text-primary" size={24} /> Ajustes
             </h2>
             <p className="text-[10px] opacity-40 uppercase tracking-[0.2em] mt-1 font-bold">Tribe Platform v1.0.2</p>
@@ -78,53 +63,21 @@ const SettingsModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* CONTENIDO SCROLLABLE */}
-        <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 bg-gradient-to-b from-transparent to-black/20">
+        <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 bg-linear-to-b from-transparent to-black/20">
           
-          {/* NUEVA SECCIÓN: SELECTOR DE TEMAS */}
-          <div className="collapse bg-white/5 rounded-3xl group transition-all border border-white/5">
-            <input type="checkbox" defaultChecked /> 
-            <div className="collapse-title flex items-center gap-4 p-5 font-bold text-sm cursor-pointer">
-              <Palette className="text-primary" size={20} /> Personalización
-            </div>
-            <div className="collapse-content px-5 pb-5">
-              <p className="text-[11px] opacity-60 mb-4 text-base-content">Elige el estilo visual que mejor se adapte a tu tribu.</p>
-              <div className="grid grid-cols-3 gap-2">
-                {availableThemes.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setTheme(t.id)}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
-                      theme === t.id 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-white/5 bg-black/20 hover:bg-white/5'
-                    }`}
-                  >
-                    <div 
-                      className="w-full h-8 rounded-lg shadow-inner" 
-                      style={{ backgroundColor: t.color }}
-                    />
-                    <span className={`text-[10px] font-bold ${theme === t.id ? 'text-primary' : 'opacity-40'}`}>
-                      {t.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
           {/* SECCIÓN: SEGURIDAD (CAMBIAR CONTRASEÑA) */}
           <div className="collapse bg-white/5 rounded-3xl group transition-all border border-white/5">
             <input type="checkbox" /> 
-            <div className="collapse-title flex items-center gap-4 p-5 font-bold text-sm cursor-pointer text-base-content">
+            <div className="collapse-title flex items-center gap-4 p-5 font-bold text-sm cursor-pointer">
               <Lock className="text-emerald-400" size={20} /> Cambiar contraseña
             </div>
             <div className="collapse-content px-5 pb-5">
               <form onSubmit={handleChangePassword} className="space-y-4">
-                <p className="text-[11px] opacity-60 mb-2 text-base-content">Para cambiar tu contraseña, introduce la actual y la nueva.</p>
+                <p className="text-[11px] opacity-60 mb-2">Para cambiar tu contraseña, introduce la actual y la nueva que deseas utilizar.</p>
                 <input 
                   type="password" 
                   placeholder="Contraseña actual" 
-                  className="input input-bordered w-full bg-black/20 text-xs rounded-2xl h-12 focus:border-primary text-base-content"
+                  className="input input-bordered w-full bg-black/20 text-xs rounded-2xl h-12 focus:border-primary"
                   value={passwords.current}
                   onChange={(e) => setPasswords({...passwords, current: e.target.value})}
                   required
@@ -132,7 +85,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 <input 
                   type="password" 
                   placeholder="Nueva contraseña" 
-                  className="input input-bordered w-full bg-black/20 text-xs rounded-2xl h-12 focus:border-primary text-base-content"
+                  className="input input-bordered w-full bg-black/20 text-xs rounded-2xl h-12 focus:border-primary"
                   value={passwords.next}
                   onChange={(e) => setPasswords({...passwords, next: e.target.value})}
                   required
