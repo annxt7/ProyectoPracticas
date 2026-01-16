@@ -44,22 +44,9 @@ const Explorer = () => {
         const cleanUsers = (data.users || [])
           .map((u) => normalizeUser(u))
           .filter((u) => Number(u.id) !== myId);
-        // const cleanCollections = (data.collections || [])
-        //   .map((c) => normalizeCollection(c))
-        //   .filter((c) => Number(c.creatorId) !== myId);
         const cleanCollections = (data.collections || [])
-          .map((c) => {
-            const n = normalizeCollection(c);
-            console.log("Colección normalizada:", n); // Mira aquí si existe 'creatorId'
-            return n;
-          })
-          .filter((c) => {
-            const isMine = Number(c.creatorId) === myId;
-            console.log(
-              `¿Es mía? ${isMine} | ID Creador: ${c.creatorId} | Mi ID: ${myId}`
-            );
-            return !isMine;
-          });
+          .map((c) => normalizeCollection(c))
+          .filter((c) => c.author !== currentUser?.username);
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
