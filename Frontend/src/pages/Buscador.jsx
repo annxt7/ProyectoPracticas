@@ -43,10 +43,23 @@ const Explorer = () => {
         const myId = Number(currentUser?.id);
         const cleanUsers = (data.users || [])
           .map((u) => normalizeUser(u))
-          .filter((u) => Number(u.id) !== myId); 
+          .filter((u) => Number(u.id) !== myId);
+        // const cleanCollections = (data.collections || [])
+        //   .map((c) => normalizeCollection(c))
+        //   .filter((c) => Number(c.creatorId) !== myId);
         const cleanCollections = (data.collections || [])
-          .map((c) => normalizeCollection(c))
-          .filter((c) => Number(c.creatorId) !== myId); 
+          .map((c) => {
+            const n = normalizeCollection(c);
+            console.log("Colección normalizada:", n); // Mira aquí si existe 'creatorId'
+            return n;
+          })
+          .filter((c) => {
+            const isMine = Number(c.creatorId) === myId;
+            console.log(
+              `¿Es mía? ${isMine} | ID Creador: ${c.creatorId} | Mi ID: ${myId}`
+            );
+            return !isMine;
+          });
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
@@ -137,7 +150,7 @@ const Explorer = () => {
               return (
                 <div
                   key={u.id}
-                  className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
+                  className="flex items-center justify-between p-4 bg-white/0.03 rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
                 >
                   <Link
                     to={isMe ? "/profile/me" : `/profile/${u.id}`}
@@ -146,7 +159,7 @@ const Explorer = () => {
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-white/5 border border-white/10">
                       <img
                         src={
-                          u.avatar ||
+                          u.img ||
                           `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`
                         }
                         className="w-full h-full object-cover"
