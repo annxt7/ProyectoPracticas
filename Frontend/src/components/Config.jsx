@@ -121,11 +121,11 @@ const SettingsModal = ({ isOpen, onClose }) => {
       </p>
       
       <div className="grid grid-cols-2 gap-3 py-2">
-        <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="p-3 rounded-2xl bg-white/0.03 border border-white/5">
           <h5 className="text-[10px] font-bold text-white uppercase mb-1">La Visión</h5>
           <p className="text-[10px] leading-tight opacity-50">Crear el catálogo definitivo de tus pasiones, desde música hasta cine.</p>
         </div>
-        <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="p-3 rounded-2xl bg-white/0.03 border border-white/5">
           <h5 className="text-[10px] font-bold text-white uppercase mb-1">La Comunidad</h5>
           <p className="text-[10px] leading-tight opacity-50">Conectar a personas a través de lo que aman, sin algoritmos invasivos.</p>
         </div>

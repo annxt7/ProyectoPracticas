@@ -85,9 +85,7 @@ exports.getCollectionDetails = async (req, res) => {
                 u.avatar_url AS creator_avatar,
                 u.user_id AS creator_id,
                 c.item_count,
-                //¿guardada?
                 (SELECT COUNT(*) FROM Saved_Collections WHERE user_id = ? AND collection_id = c.collection_id) AS is_saved,
-                --¿likeada?
                 (SELECT COUNT(*) FROM Collection_Likes WHERE user_id = ? AND collection_id = c.collection_id) AS has_liked
             FROM Collections c
             LEFT JOIN Users u ON c.user_id = u.user_id
