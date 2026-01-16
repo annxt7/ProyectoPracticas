@@ -13,50 +13,47 @@ const GRADIENTS = [
 const ItemCover = ({ src, title, className = "" }) => {
   const [imgError, setImgError] = useState(false);
 
-  // 1. Normalización del título
-  const safeTitle = typeof title === "string" ? title.trim() : String(title || "");
+  // 1. Limpieza de título: Si no hay título, usamos un placeholder para el hash del color
+  const displayTitle = title?.trim() || "Colección";
 
-  // 2. Limpieza de URL (Forzar HTTPS para evitar bloqueos del navegador)
-  const cleanSrc = src && src !== "null" && src !== "undefined" 
-    ? src.replace("http://", "https://") 
-    : null;
-
-  // 3. Lógica de Iniciales (Máximo 2 letras)
-  const getInitials = (text) => {
-    if (!text) return "?";
-    const words = text.split(/\s+/).filter(w => w.length > 0);
+  // 2. Generación de iniciales ultra-segura
+  const getInitials = () => {
+    if (!title || title.trim().length === 0) return "??";
+    const words = title.trim().split(/\s+/);
     if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
-    return text.substring(0, 2).toUpperCase();
+    return words[0].substring(0, 2).toUpperCase();
   };
 
-  const getGradient = (text) => {
+  // 3. Selección de color basada en el título (o en el placeholder)
+  const getGradient = () => {
     let hash = 0;
+    const text = displayTitle;
     for (let i = 0; i < text.length; i++) {
       hash = text.charCodeAt(i) + ((hash << 5) - hash);
     }
     return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
   };
 
-  // Renderizado condicional basado en si hay imagen y si cargó bien
-  const showFallback = !cleanSrc || imgError;
+  // 4. Limpieza de URL
+  const cleanSrc = src && src !== "null" && src !== "undefined" ? src : null;
 
   return (
-    <div className={`relative flex items-center justify-center overflow-hidden select-none ${className} ${showFallback ? getGradient(safeTitle) : "bg-neutral"}`}>
+    <div className={`relative flex items-center justify-center overflow-hidden select-none ${className} ${(!cleanSrc || imgError) ? getGradient() : "bg-neutral"}`}>
       
       {cleanSrc && !imgError && (
         <img
+          key={src} // El 'key' fuerza a React a tratarlo como imagen nueva si cambia el src sin usar useEffect
           src={cleanSrc}
-          alt={safeTitle}
-          className="w-full h-full object-cover transition-opacity duration-500"
+          alt={displayTitle}
+          className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
           onError={() => setImgError(true)}
-          // Eliminamos el onLoad que causaba el cascading render
         />
       )}
 
-      {showFallback && (
+      {(!cleanSrc || imgError) && (
         <span className="font-bold text-white drop-shadow-md uppercase tracking-tighter">
-          {getInitials(safeTitle)}
+          {getInitials()}
         </span>
       )}
     </div>
