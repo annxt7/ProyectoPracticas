@@ -106,7 +106,7 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
       title: customForm.title,
       subtitle: customForm.subtitle,
       description: customForm.description,
-      cover: customForm.coverPreview, 
+      cover: customForm.cover, 
       coverFile: customForm.cover, 
       isCustom: true,
       item_type: "Custom" 

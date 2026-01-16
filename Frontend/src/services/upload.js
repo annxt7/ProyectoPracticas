@@ -1,31 +1,30 @@
 import api from "./api";
 import imageCompression from 'browser-image-compression'; // <--- IMPORTANTE
 
+
 export const uploadFileToCloudinary = async (file) => {
   if (!file) return null;
 
   try {
-   
     const options = {
-      maxSizeMB: 0.5,          
-      maxWidthOrHeight: 1200, 
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 1200,
       useWebWorker: true,
+      fileType: file.type 
     };
-    const compressedFile = await imageCompression(file, options);
+    
+    const compressedBlob = await imageCompression(file, options);
 
     const formData = new FormData();
-    formData.append("imagen", compressedFile); 
+    formData.append("imagen", compressedBlob, file.name); 
 
     const response = await api.post("/files/upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     });
 
     return response.data.url; 
-    
   } catch (error) {
-    console.error("Error en el proceso (compresión o subida):", error);
+    console.error("Error:", error);
     throw error;
   }
 };

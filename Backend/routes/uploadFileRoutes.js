@@ -12,6 +12,7 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'mis-colecciones', 
     allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
   },
 });
 
