@@ -1,53 +1,52 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
   Plus,
   Share2,
   Settings,
-  BookmarkPlus,
   Trash2,
   Camera,
-  Check,
   Heart,
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import ItemCover from "../components/ItemCover";
-import AddToCollectionModal from "../components/AddToCollectionModal";
 import AddItemModal from "../components/AddItemModal";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
 
+// --- TUS FUNCIONES DE NORMALIZACIÓN ---
+const normalizeCollection = (c) => {
+  if (!c) return null;
+  return {
+    id: Number(c.collection_id || c.id),
+    creatorId: Number(c.user_id || c.creator_id),
+    title: c.collection_name || c.title || "Sin título",
+    description: c.collection_description || c.description || "", // Añadida descripción
+    type: c.collection_type || c.type,
+    cover: c.cover_url || c.cover,
+    author: (c.username || c.author || "usuario").replace(/^@/, '').toLowerCase()
+  };
+};
+
 const CollectionPage = () => {
   const { id } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const fileInputRef = useRef(null);
 
-  // Datos
   const [loading, setLoading] = useState(true);
   const [collectionInfo, setCollectionInfo] = useState(null);
   const [items, setItems] = useState([]);
-  const [isSaved, setIsSaved] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
-  // Estados
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [fileToUpload, setFileToUpload] = useState(null);
-  const [editForm, setEditForm] = useState({
-    title: "",
-    description: "",
-    cover: "",
-  });
+  const [editForm, setEditForm] = useState({ title: "", description: "", cover: "" });
 
-  // Modales
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
-  const [selectedItemForSave, setSelectedItemForSave] = useState(null);
 
-  // Cargar los datos
   useEffect(() => {
     const fetchCollection = async () => {
       setLoading(true);
@@ -55,45 +54,22 @@ const CollectionPage = () => {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
 
-        setIsSaved(!!data.is_saved);
-        setIsLiked(!!data.has_liked);
+        // Usamos tu función de normalización para la cabecera
+        const normalized = normalizeCollection(data);
+        setCollectionInfo(normalized);
         setLikeCount(data.likes || 0);
 
-        // Normalización de la información de la colección
-        setCollectionInfo({
-          id: data.collection_id || data.id,
-          title: data.collection_name || data.title || "Sin título",
-          description: data.collection_description || data.description || "",
-          type: data.collection_type || data.type,
-          cover: data.cover_url || data.collection_image || "",
-          creatorId: data.creator_id,
-          creatorName: data.creator_username,
-          stats: {
-            items: data.item_count || 0,
-          },
-        });
-
-        // Mapeo corregido de los items para asegurar que las imágenes y títulos carguen
+        // Mapeo específico para los Items basado en tu tabla SQL
         if (data.items) {
           setItems(
-            data.items.map((item) => {
-              const refId =
-                item.music_id ||
-                item.book_id ||
-                item.movie_id ||
-                item.show_id ||
-                item.game_id;
-
-              return {
-                id: item.item_id || item.id,
-                title: item.display_title || item.custom_title || item.title || "Sin título",
-                author: item.display_subtitle || item.custom_subtitle || item.subtitle || "Desconocido",
-                cover: item.display_image || item.custom_image || item.image_url,
-                item_type: item.item_type,
-                reference_id: refId,
-                is_custom: !refId,
-              };
-            })
+            data.items.map((item) => ({
+              id: item.item_id, // PRI de tu tabla
+              title: item.custom_title || item.display_title || "Sin título",
+              author: item.custom_subtitle || item.display_subtitle || "Varios",
+              cover: item.custom_image || item.display_image || null,
+              item_type: item.item_type,
+              reference_id: item.music_id || item.book_id || item.movie_id || item.show_id || item.game_id,
+            }))
           );
         }
       } catch (err) {
@@ -106,55 +82,16 @@ const CollectionPage = () => {
     if (id) fetchCollection();
   }, [id]);
 
-  const isOwner =
-    user &&
-    collectionInfo &&
-    String(user.id || user.userId) === String(collectionInfo.creatorId);
-
-  const handleAddNewItem = async (newItem) => {
-    try {
-      const response = await api.post(`/collections/${id}/items`, {
-        item_type: newItem.item_type || collectionInfo.type,
-        reference_id: newItem.reference_id,
-        custom_title: newItem.title,
-        custom_subtitle: newItem.subtitle,
-        custom_image: newItem.cover,
-        custom_description: newItem.description,
-      });
-
-      if (response.data.success) {
-        const itemParaLaVista = {
-          ...newItem,
-          id: response.data.itemId,
-        };
-        setItems((prev) => [...prev, itemParaLaVista]);
-        setIsAddItemOpen(false);
-      }
-    } catch (error) {
-      console.error("Error al guardar el item:", error);
-      alert("No se pudo guardar en la base de datos");
-    }
-  };
-
-  const handleSaveCollection = async () => {
-    if (isSaved) return;
-    setIsSaved(true);
-    try {
-      await api.post(`/collections/save/${id}`);
-    } catch (error) {
-      setIsSaved(false);
-      console.error("Error al guardar colección:", error);
-    }
-  };
+  // Comprobación de dueño usando la normalización
+  const isOwner = authUser && collectionInfo && 
+                  Number(authUser.id || authUser.userId) === collectionInfo.creatorId;
 
   const handleSaveEditing = async () => {
     setIsUploading(true);
     try {
       let finalCoverUrl = collectionInfo.cover;
-
       if (fileToUpload) {
         const formData = new FormData();
-        // IMPORTANTE: Asegúrate de que el backend espere "imagen"
         formData.append("imagen", fileToUpload);
         const uploadRes = await api.post("/files/upload", formData);
         finalCoverUrl = uploadRes.data.url;
@@ -166,146 +103,91 @@ const CollectionPage = () => {
         cover_url: finalCoverUrl,
       });
 
-      setCollectionInfo((prev) => ({
+      setCollectionInfo(prev => ({
         ...prev,
         title: editForm.title,
         description: editForm.description,
         cover: finalCoverUrl,
       }));
       setIsEditing(false);
-      setFileToUpload(null);
     } catch (error) {
-      console.error("Error al actualizar:", error);
       alert("Error al actualizar");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleDeleteItem = async (itemId) => {
-    if (window.confirm("¿Eliminar este item?")) {
-      try {
-        await api.delete(`/collections/items/${itemId}`);
-        setItems((prev) => prev.filter((i) => i.id !== itemId));
-      } catch (error) {
-        console.error("Error borrando item:", error);
-      }
-    }
-  };
-
-  const handleToggleLike = async () => {
-    try {
-      const res = await api.post(`/collections/like/${id}`);
-      if (res.data.success) {
-        if (res.data.liked) {
-          setIsLiked(true);
-          setLikeCount((prev) => prev + 1);
-        } else {
-          setIsLiked(false);
-          setLikeCount((prev) => prev - 1);
-        }
-      }
-    } catch (error) {
-      console.error("Error al procesar like:", error);
-    }
-  };
-
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-base-100">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-base-100">
+      <span className="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  );
 
   return (
     <div className="min-h-screen pb-24 bg-base-100 text-base-content">
       <NavDesktop />
-
+      
       <div className="relative">
+        {/* FONDO BLUR */}
         <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-25">
-          <img
-            src={isEditing ? editForm.cover : collectionInfo.cover}
+          <img 
+            src={isEditing ? editForm.cover : collectionInfo.cover} 
             key={isEditing ? editForm.cover : collectionInfo.cover}
-            className="w-full h-full object-cover blur-3xl"
-            alt=""
+            className="w-full h-full object-cover blur-3xl" 
+            alt="" 
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-base-100"></div>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 pt-8">
-          <Link
-            to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`}
-            className="inline-flex items-center gap-2 text-sm opacity-60 hover:opacity-100 mb-8 transition-all"
-          >
-            <ArrowLeft size={16} />{" "}
-            {isOwner ? "Mi Perfil" : `Perfil de ${collectionInfo.creatorName}`}
+          <Link to={`/profile/${collectionInfo.creatorId}`} className="inline-flex items-center gap-2 text-sm opacity-60 hover:opacity-100 mb-8 transition-all">
+            <ArrowLeft size={16} /> Perfil de {collectionInfo.author}
           </Link>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* PORTADA COLECCIÓN */}
+            {/* PORTADA */}
             <div className="relative group w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-base-300">
-              <ItemCover
-                src={isEditing ? editForm.cover : collectionInfo.cover}
+              <ItemCover 
+                src={isEditing ? editForm.cover : collectionInfo.cover} 
                 title={isEditing ? editForm.title : collectionInfo.title}
                 key={isEditing ? editForm.cover : collectionInfo.cover}
-                className="w-full h-full object-cover"
+                className="w-full h-full"
               />
               {isEditing && (
-                <div
-                  onClick={() => fileInputRef.current.click()}
-                  className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm"
-                >
-                  <Camera className="text-white mb-1" size={32} />
-                  <span className="text-white text-[10px] font-bold uppercase tracking-widest">
-                    Cambiar
-                  </span>
+                <div onClick={() => fileInputRef.current.click()} className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm">
+                  <Camera className="text-white" size={32} />
                 </div>
               )}
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setFileToUpload(file);
-                    setEditForm({
-                      ...editForm,
-                      cover: URL.createObjectURL(file),
-                    });
-                  }
-                }}
-              />
+              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setFileToUpload(file);
+                  setEditForm({ ...editForm, cover: URL.createObjectURL(file) });
+                }
+              }} />
             </div>
 
-            {/* INFO COLECCIÓN */}
+            {/* INFO */}
             <div className="flex-1 space-y-4 w-full">
               <span className="badge badge-primary badge-outline font-bold text-[10px] uppercase tracking-widest px-3">
                 {collectionInfo.type}
               </span>
 
               {isEditing ? (
-                <input
-                  className="input input-ghost w-full text-4xl font-serif font-bold px-0 focus:bg-transparent border-b border-primary/30 h-auto"
+                <input 
+                  className="input input-ghost w-full text-4xl font-bold px-0 focus:bg-transparent border-b border-primary/30 h-auto"
                   value={editForm.title}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, title: e.target.value })
-                  }
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                 />
               ) : (
-                <h1 className="text-4xl md:text-5xl font-serif font-bold leading-tight">
-                  {collectionInfo.title}
-                </h1>
+                <h1 className="text-4xl md:text-5xl font-serif font-bold leading-tight">{collectionInfo.title}</h1>
               )}
 
               {isEditing ? (
-                <textarea
+                <textarea 
                   className="textarea textarea-ghost w-full text-lg opacity-70 px-0 focus:bg-transparent border-l-2 border-primary/30 pl-4 h-24 resize-none"
                   value={editForm.description}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, description: e.target.value })
-                  }
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 />
               ) : (
                 <p className="text-lg opacity-60 max-w-2xl border-l-2 border-white/10 pl-4 italic">
@@ -315,103 +197,33 @@ const CollectionPage = () => {
 
               <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/5">
                 <div className="flex gap-8">
-                  <div>
-                    <span className="block text-xl font-bold">
-                      {items.length}
-                    </span>
-                    <span className="text-[10px] opacity-40 uppercase font-bold">
-                      Items
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-xl font-bold">{likeCount}</span>
-                    <span className="text-[10px] opacity-40 uppercase font-bold">
-                      Likes
-                    </span>
-                  </div>
+                  <div><span className="block text-xl font-bold">{items.length}</span><span className="text-[10px] opacity-40 uppercase font-bold">Items</span></div>
+                  <div><span className="block text-xl font-bold">{likeCount}</span><span className="text-[10px] opacity-40 uppercase font-bold">Likes</span></div>
                 </div>
 
                 <div className="flex gap-3">
                   {isOwner ? (
                     isEditing ? (
                       <>
-                        <button
-                          onClick={handleSaveEditing}
-                          className="btn btn-primary btn-sm rounded-full px-6"
-                          disabled={isUploading}
-                        >
-                          {isUploading ? "Guardando..." : "Guardar"}
-                        </button>
-                        <button
-                          onClick={() => setIsEditing(false)}
-                          className="btn btn-ghost btn-sm rounded-full"
-                        >
-                          Cancelar
-                        </button>
+                        <button onClick={handleSaveEditing} className="btn btn-primary btn-sm rounded-full px-6" disabled={isUploading}>Guardar</button>
+                        <button onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm rounded-full">Cancelar</button>
                       </>
                     ) : (
                       <>
-                        <button
-                          onClick={() => {
-                            setEditForm({
-                              title: collectionInfo.title,
-                              description: collectionInfo.description,
-                              cover: collectionInfo.cover,
-                            });
-                            setIsEditing(true);
-                          }}
-                          className="btn btn-outline btn-sm rounded-full gap-2 px-4"
-                        >
+                        <button onClick={() => {
+                          setEditForm({ title: collectionInfo.title, description: collectionInfo.description, cover: collectionInfo.cover });
+                          setIsEditing(true);
+                        }} className="btn btn-outline btn-sm rounded-full gap-2 px-4">
                           <Settings size={16} /> Editar
                         </button>
-                        <button
-                          onClick={() => setIsAddItemOpen(true)}
-                          className="btn btn-primary btn-sm rounded-full gap-2 px-4 shadow-lg shadow-primary/20"
-                        >
+                        <button onClick={() => setIsAddItemOpen(true)} className="btn btn-primary btn-sm rounded-full gap-2 px-4">
                           <Plus size={16} /> Añadir
                         </button>
                       </>
                     )
                   ) : (
-                    <>
-                      <button
-                        onClick={handleToggleLike}
-                        className={`btn btn-sm btn-circle transition-all duration-300 ${
-                          isLiked
-                            ? "bg-error/20 text-error border-error/50"
-                            : "btn-ghost"
-                        }`}
-                      >
-                        <Heart
-                          size={18}
-                          fill={isLiked ? "currentColor" : "none"}
-                          className={isLiked ? "scale-110" : ""}
-                        />
-                      </button>
-                      <button
-                        onClick={handleSaveCollection}
-                        disabled={isSaved}
-                        className={`btn btn-sm rounded-full gap-2 px-6 transition-all duration-500 ${
-                          isSaved
-                            ? "btn-success btn-outline opacity-100"
-                            : "btn-primary shadow-lg"
-                        }`}
-                      >
-                        {isSaved ? (
-                          <>
-                            <Check size={18} /> Guardada
-                          </>
-                        ) : (
-                          <>
-                            <BookmarkPlus size={18} /> Guardar Colección
-                          </>
-                        )}
-                      </button>
-                    </>
+                    <button className="btn btn-sm btn-circle btn-ghost"><Heart size={18} /></button>
                   )}
-                  <button className="btn btn-square btn-ghost btn-sm rounded-full">
-                    <Share2 size={18} />
-                  </button>
                 </div>
               </div>
             </div>
@@ -419,89 +231,38 @@ const CollectionPage = () => {
         </div>
       </div>
 
+      {/* GRID */}
       <main className="max-w-6xl mx-auto px-4 mt-16">
-        <h2 className="text-xl font-bold mb-8 flex items-center gap-4">
-          Contenido <div className="h-px flex-1 bg-white/5"></div>
-        </h2>
-
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {items.map((item) => (
             <div key={item.id} className="group flex flex-col gap-3">
               <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-base-300 shadow-lg border border-white/5">
-                <ItemCover
-                  src={item.cover}
-                  title={item.title}
-                  key={item.cover} // Forzamos reset si cambia la imagen
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                <ItemCover 
+                  src={item.cover} 
+                  title={item.title} 
+                  key={item.cover}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                 />
-
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  {isOwner ? (
-                    <button
-                      onClick={() => handleDeleteItem(item.id)}
-                      className="btn btn-square btn-xs btn-error shadow-xl"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setSelectedItemForSave(item)}
-                      className="btn btn-square btn-xs btn-primary shadow-xl hover:scale-110"
-                    >
-                      <Plus size={14} />
-                    </button>
-                  )}
-                </div>
+                {isOwner && (
+                  <button className="absolute top-2 right-2 btn btn-square btn-xs btn-error opacity-0 group-hover:opacity-100 transition-all">
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
               <div className="px-1">
-                <h3 className="font-bold text-sm truncate leading-none mb-1">
-                  {item.title}
-                </h3>
-                <p className="text-[11px] opacity-40 uppercase tracking-wider truncate font-bold">
-                  {item.author}
-                </p>
+                <h3 className="font-bold text-sm truncate leading-none mb-1">{item.title}</h3>
+                <p className="text-[11px] opacity-40 uppercase tracking-wider truncate font-bold">{item.author}</p>
               </div>
             </div>
           ))}
-          {isOwner && (
-            <button
-              onClick={() => setIsAddItemOpen(true)}
-              className="aspect-[2/3] rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 opacity-30 hover:opacity-100 hover:bg-white/5 transition-all"
-            >
-              <Plus size={32} />
-              <span className="text-[10px] font-bold uppercase tracking-widest">
-                Añadir
-              </span>
-            </button>
-          )}
         </div>
       </main>
 
-      {selectedItemForSave && (
-        <AddToCollectionModal
-          isOpen={!!selectedItemForSave}
-          onClose={() => setSelectedItemForSave(null)}
-          item={{
-            id: selectedItemForSave.reference_id,
-            type: selectedItemForSave.item_type,
-            title: selectedItemForSave.title,
-            subtitle: selectedItemForSave.author,
-            image: selectedItemForSave.cover,
-            display_image: selectedItemForSave.cover,
-            custom_image: selectedItemForSave.cover,
-            cover: selectedItemForSave.cover,
-            is_custom: selectedItemForSave.is_custom,
-          }}
-        />
-      )}
-
-      <AddItemModal
-        isOpen={isAddItemOpen}
-        onClose={() => setIsAddItemOpen(false)}
-        collectionType={collectionInfo?.type}
-        onAddItem={handleAddNewItem}
+      <AddItemModal 
+        isOpen={isAddItemOpen} 
+        onClose={() => setIsAddItemOpen(false)} 
+        collectionType={collectionInfo?.type} 
       />
-
       <NavMobile />
     </div>
   );
