@@ -13,11 +13,13 @@ import OnboardingPage from "./pages/OnBoarding.jsx";
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import ResetPasswordScreen from "./pages/ResetPassword.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 function App() {
   return (
     <>
-      <Routes>
+      <ThemeProvider>
+        <Routes>
         //Rutas Publicas
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<AuthScreen />} />
@@ -36,6 +38,7 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Routes>
+      </ThemeProvider>
     </>
   );
 }
