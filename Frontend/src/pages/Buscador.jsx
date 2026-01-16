@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import ItemCover from "../components/ItemCover";
-import api from "../services/api";
+import api from "../services/api"; // Usamos tu instancia de axios
 import { useAuth } from "../context/AuthContext";
-import { normalizeUser, normalizeCollection } from "../services/normalizers"
+import { normalizeUser, normalizeCollection } from "../services/normalizers";
 
 const Explorer = () => {
   const [query, setQuery] = useState("");
@@ -18,13 +18,12 @@ const Explorer = () => {
 
   const { user: currentUser } = useAuth();
 
-  // 1. Cargar seguidos del usuario logueado
+  // Cargar seguidos 
   useEffect(() => {
     if (!currentUser?.id) return;
     const fetchFollowing = async () => {
       try {
         const res = await api.get(`/users/following/${currentUser.id}`);
-        // Normalizamos cada usuario seguido para obtener su ID real
         const ids = res.data.map(u => normalizeUser(u).id);
         setFollowingIds(ids);
       } catch (err) {
@@ -34,36 +33,15 @@ const Explorer = () => {
     fetchFollowing();
   }, [currentUser?.id]);
 
-  // 2. Lógica de búsqueda
   useEffect(() => {
-    if (!currentUser?.id) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const baseUrl = window.location.hostname === "localhost" 
-          ? "http://localhost:3000" 
-          : "https://axel.informaticamajada.es";
-        
-        const token = localStorage.getItem("tribe_token")?.replace(/['"]+/g, "");
-        const res = await fetch(`${baseUrl}/api/search?query=${encodeURIComponent(query)}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!res.ok) throw new Error("Error en la respuesta de búsqueda");
-        const data = await res.json();
-        
-        const myId = Number(currentUser.id);
-
-        // Procesamos usuarios: Normalizar -> Filtrar mi propia cuenta
-        const cleanUsers = (data.users || [])
-          .map(u => normalizeUser(u))
-          .filter(u => u.id !== myId);
-
-        // Procesamos colecciones: Normalizar -> Filtrar mis colecciones
-        const cleanCollections = (data.collections || [])
-          .map(c => normalizeCollection(c))
-          .filter(c => c.creatorId !== myId);
+        const res = await api.get(`/search?query=${encodeURIComponent(query)}`);
+        const data = res.data;
+        const cleanUsers = (data.users || []).map(u => normalizeUser(u));
+        const cleanCollections = (data.collections || []).map(c => normalizeCollection(c));
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
@@ -76,9 +54,8 @@ const Explorer = () => {
 
     const timeoutId = setTimeout(fetchData, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, currentUser?.id]);
+  }, [query]); 
 
-  // 3. Follow / Unfollow
   const handleFollowToggle = async (targetId, isFollowing) => {
     const id = Number(targetId);
     try {
@@ -90,16 +67,15 @@ const Explorer = () => {
         setFollowingIds(prev => [...prev, id]);
       }
     } catch (err) {
-      console.error("Error al cambiar estado de seguimiento:", err);
+      console.error("Error al seguir/dejar de seguir:", err);
     }
   };
 
   return (
-    <div className="min-h-screen pb-24 bg-[#0a0a0a] text-white font-sans">
+    <div className="min-h-screen pb-24 bg-base-100 text-base-content font-sans">
       <NavDesktop />
       
-      {/* Buscador Superior */}
-      <div className="sticky top-0 md:top-16 z-40 bg-[#0a0a0a]/90 backdrop-blur-md p-4 border-b border-white/5">
+      <div className="sticky top-0 md:top-16 z-40 bg-base-100/90 backdrop-blur-md p-4 border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20" size={18} />
@@ -119,7 +95,6 @@ const Explorer = () => {
             )}
           </div>
 
-          {/* Tabs */}
           <div className="flex justify-center gap-12">
             {["cuentas", "colecciones"].map(tab => (
               <button
@@ -136,22 +111,22 @@ const Explorer = () => {
         </div>
       </div>
 
-      {/* Contenido */}
       <main className="max-w-6xl mx-auto p-6 mt-4">
         {loading && (
           <div className="flex justify-center py-10">
-            <div className="text-xs opacity-30 animate-pulse font-mono">Sincronizando base de datos...</div>
+            <span className="loading loading-spinner text-primary"></span>
           </div>
         )}
 
-        {/* Listado de Cuentas */}
         {activeTab === "cuentas" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {users.map(u => {
               const isFollowing = followingIds.includes(u.id);
+              const isMe = u.id === currentUser?.id; // Identificamos si soy yo
+
               return (
-                <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 transition-colors shadow-sm">
-                  <Link to={`/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
+                <div key={u.id} className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                  <Link to={isMe ? "/profile/me" : `/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-white/5 border border-white/10">
                       <img 
                         src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`} 
@@ -161,41 +136,42 @@ const Explorer = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="font-bold text-sm truncate uppercase tracking-tighter text-white/90">
-                        @{u.username}
+                        @{u.username} {isMe && <span className="text-[10px] text-primary ml-1">(TÚ)</span>}
                       </p>
                     </div>
                   </Link>
-                  <button
-                    onClick={() => handleFollowToggle(u.id, isFollowing)}
-                    className={`btn btn-xs px-5 rounded-lg font-bold transition-all ${
-                      isFollowing 
-                        ? "btn-neutral opacity-40 hover:opacity-60" 
-                        : "btn-primary shadow-lg shadow-primary/20"
-                    }`}
-                  >
-                    {isFollowing ? "Siguiendo" : "Seguir"}
-                  </button>
+                  
+                  {/* Solo mostramos botón seguir si NO soy yo */}
+                  {!isMe && (
+                    <button
+                      onClick={() => handleFollowToggle(u.id, isFollowing)}
+                      className={`btn btn-xs px-5 rounded-lg font-bold transition-all ${
+                        isFollowing ? "btn-neutral opacity-40" : "btn-primary"
+                      }`}
+                    >
+                      {isFollowing ? "Siguiendo" : "Seguir"}
+                    </button>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
 
-        {/* Grid de Colecciones */}
         {activeTab === "colecciones" && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {collections.map(col => (
               <Link key={col.id} to={`/collection/${col.id}`} className="group">
                 <div className="flex flex-col gap-3">
-                  <div className="aspect-video rounded-2xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-primary/40 transition-all shadow-xl relative">
+                  <div className="aspect-video rounded-2xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-primary/40 transition-all relative">
                     <ItemCover src={col.cover} title={col.title} className="group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <div className="px-1">
-                    <h3 className="font-bold truncate text-[13px] text-white/90 group-hover:text-primary transition-colors">
+                    <h3 className="font-bold truncate text-[13px] text-white/90 group-hover:text-primary">
                       {col.title}
                     </h3>
                     <p className="text-[10px] text-primary font-black uppercase tracking-widest">
-                      @{col.author}
+                      @{col.author} {col.creatorId === currentUser?.id && "(Mía)"}
                     </p>
                   </div>
                 </div>
@@ -204,7 +180,6 @@ const Explorer = () => {
           </div>
         )}
       </main>
-
       <NavMobile />
     </div>
   );
