@@ -307,14 +307,12 @@ exports.toggleLikeCollection = async (req, res) => {
   const collectionId = req.params.id;
 
   try {
-    // 1. Verificamos si el usuario ya le dio like en la tabla intermedia
     const [exists] = await db.query(
       "SELECT * FROM Collection_Likes WHERE user_id = ? AND collection_id = ?",
       [userId, collectionId]
     );
 
     if (exists.length > 0) {
-      // Quitar like
       await db.query(
         "DELETE FROM Collection_Likes WHERE user_id = ? AND collection_id = ?",
         [userId, collectionId]
@@ -337,7 +335,7 @@ exports.toggleLikeCollection = async (req, res) => {
       const [owner] = await db.query("SELECT user_id FROM Collections WHERE collection_id = ?", [collectionId]);
       if (owner[0].user_id !== userId) {
         await db.query(
-          "INSERT INTO Notifications (user_id, actor_id, type, content) VALUES (?, ?, 'like', 'le ha dado like a tu colección')",
+          "INSERT INTO Notifications (user_id, actor_id, type, content) VALUES (?, ?, 'like_collection', 'le ha dado like a tu colección')",
           [owner[0].user_id, userId]
         );
       }
