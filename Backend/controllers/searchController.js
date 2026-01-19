@@ -64,7 +64,7 @@ exports.getSuggestedUsers = async (req, res) => {
             WHERE role != 'admin' and user_id != ?
             ORDER BY RAND() 
             LIMIT 3
-        `);
+        `, [id]);
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: "Error al obtener sugerencias reales" });
