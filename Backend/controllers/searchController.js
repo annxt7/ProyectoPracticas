@@ -20,7 +20,7 @@ exports.searchTribe = async (req, res, next) => {
                 role,
                 FALSE AS isFollowing 
             FROM Users 
-            WHERE username LIKE ? 
+            WHERE username LIKE ? and role != 'admin'
             LIMIT 20
         `, [searchTerm]);
 
@@ -60,6 +60,7 @@ exports.getSuggestedUsers = async (req, res) => {
                 CONCAT('@', username) AS handle, 
                 avatar_url AS img 
             FROM Users 
+            WHERE role != 'admin'
             ORDER BY RAND() 
             LIMIT 3
         `);
