@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { ArrowRight, Eye, EyeOff, Check, X } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Check, X, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,8 +69,9 @@ const AuthScreen = ({ type = "login" }) => {
 
   const watchedPassword = watch("password", "");
 
+  // Lógica de fuerza de contraseña optimizada
   useEffect(() => {
-    if (isRegister) {
+    if (isRegister && watchedPassword) {
       const requirements = [
         watchedPassword.length >= 8,
         /[A-Z]/.test(watchedPassword),
@@ -80,6 +81,8 @@ const AuthScreen = ({ type = "login" }) => {
       ];
       const metRequirements = requirements.filter(Boolean).length;
       setPasswordStrength((metRequirements / requirements.length) * 100);
+    } else {
+      setPasswordStrength(0);
     }
   }, [watchedPassword, isRegister]);
 
@@ -107,9 +110,8 @@ const AuthScreen = ({ type = "login" }) => {
 
     try {
       if (isForgot) {
-        // Enviar solo la solicitud al admin
         await api.post("/users/forgot-password", data);
-        setSuccess("Solicitud enviada. Contacta con el administrador para recibir tu código.");
+        setSuccess("Solicitud enviada. Contacta con el administrador.");
         return;
       }
 
@@ -130,11 +132,13 @@ const AuthScreen = ({ type = "login" }) => {
       const response = await api.post(endpoint, payload);
 
       if (response.data.success) {
-        login(normalizeUser(response.data), response.data.token);
+        const userData = normalizeUser(response.data.user || response.data);
+        login(userData, response.data.token);
+
         if (isRegister) {
-          navigate("/onboarding", { state: { userId: response.data.userId, username: response.data.username } });
+          navigate("/onboarding", { state: { userId: userData.id, username: userData.username } });
         } else {
-          navigate(response.data.role === 'admin' ? "/admin" : "/feed");
+          navigate(userData.role === 'admin' ? "/admin" : "/feed");
         }
       }
     } catch (err) {
@@ -147,11 +151,19 @@ const AuthScreen = ({ type = "login" }) => {
 
   const handleGoogleSuccess = async (idToken) => {
     setLoading(true);
+    setError(null);
     try {
       const response = await api.post("/users/google", { token: idToken });
       const { token, user, isNewUser } = response.data;
-      login(user, token);
-      navigate(isNewUser ? "/onboarding" : "/feed");
+      const userData = normalizeUser(user);
+      
+      login(userData, token);
+
+      if (isNewUser) {
+        navigate("/onboarding", { state: { userId: userData.id, username: userData.username } });
+      } else {
+        navigate(userData.role === 'admin' ? "/admin" : "/feed");
+      }
     } catch (err) {
       setError("Error al conectar con Google.");
     } finally {
@@ -162,7 +174,7 @@ const AuthScreen = ({ type = "login" }) => {
   return (
     <div className="min-h-screen flex w-full bg-base-100">
       <div className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative" style={{ backgroundImage: `url(${fotoLogin})` }}>
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         <div className="relative z-10 p-16 flex flex-col h-full text-white justify-end pb-24">
           <img src={Logo} alt="Logo" className="w-32 h-auto mb-6" />
           <h1 className="text-4xl font-bold mb-4">Tribe</h1>
@@ -221,12 +233,24 @@ const AuthScreen = ({ type = "login" }) => {
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+                
+                {/* Visualización de fuerza de contraseña para corregir ESLint */}
                 {isRegister && watchedPassword.length > 0 && (
-                  <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1">
-                    <Requirement met={watchedPassword.length >= 8} label="8+ caracteres" />
-                    <Requirement met={/[A-Z]/.test(watchedPassword)} label="Mayúscula" />
-                    <Requirement met={/[0-9]/.test(watchedPassword)} label="Número" />
-                    <Requirement met={/[^a-zA-Z0-9]/.test(watchedPassword)} label="Especial" />
+                  <div className="mt-4 space-y-3">
+                    <div className="h-1.5 w-full bg-base-300 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-500 ${
+                          passwordStrength < 40 ? 'bg-error' : passwordStrength < 80 ? 'bg-warning' : 'bg-success'
+                        }`}
+                        style={{ width: `${passwordStrength}%` }}
+                      ></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <Requirement met={watchedPassword.length >= 8} label="8+ caracteres" />
+                      <Requirement met={/[A-Z]/.test(watchedPassword)} label="Mayúscula" />
+                      <Requirement met={/[0-9]/.test(watchedPassword)} label="Número" />
+                      <Requirement met={/[^a-zA-Z0-9]/.test(watchedPassword)} label="Especial" />
+                    </div>
                   </div>
                 )}
               </div>
@@ -241,10 +265,15 @@ const AuthScreen = ({ type = "login" }) => {
             )}
 
             {error && <div className="alert alert-error text-sm py-2">{error}</div>}
+            
+            {/* Mensaje de éxito para corregir ESLint */}
             {success && (
-              <div className="alert alert-success text-sm py-2 flex flex-col items-start gap-2">
-                <span>{success}</span>
-                <Link to="/reset-password" style={{ color: "black" }} className="btn btn-xs btn-outline">Ya tengo mi código →</Link>
+              <div className="alert alert-success text-sm py-3 shadow-md flex items-start gap-3">
+                <ShieldCheck size={20} className="shrink-0" />
+                <div className="flex flex-col gap-2">
+                   <span>{success}</span>
+                   {isForgot && <Link to="/reset-password" underline="always" className="font-bold">Ir a restablecer →</Link>}
+                </div>
               </div>
             )}
 
@@ -260,7 +289,9 @@ const AuthScreen = ({ type = "login" }) => {
           {!isForgot && (
             <>
               <div className="divider text-sm">O continúa con</div>
-              <div className="flex justify-center"><GoogleSignIn onGoogleSuccess={handleGoogleSuccess} isLogin={isLogin} /></div>
+              <div className="flex justify-center">
+                <GoogleSignIn onGoogleSuccess={handleGoogleSuccess} isLogin={isLogin} />
+              </div>
             </>
           )}
 
@@ -276,7 +307,7 @@ const AuthScreen = ({ type = "login" }) => {
 };
 
 const Requirement = ({ met, label }) => (
-  <div className={`flex items-center gap-2 text-[10px] uppercase font-bold ${met ? 'text-success' : 'text-base-content/30'}`}>
+  <div className={`flex items-center gap-2 text-[10px] uppercase font-bold transition-colors ${met ? 'text-success' : 'text-base-content/30'}`}>
     {met ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />} {label}
   </div>
 );
