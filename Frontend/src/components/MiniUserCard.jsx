@@ -3,7 +3,14 @@ import { Link } from "react-router-dom";
 
 const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
   if (!user) return null;
- console.log(user)
+
+  // Normalización interna: Extraemos el nombre sea cual sea el campo que venga
+  const displayName = user.username || user.name || "Usuario";
+  const displayImg = user.avatar || user.img || user.avatar_url;
+  
+  // Generamos el handle de forma segura sin romper si displayName es undefined
+  const safeHandle = user.handle || `@${String(displayName).toLowerCase().replace(/\s/g, "")}`;
+
   const handleBtnClick = (e) => {
     e.preventDefault(); 
     e.stopPropagation();
@@ -12,17 +19,17 @@ const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
 
   return (
     <Link to={`/profile/${user.id}`} className="block group">
-      <div className="flex items-center justify-between p-3 bg-white/0.02 border border-white/5 rounded-2xl hover:bg-white/5 transition-all">
+      <div className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/5 transition-all">
         
         <div className="flex items-center gap-3 min-w-0">
           <div className="avatar">
             <div className="w-10 h-10 rounded-full ring-2 ring-white/5 bg-white/10 overflow-hidden">
               <img
                 src={
-                  user.img ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`
+                  displayImg ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&color=fff`
                 }
-                alt={user.name}
+                alt={displayName}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
               />
             </div>
@@ -30,10 +37,10 @@ const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
 
           <div className="min-w-0">
             <h3 className="font-bold text-sm text-white truncate group-hover:text-primary transition-colors">
-              {user.name}
+              {displayName}
             </h3>
             <p className="text-[10px] opacity-40 leading-none">
-              {user.handle || `@${user.name.toLowerCase().replace(/\s/g, "")}`}
+              {safeHandle}
             </p>
           </div>
         </div>
@@ -42,7 +49,7 @@ const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
           onClick={handleBtnClick}
           className={`btn btn-xs rounded-full px-4 transition-all z-10 ${
             isFollowing
-              ? "btn-ghost border border-white/10 opacity-60"
+              ? "btn-outline border-white/10 opacity-60"
               : "btn-primary font-bold"
           }`}
         >
