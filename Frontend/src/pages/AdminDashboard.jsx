@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Users, Layers, Trash2, Search, ShieldAlert, LogOut,
-  Key, FolderOpen, ChevronDown, ChevronUp, Package
+  Key, FolderOpen, ChevronDown, ChevronUp, Package, AlertCircle
 } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -16,9 +16,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ESTADOS NUEVOS PARA VER ITEMS
-  const [expandedCollection, setExpandedCollection] = useState(null); // ID de la col expandida
-  const [collectionItems, setCollectionItems] = useState([]); // Items de esa col
+  const [expandedCollection, setExpandedCollection] = useState(null);
+  const [collectionItems, setCollectionItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
 
   const [selectedUser, setSelectedUser] = useState(null);
@@ -46,21 +45,17 @@ const AdminDashboard = () => {
 
   useEffect(() => { fetchData(); }, [activeTab]);
 
-  // FUNCIÓN PARA CARGAR ITEMS DE UNA COLECCIÓN
   const toggleCollectionDetails = async (colId) => {
     if (expandedCollection === colId) {
       setExpandedCollection(null);
       return;
     }
-
     setExpandedCollection(colId);
     setLoadingItems(true);
     try {
-      // Reutilizamos tu endpoint de detalles que ya devuelve { ...collection, items }
       const res = await api.get(`/collections/${colId}`);
       setCollectionItems(res.data.items || []);
     } catch (error) {
-      console.error("Error cargando items");
       setCollectionItems([]);
     } finally {
       setLoadingItems(false);
@@ -68,7 +63,7 @@ const AdminDashboard = () => {
   };
 
   const handleDelete = async (id, isModal = false) => {
-    if (!window.confirm("¿Estás seguro?")) return;
+    if (!window.confirm("¿Estás seguro de eliminar esto? Esta acción no se puede deshacer.")) return;
     try {
       const type = activeTab === "users" && !isModal ? "User" : "Collections";
       await api.delete(`/admin/${type}/${id}`);
@@ -84,13 +79,14 @@ const AdminDashboard = () => {
 
   const openUserCollections = async (userObj) => {
     setSelectedUser(userObj);
+    setUserCollections([]);
     setLoadingModal(true);
     document.getElementById('modal_user_collections').showModal();
     try {
       const res = await api.get(`/collections/user/${userObj.id}`); 
-      setUserCollections(res.data);
+      setUserCollections(res.data || []);
     } catch (error) {
-      console.error("Error");
+      console.error("Error cargando colecciones");
     } finally {
       setLoadingModal(false);
     }
@@ -116,12 +112,14 @@ const AdminDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto bg-base-100 rounded-2xl shadow-xl overflow-hidden min-h-[600px] flex flex-col">
+        {/* TABS */}
         <div className="grid grid-cols-3 border-b border-base-300">
           <TabButton active={activeTab === "requests"} onClick={() => setActiveTab("requests")} icon={<Key size={18} />} label="Solicitudes" />
           <TabButton active={activeTab === "users"} onClick={() => setActiveTab("users")} icon={<Users size={18} />} label="Usuarios" />
           <TabButton active={activeTab === "collections"} onClick={() => setActiveTab("collections")} icon={<Layers size={18} />} label="Colecciones" />
         </div>
 
+        {/* SEARCH BAR */}
         <div className="p-4 border-b border-base-200">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30" size={18}/>
@@ -133,112 +131,176 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* CONTENT */}
         <div className="overflow-x-auto flex-1">
-          <table className="table w-full">
-            <thead>
-              <tr className="bg-base-200/50">
-                {activeTab === "requests" && <><th>Fecha</th><th>Usuario</th><th>Estado</th><th className="text-right">Acción</th></>}
-                {activeTab === "users" && <><th>Usuario</th><th>Rol</th><th>ID</th><th className="text-right">Acciones</th></>}
-                {activeTab === "collections" && <><th>Título</th><th>Dueño</th><th>Items</th><th className="text-right">Acciones</th></>}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item) => (
-                <React.Fragment key={item.id}>
-                  <tr className="hover:bg-base-200/30 transition-colors">
-                    {activeTab === "requests" && (
-                      <>
-                        <td className="opacity-50 text-xs">{item.date}</td>
-                        <td className="font-bold text-primary">{item.email}</td>
-                        <td><div className={`badge badge-sm ${item.status === 'pending' ? 'badge-warning' : 'badge-success'}`}>{item.status}</div></td>
-                        <td className="text-right"><button className="btn btn-xs btn-primary">Gestionar</button></td>
-                      </>
-                    )}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+              <p className="opacity-50">Cargando datos del panel...</p>
+            </div>
+          ) : filteredData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 opacity-40">
+              <AlertCircle size={48} className="mb-2" />
+              <p className="text-lg font-medium">No se encontraron resultados</p>
+            </div>
+          ) : (
+            <table className="table w-full">
+              <thead>
+                <tr className="bg-base-200/50">
+                  {activeTab === "requests" && <><th>Fecha</th><th>Usuario</th><th>Estado</th><th className="text-right">Acción</th></>}
+                  {activeTab === "users" && <><th>Usuario</th><th>Rol</th><th>ID</th><th className="text-right">Acciones</th></>}
+                  {activeTab === "collections" && <><th>Título</th><th>Dueño</th><th>Items</th><th className="text-right">Acciones</th></>}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.map((item) => (
+                  <React.Fragment key={item.id}>
+                    <tr className="hover:bg-base-200/30 transition-colors">
+                      {activeTab === "requests" && (
+                        <>
+                          <td className="opacity-50 text-xs">{item.date}</td>
+                          <td className="font-bold text-primary">{item.email}</td>
+                          <td><div className={`badge badge-sm ${item.status === 'pending' ? 'badge-warning' : 'badge-success'}`}>{item.status}</div></td>
+                          <td className="text-right"><button className="btn btn-xs btn-primary">Gestionar</button></td>
+                        </>
+                      )}
 
-                    {activeTab === "users" && (
-                      <>
-                        <td>
-                          <div className="flex items-center gap-3">
-                            <img src={item.avatar || `https://ui-avatars.com/api/?name=${item.username}`} className="w-8 h-8 rounded-full" />
-                            <div><div className="font-bold">{item.username}</div><div className="text-xs opacity-50">{item.email}</div></div>
+                      {activeTab === "users" && (
+                        <>
+                          <td>
+                            <div className="flex items-center gap-3">
+                              <img src={item.avatar || `https://ui-avatars.com/api/?name=${item.username}`} className="w-8 h-8 rounded-full object-cover" alt="avatar" />
+                              <div><div className="font-bold">{item.username}</div><div className="text-xs opacity-50">{item.email}</div></div>
+                            </div>
+                          </td>
+                          <td><span className="badge badge-ghost uppercase text-[10px] font-bold">{item.role}</span></td>
+                          <td className="font-mono text-xs opacity-50">{item.id}</td>
+                          <td className="text-right">
+                            <button onClick={() => openUserCollections(item)} className="btn btn-ghost btn-xs text-primary" title="Ver colecciones">
+                              <FolderOpen size={16}/>
+                            </button>
+                            <button onClick={() => handleDelete(item.id)} className="btn btn-ghost btn-xs text-error" title="Eliminar usuario">
+                              <Trash2 size={16}/>
+                            </button>
+                          </td>
+                        </>
+                      )}
+
+                      {activeTab === "collections" && (
+                        <>
+                          <td 
+                            className="font-bold cursor-pointer hover:text-primary flex items-center gap-2"
+                            onClick={() => toggleCollectionDetails(item.id)}
+                          >
+                            {expandedCollection === item.id ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                            {item.name}
+                          </td>
+                          <td>{item.owner?.username}</td>
+                          <td><div className="badge badge-outline">{item.item_count || 0}</div></td>
+                          <td className="text-right">
+                            <button onClick={() => handleDelete(item.id)} className="btn btn-ghost btn-xs text-error"><Trash2 size={16} /></button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+
+                    {/* SUB-FILA DE ITEMS */}
+                    {activeTab === "collections" && expandedCollection === item.id && (
+                      <tr>
+                        <td colSpan="4" className="bg-base-200/50 p-0">
+                          <div className="p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <h4 className="text-[10px] uppercase font-black opacity-40 mb-3 flex items-center gap-2">
+                              <Package size={12}/> Contenido de la colección
+                            </h4>
+                            {loadingItems ? (
+                              <div className="flex items-center gap-2 p-2 italic opacity-50">
+                                <span className="loading loading-dots loading-sm"></span> Cargando items...
+                              </div>
+                            ) : collectionItems.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-left">
+                                {collectionItems.map(i => (
+                                  <div key={i.item_id} className="bg-base-100 p-2 rounded-lg border border-base-300 flex items-center gap-3">
+                                    <img src={i.display_image} className="w-10 h-10 rounded object-cover bg-base-300" alt="item" />
+                                    <div className="overflow-hidden">
+                                      <p className="font-bold text-xs truncate">{i.display_title}</p>
+                                      <p className="text-[10px] opacity-50 uppercase">{i.item_type}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs opacity-50 italic p-2 bg-base-100 rounded-lg inline-block border border-dashed border-base-300">Esta colección está vacía.</p>
+                            )}
                           </div>
                         </td>
-                        <td><span className="badge badge-ghost">{item.role}</span></td>
-                        <td className="font-mono text-xs opacity-50">{item.id}</td>
-                        <td className="text-right">
-                          <button onClick={() => openUserCollections(item)} className="btn btn-ghost btn-xs text-primary"><FolderOpen size={16}/></button>
-                          <button onClick={() => handleDelete(item.id)} className="btn btn-ghost btn-xs text-error"><Trash2 size={16}/></button>
-                        </td>
-                      </>
+                      </tr>
                     )}
-
-                    {activeTab === "collections" && (
-                      <>
-                        <td 
-                          className="font-bold cursor-pointer hover:text-primary flex items-center gap-2"
-                          onClick={() => toggleCollectionDetails(item.id)}
-                        >
-                          {expandedCollection === item.id ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
-                          {item.name}
-                        </td>
-                        <td>{item.owner?.username}</td>
-                        <td><div className="badge badge-outline">{item.item_count || 0}</div></td>
-                        <td className="text-right">
-                          <button onClick={() => handleDelete(item.id)} className="btn btn-ghost btn-xs text-error"><Trash2 size={16} /></button>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-
-                  {/* SUB-FILA DE ITEMS DETALLADOS */}
-                  {activeTab === "collections" && expandedCollection === item.id && (
-                    <tr>
-                      <td colSpan="4" className="bg-base-200/50 p-0">
-                        <div className="p-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                          <h4 className="text-[10px] uppercase font-black opacity-40 mb-3 flex items-center gap-2">
-                            <Package size={12}/> Contenido de la colección
-                          </h4>
-                          {loadingItems ? (
-                            <span className="loading loading-dots loading-sm"></span>
-                          ) : collectionItems.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                              {collectionItems.map(i => (
-                                <div key={i.item_id} className="bg-base-100 p-2 rounded-lg border border-base-300 flex items-center gap-3">
-                                  <img src={i.display_image} className="w-10 h-10 rounded object-cover bg-base-300" />
-                                  <div className="overflow-hidden">
-                                    <p className="font-bold text-xs truncate">{i.display_title}</p>
-                                    <p className="text-[10px] opacity-50 uppercase">{i.item_type}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-xs opacity-50 italic">Esta colección está vacía.</p>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
-      {/* MODAL USUARIOS (Simplificado para el ejemplo) */}
-      <dialog id="modal_user_collections" className="modal">
-        <div className="modal-box max-w-2xl">
-          <h3 className="font-bold text-lg mb-4">Colecciones de {selectedUser?.username}</h3>
-          <div className="space-y-2">
-            {userCollections.map(col => (
-              <div key={col.collection_id} className="flex justify-between items-center p-3 bg-base-200 rounded-xl">
-                <span>{col.collection_name} ({col.item_count} items)</span>
-                <button onClick={() => handleDelete(col.collection_id, true)} className="btn btn-error btn-xs">Eliminar</button>
+      {/* MODAL USER COLLECTIONS */}
+      <dialog id="modal_user_collections" className="modal modal-bottom sm:modal-middle">
+        <div className="modal-box max-w-2xl bg-base-100">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                <Layers size={24} />
               </div>
-            ))}
+              <div>
+                <h3 className="font-black text-xl">Colecciones</h3>
+                <p className="text-xs opacity-50">Gestionando el contenido de {selectedUser?.username}</p>
+              </div>
+            </div>
+            <form method="dialog">
+              <button className="btn btn-sm btn-circle btn-ghost">✕</button>
+            </form>
           </div>
-          <div className="modal-action"><form method="dialog"><button className="btn">Cerrar</button></form></div>
+
+          <div className="space-y-3 min-h-[200px]">
+            {loadingModal ? (
+              <div className="flex flex-col items-center justify-center py-10 gap-2 opacity-50">
+                <span className="loading loading-spinner loading-md"></span>
+                <p>Buscando colecciones...</p>
+              </div>
+            ) : userCollections.length > 0 ? (
+              userCollections.map(col => (
+                <div key={col.collection_id} className="flex justify-between items-center p-4 bg-base-200/50 hover:bg-base-200 rounded-2xl transition-all border border-base-300/50 group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary font-bold">
+                      {col.item_count}
+                    </div>
+                    <div>
+                      <span className="font-bold block">{col.collection_name}</span>
+                      <span className="text-[10px] opacity-50 uppercase tracking-widest">ID: {col.collection_id}</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleDelete(col.collection_id, true)} 
+                    className="btn btn-error btn-sm btn-square opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 bg-base-200/30 rounded-3xl border-2 border-dashed border-base-300">
+                <AlertCircle size={40} className="opacity-20 mb-2" />
+                <p className="font-bold opacity-60">Este usuario no tiene colecciones</p>
+                <p className="text-xs opacity-40">Las colecciones creadas aparecerán aquí.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn btn-ghost rounded-full">Cerrar</button>
+            </form>
+          </div>
         </div>
       </dialog>
     </div>
