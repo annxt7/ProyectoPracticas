@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import ItemCover from "../components/ItemCover";
-import api from "../services/api"; 
+import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { normalizeUser, normalizeCollection } from "../services/normalizers";
 
@@ -17,17 +17,16 @@ const Explorer = () => {
   const [followingIds, setFollowingIds] = useState([]);
 
   const { user: currentUser } = useAuth();
-  // Extraemos el ID actual de forma segura para comparaciones
-  const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
+  const myId = currentUser
+    ? Number(currentUser.id || currentUser.user_id)
+    : null;
 
-  // 1. Cargar seguidos (Solo si hay usuario logueado)
   useEffect(() => {
     if (!myId) return;
 
     const fetchFollowing = async () => {
       try {
         const res = await api.get(`/users/following/${myId}`);
-        // Normalizamos cada usuario y extraemos solo el ID
         const ids = (res.data || []).map((u) => Number(normalizeUser(u).id));
         setFollowingIds(ids);
       } catch (err) {
@@ -37,20 +36,20 @@ const Explorer = () => {
     fetchFollowing();
   }, [myId]);
 
-  // 2. Buscador con Debounce
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await api.get(`/search?query=${encodeURIComponent(query)}`);
         const data = res.data;
-
-        // Limpiar Usuarios: Normalizar y quitar al usuario actual
         const cleanUsers = (data.users || [])
           .map((u) => normalizeUser(u))
-          .filter((u) => Number(u.id) !== myId);
+          .filter((u) => {
+            const isNotMe = Number(u.id) !== myId;
+            const isNotAdmin = u.role !== "admin";
+            return isNotMe && isNotAdmin;
+          });
 
-        // Limpiar Colecciones: Normalizar y quitar las propias
         const cleanCollections = (data.collections || [])
           .map((c) => normalizeCollection(c))
           .filter((c) => Number(c.creatorId) !== myId);
@@ -71,7 +70,7 @@ const Explorer = () => {
   // 3. Toggle Seguir/Dejar de seguir
   const handleFollowToggle = async (targetId, isFollowing) => {
     if (!myId) return alert("Debes iniciar sesión");
-    
+
     const id = Number(targetId);
     try {
       if (isFollowing) {
@@ -94,7 +93,10 @@ const Explorer = () => {
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/90 backdrop-blur-md p-4 border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20" size={18} />
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20"
+              size={18}
+            />
             <input
               type="text"
               value={query}
@@ -138,7 +140,11 @@ const Explorer = () => {
 
         {!loading && activeTab === "cuentas" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {users.length === 0 && <p className="text-center opacity-30 col-span-full py-10">No se encontraron usuarios</p>}
+            {users.length === 0 && (
+              <p className="text-center opacity-30 col-span-full py-10">
+                No se encontraron usuarios
+              </p>
+            )}
             {users.map((u) => {
               const isFollowing = followingIds.includes(Number(u.id));
 
@@ -147,16 +153,24 @@ const Explorer = () => {
                   key={u.id}
                   className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
                 >
-                  <Link to={`/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
+                  <Link
+                    to={`/profile/${u.id}`}
+                    className="flex items-center gap-4 min-w-0"
+                  >
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-white/5 border border-white/10">
                       <img
-                        src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`}
+                        src={
+                          u.avatar ||
+                          `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`
+                        }
                         className="w-full h-full object-cover"
                         alt={u.username}
                       />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-sm truncate text-white/90">@{u.username}</p>
+                      <p className="font-bold text-sm truncate text-white/90">
+                        @{u.username}
+                      </p>
                     </div>
                   </Link>
 
@@ -176,7 +190,11 @@ const Explorer = () => {
 
         {!loading && activeTab === "colecciones" && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-             {collections.length === 0 && <p className="text-center opacity-30 col-span-full py-10">No se encontraron colecciones</p>}
+            {collections.length === 0 && (
+              <p className="text-center opacity-30 col-span-full py-10">
+                No se encontraron colecciones
+              </p>
+            )}
             {collections.map((col) => (
               <Link key={col.id} to={`/collection/${col.id}`} className="group">
                 <div className="flex flex-col gap-3">
