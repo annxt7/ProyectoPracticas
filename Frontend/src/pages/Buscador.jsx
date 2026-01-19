@@ -42,6 +42,7 @@ const Explorer = () => {
       try {
         const res = await api.get(`/search?query=${encodeURIComponent(query)}`);
         const data = res.data;
+        console.log("Datos recibidos del buscador:", data);
         const cleanUsers = (data.users || [])
           .map((u) => normalizeUser(u))
           .filter((u) => {
