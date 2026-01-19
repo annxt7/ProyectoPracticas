@@ -17,6 +17,7 @@ import AddToCollectionModal from "../components/AddToCollectionModal";
 import AddItemModal from "../components/AddItemModal";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
+import { uploadFileToCloudinary } from "../services/upload.js";
 
 const CollectionPage = () => {
   const { id } = useParams();
@@ -92,20 +93,26 @@ const CollectionPage = () => {
 
 const handleAddNewItem = async (newItem) => {
   try {
-    if (newItem.coverFile) {
-      finalImage = await uploadFileToCloudinary(newItem.coverFile);
+    let finalImageUrl = newItem.cover; 
+
+    if (newItem.isCustom && newItem.coverFile) {
+        finalImageUrl = await uploadFileToCloudinary(newItem.coverFile);
     }
+
     const response = await api.post(`/collections/${id}/items`, {
       item_type: newItem.item_type || collectionInfo.type,
       reference_id: newItem.reference_id,
       custom_title: newItem.title,
       custom_subtitle: newItem.subtitle,
-      custom_image: finalImage || newItem.cover,
+      custom_image: finalImageUrl, 
+      
       custom_description: newItem.description
     });
+
     if (response.data.success) {
       const itemParaLaVista = {
         ...newItem,
+        cover: finalImageUrl, 
         id: response.data.itemId 
       };
       setItems(prev => [...prev, itemParaLaVista]);
