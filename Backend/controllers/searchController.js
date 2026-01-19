@@ -17,6 +17,7 @@ exports.searchTribe = async (req, res, next) => {
                 CONCAT('@', username) AS handle, 
                 bio, 
                 avatar_url AS img,
+                role
                 FALSE AS isFollowing 
             FROM Users 
             WHERE username LIKE ? 
