@@ -1,33 +1,34 @@
+import api from "./api";
+import imageCompression from 'browser-image-compression';
 
-const express= require('express');
-require('dotenv').config();
-const uploadLimiter = require("../middlewares/fileLimiter");
-const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const router = express.Router();
-const { verifyToken } = require("../middlewares/authMiddleware");
+export const uploadFileToCloudinary = async (file) => {
+  if (!file) return null;
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'mis-colecciones', 
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-  },
-});
+  try {
+    const options = {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 1200,
+      useWebWorker: true,
 
-const upload = multer({ storage: storage });
+    };
+  
+    const compressedBlob = await imageCompression(file, options);
+    const compressedFile = new File([compressedBlob], file.name, {
+      type: file.type,
+      lastModified: Date.now(),
+    });
 
-//POST:
-router.post('/upload',verifyToken,uploadLimiter,upload.single('imagen'),(req,res)=>{
-try{
-res.json({
-    success:true,
-    url:req.file.path
-});
-}catch(error){
-res.status(500).json({success:false, error: error.message});
-}
-});
+    const formData = new FormData();
+  
+    formData.append("imagen", compressedFile); 
 
-module.exports=router
+    const response = await api.post("/files/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return response.data.url; 
+  } catch (error) {
+    console.error("Error en uploadFileToCloudinary:", error);
+    throw error;
+  }
+};
