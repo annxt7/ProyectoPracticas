@@ -16,6 +16,7 @@ import NavDesktop from "../components/NavDesktop";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import ItemCover from "../components/ItemCover";
+import { normalizeUser } from "../services/normalizers";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
@@ -25,11 +26,11 @@ const Profile = () => {
   // Estado para controlar el modal de ajustes
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  //Perfil propio??
-  const isMe = userId === "me" || String(userId) === String(user?.id);
+  // Perfil propio?? (Normalización de IDs)
+  const isMe = userId === "me" || Number(userId) === Number(user?.id);
   const targetId = isMe ? user?.id : userId;
 
-  const [profileData, setProfileData] = useState(isMe ? user : null);
+  const [profileData, setProfileData] = useState(null);
   const [collections, setCollections] = useState([]);
   const [savedCollections, setSavedCollections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,23 +56,25 @@ const Profile = () => {
     "https://ui-avatars.com/api/?background=random&color=fff&name=User";
   const DEFAULT_BANNER =
     "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
+
   const getImg = (url, fallback) => (url ? url : fallback);
 
+  // Sincronización inicial del usuario
   useEffect(() => {
     if (isMe && user) {
-      setProfileData(user);
-      setNewDescription(user.bio || "");
+      const normalized = normalizeUser(user);
+      setProfileData(normalized);
+      setNewDescription(normalized.bio || "");
     }
   }, [user, isMe]);
+
   useEffect(() => {
     const fetchData = async () => {
-      console.log("Cargando perfil para ID:", targetId);
       if (!targetId) return;
       setIsLoading(true);
-      setCollections([]);
-      setSavedCollections([]);
-
+      
       try {
+        // Ejecutamos promesas en paralelo para velocidad
         const collectionsPromise = api.get(`/collections/user/${targetId}`);
         const statsPromise = api.get(`/users/follow-stats/${targetId}`);
         let userPromise = Promise.resolve({ data: null });
@@ -89,6 +92,7 @@ const Profile = () => {
           savedPromise,
           statsPromise,
         ]);
+
         setCollections(colRes.data || []);
         setSavedCollections(isMe ? sRes.data || [] : []);
         setFollowStats({
@@ -96,8 +100,9 @@ const Profile = () => {
           following: statsRes.data.following || 0,
         });
         setIsFollowing(statsRes.data.amIFollowing || false);
+        
         if (!isMe && uRes.data) {
-          setProfileData(uRes.data);
+          setProfileData(normalizeUser(uRes.data));
         }
       } catch (error) {
         console.error("Error cargando perfil:", error);
@@ -109,42 +114,39 @@ const Profile = () => {
   }, [targetId, isMe]);
 
   // --- HANDLERS ---
- const handleSaveBio = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await api.put("/users/update-profile", {
-      bio: newDescription,
-    });
+  const handleSaveBio = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.put("/users/update-profile", {
+        bio: newDescription,
+      });
+      updateUser(res.data.user);
+      setIsEditing(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-    updateUser(res.data.user);
-    setIsEditing(false);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-
-const handleFileUpload = async (e, type) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  setIsUploading(true);
-  try {
-    const fd = new FormData();
-    fd.append("imagen", file);
-    const uploadRes = await api.post("/files/upload", fd);
-    const payload =
-      type === "avatar"
-        ? { avatarUrl: uploadRes.data.url }
-        : { bannerUrl: uploadRes.data.url };
-    const updateRes = await api.put("/users/update-profile", payload);
-    updateUser(updateRes.data.user);
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setIsUploading(false);
-  }
-};
-
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("imagen", file);
+      const uploadRes = await api.post("/files/upload", fd);
+      const payload =
+        type === "avatar"
+          ? { avatarUrl: uploadRes.data.url }
+          : { bannerUrl: uploadRes.data.url };
+      const updateRes = await api.put("/users/update-profile", payload);
+      updateUser(updateRes.data.user);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleDeleteCollection = async (e, collection_id) => {
     e.preventDefault();
@@ -160,15 +162,11 @@ const handleFileUpload = async (e, type) => {
       console.error("Error al borrar:", error);
     }
   };
+
   const handleDeleteSavedCollection = async (e, collection_id) => {
     e.preventDefault();
     e.stopPropagation();
-    if (
-      !window.confirm(
-        "¿Estás seguro de que quieres eliminar esta colección de tus guardados?"
-      )
-    )
-      return;
+    if (!window.confirm("¿Eliminar de tus guardados?")) return;
     try {
       await api.delete(`/collections/saved/${collection_id}`);
       setSavedCollections((prev) =>
@@ -179,14 +177,6 @@ const handleFileUpload = async (e, type) => {
     }
   };
 
-  if (isLoading && !profileData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-base-100">
-        <span className="loading loading-spinner text-primary"></span>
-      </div>
-    );
-  }
-  // --- HANDLERS ---
   const handleFollowToggle = async () => {
     if (!targetId) return;
     const prevFollowers = followStats.followers;
@@ -213,6 +203,14 @@ const handleFileUpload = async (e, type) => {
       }));
     }
   };
+
+  if (isLoading && !profileData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-100">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
@@ -254,10 +252,7 @@ const handleFileUpload = async (e, type) => {
             <div className="relative">
               <div
                 onClick={() =>
-                  isMe &&
-                  isEditing &&
-                  !isUploading &&
-                  avatarInputRef.current.click()
+                  isMe && isEditing && !isUploading && avatarInputRef.current.click()
                 }
                 className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${
                   isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""
@@ -288,12 +283,19 @@ const handleFileUpload = async (e, type) => {
             <div className="flex gap-2 mb-2">
               {isMe ? (
                 <>
-                  {!isEditing && (
+                  {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
                       className="btn btn-sm md:btn-md btn-ghost border border-white/40 rounded-full"
                     >
                       Editar Perfil
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40"
+                    >
+                      <X size={18} />
                     </button>
                   )}
                   <button
@@ -329,14 +331,14 @@ const handleFileUpload = async (e, type) => {
             <h1 className="text-2xl md:text-4xl font-bold font-serif">
               {profileData?.username || "Usuario"}
             </h1>
-            {/* BIO */}
+            
             <div className="mt-2 text-sm md:text-base">
               {isEditing ? (
-                <form onSubmit={handleSaveBio} className="flex flex-col gap-2">
+                <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl">
                   <textarea
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
-                    className="textarea textarea-bordered w-full resize-none bg-base-100 text-white placeholder:text-white/40"
+                    className="textarea textarea-bordered w-full resize-none bg-base-100 text-white"
                     rows={3}
                     placeholder="Escribe algo sobre ti..."
                   />
@@ -359,6 +361,8 @@ const handleFileUpload = async (e, type) => {
                 </p>
               )}
             </div>
+
+            {/* CONTADORES */}
             <div className="flex gap-6 py-4 mt-4">
               <div className="flex gap-1 items-baseline">
                 <span className="font-bold text-lg">{collections.length}</span>
@@ -367,7 +371,6 @@ const handleFileUpload = async (e, type) => {
                 </span>
               </div>
 
-              {/* CONTADOR SEGUIDORES (Clickable) */}
               <div
                 className="flex gap-1 items-baseline cursor-pointer hover:opacity-70 transition-opacity"
                 onClick={() =>
@@ -386,7 +389,6 @@ const handleFileUpload = async (e, type) => {
                 </span>
               </div>
 
-              {/* CONTADOR SEGUIDOS (Clickable) */}
               <div
                 className="flex gap-1 items-baseline cursor-pointer hover:opacity-70 transition-opacity"
                 onClick={() =>
@@ -445,35 +447,20 @@ const handleFileUpload = async (e, type) => {
               <span className="text-xs font-bold mt-2 uppercase">Nueva</span>
             </Link>
           )}
-          {/* COLECCIONES PROPIAS */}
-          {activeTab === "collections" &&
-            collections.map((col) => (
-              <Link
-                to={`/collection/${col.collection_id}`}
-                key={col.collection_id}
-                className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform group"
-              >
-                {col.cover_url ? (
-                  <img
-                    src={col.cover_url}
-                    className="w-full h-full object-cover"
-                    alt="cover"
-                  />
-                ) : (
-                  <ItemCover
-                    src={col.cover_url}
-                    title={col.collection_name}
-                    className="w-full h-full object-cover"
-                  />
-                )}
-                <img
-                  src={
-                    col.cover_url ||
-                    `https://ui-avatars.com/api/?name=${col.collection_name}&background=random`
-                  }
+
+          {/* RENDERIZADO DE COLECCIONES */}
+          {(activeTab === "collections" ? collections : savedCollections).map((col) => (
+            <div
+              key={col.collection_id}
+              className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform group"
+            >
+              <Link to={`/collection/${col.collection_id}`} className="w-full h-full block">
+                <ItemCover
+                  src={col.cover_url}
+                  title={col.collection_name}
                   className="w-full h-full object-cover"
-                  alt="cover"
                 />
+                
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
                   <h3 className="text-white font-bold leading-tight">
                     {col.collection_name}
@@ -482,58 +469,32 @@ const handleFileUpload = async (e, type) => {
                     {col.collection_type}
                   </p>
                 </div>
-                {isMe && (
-                  <button
-                    onClick={(e) =>
-                      handleDeleteCollection(e, col.collection_id)
-                    }
-                    className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
               </Link>
-            ))}
-          {/* COLECCIONES GUARDADAS */}
-          {activeTab === "saved" &&
-            isMe &&
-            savedCollections.map((col) => (
-              <Link
-                to={`/collection/${col.collection_id}`}
-                key={col.collection_id}
-                className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform group"
-              >
-                <img
-                  src={
-                    col.cover_url ||
-                    `https://ui-avatars.com/api/?name=${col.collection_name}&background=random`
-                  }
-                  className="w-full h-full object-cover"
-                  alt="cover"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
-                  <h3 className="text-white font-bold leading-tight">
-                    {col.collection_name}
-                  </h3>
-                  <p className="text-white/70 text-xs mt-1 capitalize">
-                    {col.collection_type}
-                  </p>
-                </div>
-                {isMe && (
-                  <button
-                    onClick={(e) =>
-                      handleDeleteSavedCollection(e, col.collection_id)
-                    }
-                    className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </Link>
-            ))}
+
+              {/* BOTÓN BORRAR PROPIO */}
+              {isMe && activeTab === "collections" && (
+                <button
+                  onClick={(e) => handleDeleteCollection(e, col.collection_id)}
+                  className="absolute top-2 right-2 p-2 bg-red-600/80 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 backdrop-blur-sm"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+
+              {/* BOTÓN QUITAR GUARDADO */}
+              {isMe && activeTab === "saved" && (
+                <button
+                  onClick={(e) => handleDeleteSavedCollection(e, col.collection_id)}
+                  className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 backdrop-blur-sm"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+          ))}
         </div>
 
-        {/* Config*/}
+        {/* MODALES */}
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
