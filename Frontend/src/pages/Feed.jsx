@@ -16,16 +16,14 @@ const Feed = () => {
   const [loading, setLoading] = useState(false);
   const [followingIds, setFollowingIds] = useState([]);
 
-  // Aseguramos que el ID actual sea siempre un número
   const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
 
-  // 1. Cargar lista de seguidos (Para saber a quién sigo ya)
+  // 1. Cargar seguidos
   useEffect(() => {
     const fetchMyFollowing = async () => {
       if (!myId) return;
       try {
         const res = await api.get(`/users/following/${myId}`);
-        // Normalizamos los IDs a números para comparaciones directas
         const ids = (res.data || []).map((u) => Number(u.id || u.user_id));
         setFollowingIds(ids);
       } catch (e) {
@@ -35,21 +33,23 @@ const Feed = () => {
     fetchMyFollowing();
   }, [myId]);
 
-  // 2. Cargar actividad global y sugerencias
+  // 2. Cargar actividad y sugerencias
   useEffect(() => {
     const fetchFeedData = async () => {
       if (!myId) return;
       setLoading(true);
       try {
-        // Obtenemos actividad de la red
         const activityRes = await api.get("/users/feed/activity");
-        // Filtramos para no ver mis propias acciones
-        const filteredActivity = (activityRes.data || []).filter(
-          (item) => Number(item.user_id) !== myId
-        );
-        setActivities(filteredActivity);
+        // Aseguramos que cada item tenga valores por defecto para evitar el error de toLowerCase()
+        const safeActivity = (activityRes.data || []).map(item => ({
+          ...item,
+          username: item.username || "Usuario",
+          collection_name: item.collection_name || "Sin título",
+          collection_type: item.collection_type || "Colección"
+        })).filter(item => Number(item.user_id) !== myId);
 
-        // Obtenemos sugerencias
+        setActivities(safeActivity);
+
         const suggestionsRes = await api.get("/search/suggested");
         const normalizedSuggestions = (suggestionsRes.data || [])
           .map(u => normalizeUser(u))
@@ -65,30 +65,18 @@ const Feed = () => {
     fetchFeedData();
   }, [myId]);
 
-  // Handler de seguimiento (Optimista)
   const handleFollowToggle = async (targetId, currentlyFollowing) => {
     const id = Number(targetId);
-    // Cambio local instantáneo para feedback del usuario
     if (currentlyFollowing) {
       setFollowingIds(prev => prev.filter(fid => fid !== id));
     } else {
       setFollowingIds(prev => [...prev, id]);
     }
-
     try {
-      if (currentlyFollowing) {
-        await api.delete(`/users/unfollow/${id}`);
-      } else {
-        await api.post(`/users/follow/${id}`);
-      }
+      if (currentlyFollowing) await api.delete(`/users/unfollow/${id}`);
+      else await api.post(`/users/follow/${id}`);
     } catch (error) {
-      console.error("Error en toggle follow:", error);
-      // Rollback si falla la API
-      if (currentlyFollowing) {
-        setFollowingIds(prev => [...prev, id]);
-      } else {
-        setFollowingIds(prev => prev.filter(fid => fid !== id));
-      }
+      console.error(error);
     }
   };
 
@@ -112,12 +100,12 @@ const Feed = () => {
         );
       }
     } catch (error) {
-      console.error("Error like:", error);
+      console.error(error);
     }
   };
 
   function timeAgo(dateString) {
-    if (!dateString) return "";
+    if (!dateString) return "Reciente";
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
@@ -135,81 +123,71 @@ const Feed = () => {
       <NavDesktop />
       
       <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6 px-4">
-        
-        {/* COLUMNA IZQUIERDA: ACTIVIDAD (8 de 12 columnas) */}
         <div className="lg:col-span-8 space-y-6">
-          <h1 className="text-2xl font-black italic uppercase tracking-tighter mb-4">Actividad reciente</h1>
+          <h1 className="text-2xl font-black italic uppercase tracking-tighter mb-4">Feed</h1>
 
           {loading ? (
-            <div className="flex justify-center py-20">
-              <span className="loading loading-spinner loading-lg text-primary"></span>
-            </div>
+            <div className="flex justify-center py-20"><span className="loading loading-spinner loading-lg text-primary"></span></div>
           ) : activities.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10 text-center">
-              <ShieldAlert size={48} className="mb-4 opacity-20" />
-              <p className="font-bold opacity-60">Tu feed está vacío</p>
-              <p className="text-xs opacity-40 max-w-[200px] mt-2">Sigue a otros usuarios para ver sus nuevas colecciones aquí.</p>
+            <div className="flex flex-col items-center justify-center py-20 opacity-30">
+              <ShieldAlert size={48} className="mb-4" />
+              <p>No hay actividad. ¡Sigue a más gente!</p>
             </div>
           ) : (
-            activities.map((item) => (
+            activities.map((item, index) => (
               <div
-                key={`${item.collection_id}-${item.created_at}`}
-                className="bg-base-100 border border-white/5 rounded-3xl overflow-hidden shadow-sm"
+                key={item.collection_id ? `${item.collection_id}-${index}` : index}
+                className="bg-base-100 border border-white/5 md:rounded-3xl overflow-hidden shadow-sm"
               >
-                {/* Header: Usuario */}
+                {/* Header */}
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Link to={`/profile/${item.user_id}`} className="avatar">
-                      <div className="w-10 h-10 rounded-full border border-white/10">
-                        <img
-                          src={item.avatar_url || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
-                          alt={item.username}
-                        />
-                      </div>
+                    <Link to={`/profile/${item.user_id}`} className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-base-300">
+                      <img
+                        src={item.avatar_url || `https://ui-avatars.com/api/?name=${item.username}`}
+                        alt={item.username}
+                        className="w-full h-full object-cover"
+                      />
                     </Link>
                     <div>
                       <p className="text-sm font-bold">
-                        <Link to={`/profile/${item.user_id}`} className="hover:text-primary transition-colors">
-                          @{item.username}
-                        </Link>
+                        <Link to={`/profile/${item.user_id}`} className="hover:text-primary">@{item.username}</Link>
                       </p>
                       <p className="text-[10px] font-black uppercase tracking-widest text-primary">
-                        {item.collection_type || 'Nueva Colección'}
+                        {item.collection_type}
                       </p>
                     </div>
                   </div>
-                  <span className="text-[10px] opacity-40 font-bold uppercase tracking-tighter">
-                    {timeAgo(item.created_at)}
-                  </span>
+                  <span className="text-[10px] opacity-40 font-bold uppercase">{timeAgo(item.created_at)}</span>
                 </div>
 
-                {/* Contenido: Portada */}
-                <Link to={`/collection/${item.collection_id}`} className="relative block group aspect-video overflow-hidden bg-base-300">
-                  <ItemCover
-                    src={item.cover_url}
-                    title={item.collection_name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6">
-                    <h2 className="text-white text-xl font-black italic uppercase tracking-tight leading-none">
-                      {item.collection_name}
-                    </h2>
+                {/* Imagen/Cover con validación */}
+                <Link to={`/collection/${item.collection_id}`}>
+                  <div className="relative aspect-video bg-base-300 w-full overflow-hidden group">
+                    {item.collection_id && (
+                       <ItemCover
+                       src={item.cover_url}
+                       title={item.collection_name || "Colección"}
+                       className="group-hover:scale-105 transition-transform duration-700"
+                     />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6">
+                      <h2 className="text-white text-xl font-black italic uppercase tracking-tight">
+                        {item.collection_name}
+                      </h2>
+                    </div>
                   </div>
                 </Link>
 
-                {/* Footer: Acciones */}
-                <div className="p-4 flex items-center gap-4">
+                {/* Footer */}
+                <div className="p-4">
                   <button
                     onClick={() => handleToggleLike(item.collection_id)}
                     className={`flex items-center gap-2 text-sm font-black transition-all ${
                       item.has_liked ? "text-error" : "opacity-40 hover:opacity-100"
                     }`}
                   >
-                    <Heart
-                      size={20}
-                      fill={item.has_liked ? "currentColor" : "none"}
-                      strokeWidth={3}
-                    />
+                    <Heart size={20} fill={item.has_liked ? "currentColor" : "none"} strokeWidth={3} />
                     <span>{item.likes || 0}</span>
                   </button>
                 </div>
@@ -218,33 +196,23 @@ const Feed = () => {
           )}
         </div>
 
-        {/* COLUMNA DERECHA: SUGERENCIAS (4 de 12 columnas) */}
+        {/* Sugerencias */}
         <div className="hidden lg:block lg:col-span-4">
-          <div className="sticky top-24">
-            <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-6">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-primary">
-                Descubrir Tribers
-              </h3>
-              <div className="space-y-6">
-                {suggestedUsers.map((u) => {
-                  const targetId = Number(u.id);
-                  const isFollowingThis = followingIds.includes(targetId);
-                  
-                  return (
-                    <MiniUserCard
-                      key={targetId}
-                      user={u}
-                      isFollowing={isFollowingThis}
-                      onFollowToggle={() => handleFollowToggle(targetId, isFollowingThis)}
-                    />
-                  );
-                })}
-              </div>
+          <div className="sticky top-24 bg-white/[0.02] border border-white/5 rounded-3xl p-6">
+            <h3 className="text-[10px] font-black uppercase tracking-widest mb-6 text-primary">Descubrir</h3>
+            <div className="space-y-6">
+              {suggestedUsers.map((u) => (
+                <MiniUserCard
+                  key={u.id}
+                  user={u}
+                  isFollowing={followingIds.includes(Number(u.id))}
+                  onFollowToggle={() => handleFollowToggle(u.id, followingIds.includes(Number(u.id)))}
+                />
+              ))}
             </div>
           </div>
         </div>
       </main>
-
       <NavMobile />
     </div>
   );
