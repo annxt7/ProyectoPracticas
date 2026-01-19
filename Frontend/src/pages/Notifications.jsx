@@ -140,7 +140,7 @@ const Activity = () => {
 
         {/* Resumen Lateral */}
         <aside className="hidden lg:block">
-          <div className="p-6 rounded-[2rem] bg-base-200 border border-base-content/5 text-center shadow-sm">
+          <div className="p-6 rounded-4x1 bg-base-200 border border-base-content/5 text-center shadow-sm">
             <h4 className="text-[10px] uppercase tracking-widest opacity-40 font-bold mb-6">Estado</h4>
             <div className="space-y-4">
               <div className="flex flex-col">
@@ -149,7 +149,7 @@ const Activity = () => {
                 </span>
                 <span className="text-[9px] opacity-60 uppercase font-black tracking-tighter">Pendientes</span>
               </div>
-              <div className="h-[1px] bg-base-content/10 w-8 mx-auto"></div>
+              <div className="h-px bg-base-content/10 w-8 mx-auto"></div>
               <p className="text-[11px] opacity-50 leading-relaxed px-2">
                 Mantente al día con quienes interactúan con tus colecciones.
               </p>
