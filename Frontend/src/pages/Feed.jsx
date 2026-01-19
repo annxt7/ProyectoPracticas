@@ -24,7 +24,6 @@ const Feed = () => {
     const fetchMyFollowing = async () => {
       try {
         const res = await api.get(`/users/following/${myId}`);
-        // Forzamos a que todos los IDs en la lista sean Números
         setFollowingIds((res.data || []).map((u) => Number(u.id || u.user_id)));
       } catch (e) {
         console.error("Error cargando mis seguidos", e);
@@ -40,15 +39,20 @@ const Feed = () => {
       setLoading(true);
       try {
         const activityRes = await api.get("/users/feed/activity");
-        // Filtramos para no ver nuestra propia actividad
-        const filteredActivity = (activityRes.data || []).filter(
-          (item) => Number(item.user_id) !== myId
-        );
+        // Saneamiento de datos para evitar errores de toLowerCase
+        const filteredActivity = (activityRes.data || [])
+          .filter((item) => Number(item.user_id) !== myId)
+          .map(item => ({
+            ...item,
+            username: item.username || "usuario",
+            collection_name: item.collection_name || "Sin título",
+            collection_type: item.collection_type || "Colección"
+          }));
         setActivities(filteredActivity);
 
         const suggestionsRes = await api.get("/search/suggested");
         const filteredSuggestions = (suggestionsRes.data || [])
-          .map(u => normalizeUser(u)) // Normalizamos sugerencias
+          .map(u => normalizeUser(u))
           .filter(u => Number(u.id) !== myId);
         
         setSuggestedUsers(filteredSuggestions);
@@ -101,6 +105,7 @@ const Feed = () => {
   };
 
   function timeAgo(dateString) {
+    if (!dateString) return "Ahora";
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
@@ -118,7 +123,7 @@ const Feed = () => {
       <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
         
-        {/* COLUMNA IZQUIERDA: FEED */}
+        {/* COLUMNA IZQUIERDA: FEED (Restaurado diseño original) */}
         <div className="md:col-span-2 space-y-6">
           <div className="md:hidden flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold font-serif">Tu Feed</h1>
@@ -158,7 +163,7 @@ const Feed = () => {
                         <span className="font-normal opacity-60 ml-2">creó una colección</span>
                       </p>
                       <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-0.5">
-                        {item.collection_type || 'Colección'}
+                        {item.collection_type}
                       </p>
                     </div>
                   </div>
@@ -183,7 +188,7 @@ const Feed = () => {
                   </div>
                 </Link>
 
-                {/* Footer del post: Likes */}
+                {/* Footer del post: Likes (RESTAURADO) */}
                 <div className="p-4">
                   <button
                     onClick={() => handleToggleLike(item.collection_id)}
