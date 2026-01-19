@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Heart, MoreHorizontal } from "lucide-react";
+import { Heart, ShieldAlert } from "lucide-react";
 import { Link } from "react-router-dom";
 import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
@@ -7,44 +7,50 @@ import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { normalizeUser } from "../services/normalizers";
 
 const Feed = () => {
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [followingIds, setFollowingIds] = useState([]);
 
-  // Cargar seguidos
+  const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
+
+  // 1. Cargar seguidos (Normalizado)
   useEffect(() => {
-    if (!user?.id) return;
+    if (!myId) return;
     const fetchMyFollowing = async () => {
       try {
-        const res = await api.get(`/users/following/${user.id}`);
-        setFollowingIds(res.data.map((u) => String(u.id || u.user_id)));
+        const res = await api.get(`/users/following/${myId}`);
+        // Forzamos a que todos los IDs en la lista sean Números
+        setFollowingIds((res.data || []).map((u) => Number(u.id || u.user_id)));
       } catch (e) {
         console.error("Error cargando mis seguidos", e);
       }
     };
     fetchMyFollowing();
-  }, [user?.id]);
+  }, [myId]);
 
-  // Cargar actividad y sugerencias
+  // 2. Cargar actividad y sugerencias
   useEffect(() => {
-    if (!user?.id) return;
+    if (!myId) return;
     const fetchFeedData = async () => {
       setLoading(true);
       try {
         const activityRes = await api.get("/users/feed/activity");
-        const filteredActivity = activityRes.data.filter(
-          (item) => String(item.user_id) !== String(user.id)
+        // Filtramos para no ver nuestra propia actividad
+        const filteredActivity = (activityRes.data || []).filter(
+          (item) => Number(item.user_id) !== myId
         );
         setActivities(filteredActivity);
 
         const suggestionsRes = await api.get("/search/suggested");
-        const filteredSuggestions = suggestionsRes.data.filter(
-          (u) => String(u.id || u.user_id) !== String(user.id)
-        );
+        const filteredSuggestions = (suggestionsRes.data || [])
+          .map(u => normalizeUser(u)) // Normalizamos sugerencias
+          .filter(u => Number(u.id) !== myId);
+        
         setSuggestedUsers(filteredSuggestions);
       } catch (error) {
         console.error("Error cargando feed:", error);
@@ -53,21 +59,23 @@ const Feed = () => {
       }
     };
     fetchFeedData();
-  }, [user?.id]);
+  }, [myId]);
 
   const handleFollowToggle = async (targetId, currentlyFollowing) => {
+    const id = Number(targetId);
     try {
       if (currentlyFollowing) {
-        await api.delete(`/users/unfollow/${targetId}`);
-        setFollowingIds((prev) => prev.filter((id) => id !== String(targetId)));
+        await api.delete(`/users/unfollow/${id}`);
+        setFollowingIds((prev) => prev.filter((fid) => fid !== id));
       } else {
-        await api.post(`/users/follow/${targetId}`);
-        setFollowingIds((prev) => [...prev, String(targetId)]);
+        await api.post(`/users/follow/${id}`);
+        setFollowingIds((prev) => [...prev, id]);
       }
     } catch (error) {
       console.error("Error follow toggle:", error);
     }
   };
+
   const handleToggleLike = async (collectionId) => {
     try {
       const res = await api.post(`/collections/like/${collectionId}`);
@@ -77,7 +85,7 @@ const Feed = () => {
             if (item.collection_id === collectionId) {
               return {
                 ...item,
-                has_liked: res.data.liked, // true o false
+                has_liked: res.data.liked,
                 likes: res.data.liked
                   ? (item.likes || 0) + 1
                   : Math.max(0, (item.likes || 0) - 1),
@@ -97,17 +105,20 @@ const Feed = () => {
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
     if (seconds < 60) return "Ahora";
-    let interval = seconds / 3600;
-    if (interval > 1 && interval < 24) return Math.floor(interval) + " h";
-    interval = seconds / 86400;
-    if (interval >= 1) return Math.floor(interval) + " d";
-    return "Reciente";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} h`;
+    const days = Math.floor(hours / 24);
+    return `${days} d`;
   }
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
       <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
+        
+        {/* COLUMNA IZQUIERDA: FEED */}
         <div className="md:col-span-2 space-y-6">
           <div className="md:hidden flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold font-serif">Tu Feed</h1>
@@ -115,82 +126,75 @@ const Feed = () => {
 
           {loading ? (
             <div className="flex justify-center py-10">
-              <span className="loading loading-spinner loading-lg"></span>
+              <span className="loading loading-spinner loading-lg text-primary"></span>
             </div>
           ) : activities.length === 0 ? (
-            <div className="text-center py-10 opacity-50">
-              No hay actividad reciente.
+            <div className="flex flex-col items-center justify-center py-20 opacity-40 text-center">
+              <ShieldAlert size={48} className="mb-4" />
+              <p>No hay actividad reciente de las personas que sigues.</p>
+              <p className="text-xs">¡Sigue a más Tribers para llenar tu feed!</p>
             </div>
           ) : (
             activities.map((item) => (
               <div
                 key={`${item.collection_id}-${item.created_at}`}
-                className="card border-b bg-base-100 border-white/5 md:border md:rounded-2xl md:shadow-sm overflow-hidden"
+                className="bg-base-100 border-b border-white/5 md:border md:rounded-2xl overflow-hidden"
               >
+                {/* Header del post */}
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Link to={`/profile/${item.user_id}`} className="avatar">
-                      <div className="w-10 h-10 rounded-full ring ring-base-200 ring-offset-1">
-                        <img
-                          src={
-                            item.avatar_url ||
-                            `https://ui-avatars.com/api/?name=${item.username}&background=random`
-                          }
-                          alt={item.username}
-                        />
-                      </div>
+                    <Link to={`/profile/${item.user_id}`} className="w-10 h-10 rounded-full overflow-hidden border border-white/10">
+                      <img
+                        src={item.avatar_url || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
+                        alt={item.username}
+                        className="w-full h-full object-cover"
+                      />
                     </Link>
                     <div className="text-sm">
-                      <p className="font-semibold leading-none">
-                        <Link
-                          to={`/profile/${item.user_id}`}
-                          className="hover:underline"
-                        >
-                          {item.username}
+                      <p className="font-semibold">
+                        <Link to={`/profile/${item.user_id}`} className="hover:text-primary">
+                          @{item.username}
                         </Link>
-                        <span className="font-normal opacity-70">
-                          {" "}
-                          creó una colección
-                        </span>
+                        <span className="font-normal opacity-60 ml-2">creó una colección</span>
                       </p>
-                      <p className="text-xs font-bold mt-0.5 opacity-80 capitalize">
-                        {item.collection_type}
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-0.5">
+                        {item.collection_type || 'Colección'}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs opacity-50">
-                      {timeAgo(item.created_at)}
-                    </span>
-                  </div>
+                  <span className="text-[10px] opacity-40 font-bold uppercase">
+                    {timeAgo(item.created_at)}
+                  </span>
                 </div>
 
+                {/* Portada de la colección */}
                 <Link to={`/collection/${item.collection_id}`}>
-                  <div className="relative aspect-4/3 bg-base-200 w-full overflow-hidden group">
+                  <div className="relative aspect-video bg-base-200 w-full overflow-hidden group">
                     <ItemCover
                       src={item.cover_url}
                       title={item.collection_name}
-                      className="w-full h-full object-cover"
+                      className="group-hover:scale-105 transition-transform duration-700"
                     />
-                    <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
-                      {item.collection_name}
+                    <div className="absolute bottom-4 left-4 right-4">
+                        <div className="inline-block bg-black/70 backdrop-blur-md text-white px-4 py-1.5 rounded-xl text-sm font-bold shadow-xl border border-white/10">
+                          {item.collection_name}
+                        </div>
                     </div>
                   </div>
                 </Link>
 
+                {/* Footer del post: Likes */}
                 <div className="p-4">
                   <button
                     onClick={() => handleToggleLike(item.collection_id)}
-                    className={`flex items-center gap-1.5 text-sm font-bold transition-all ${
-                      item.has_liked
-                        ? "text-error"
-                        : "opacity-60 hover:opacity-100"
+                    className={`flex items-center gap-2 text-sm font-black transition-all ${
+                      item.has_liked ? "text-error" : "opacity-40 hover:opacity-100"
                     }`}
                   >
                     <Heart
-                      size={20}
+                      size={22}
                       fill={item.has_liked ? "currentColor" : "none"}
-                      className={item.has_liked ? "scale-110" : ""}
+                      strokeWidth={2.5}
                     />
                     <span>{item.likes || 0}</span>
                   </button>
@@ -200,29 +204,24 @@ const Feed = () => {
           )}
         </div>
 
+        {/* COLUMNA DERECHA: SUGERENCIAS */}
         <div className="hidden md:block col-span-1">
           <div className="sticky top-24 space-y-6">
-            <div className="border border-white/5 bg-base-200/50 rounded-2xl p-5">
-              <h3 className="font-bold font-serif text-lg mb-4 text-primary">
+            <div className="border border-white/5 bg-white/[0.02] rounded-3xl p-6">
+              <h3 className="font-bold text-xs uppercase tracking-[0.2em] mb-6 text-primary">
                 Tribers Sugeridos
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {suggestedUsers.map((u) => {
-                  const targetId = String(u.id || u.user_id);
+                  const targetId = Number(u.id);
                   const isFollowingThis = followingIds.includes(targetId);
+                  
                   return (
                     <MiniUserCard
                       key={targetId}
-                      user={{
-                        id: targetId,
-                        name: u.username || u.name,
-                        handle: u.handle,
-                        img: u.img,
-                      }}
+                      user={u}
                       isFollowing={isFollowingThis}
-                      onFollowToggle={() =>
-                        handleFollowToggle(targetId, isFollowingThis)
-                      }
+                      onFollowToggle={() => handleFollowToggle(targetId, isFollowingThis)}
                     />
                   );
                 })}

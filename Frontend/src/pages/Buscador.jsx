@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
 import ItemCover from "../components/ItemCover";
-import api from "../services/api"; // Usamos tu instancia de axios
+import api from "../services/api"; 
 import { useAuth } from "../context/AuthContext";
 import { normalizeUser, normalizeCollection } from "../services/normalizers";
 
@@ -17,36 +17,43 @@ const Explorer = () => {
   const [followingIds, setFollowingIds] = useState([]);
 
   const { user: currentUser } = useAuth();
+  // Extraemos el ID actual de forma segura para comparaciones
+  const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
 
-  // Cargar seguidos
+  // 1. Cargar seguidos (Solo si hay usuario logueado)
   useEffect(() => {
-    if (!currentUser?.id) return;
+    if (!myId) return;
+
     const fetchFollowing = async () => {
       try {
-        const res = await api.get(`/users/following/${currentUser.id}`);
-        const ids = res.data.map((u) => normalizeUser(u).id);
+        const res = await api.get(`/users/following/${myId}`);
+        // Normalizamos cada usuario y extraemos solo el ID
+        const ids = (res.data || []).map((u) => Number(normalizeUser(u).id));
         setFollowingIds(ids);
       } catch (err) {
         console.error("Error al cargar seguidos:", err);
       }
     };
     fetchFollowing();
-  }, [currentUser?.id]);
+  }, [myId]);
 
+  // 2. Buscador con Debounce
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await api.get(`/search?query=${encodeURIComponent(query)}`);
-        console.log("Respuesta del buscador:", res.data);
         const data = res.data;
-        const myId = Number(currentUser?.id);
+
+        // Limpiar Usuarios: Normalizar y quitar al usuario actual
         const cleanUsers = (data.users || [])
           .map((u) => normalizeUser(u))
           .filter((u) => Number(u.id) !== myId);
+
+        // Limpiar Colecciones: Normalizar y quitar las propias
         const cleanCollections = (data.collections || [])
           .map((c) => normalizeCollection(c))
-          .filter((c) => c.author !== currentUser?.username);
+          .filter((c) => Number(c.creatorId) !== myId);
 
         setUsers(cleanUsers);
         setCollections(cleanCollections);
@@ -57,11 +64,14 @@ const Explorer = () => {
       }
     };
 
-    const timeoutId = setTimeout(fetchData, 300);
+    const timeoutId = setTimeout(fetchData, 400); // Un poco más de margen para el servidor
     return () => clearTimeout(timeoutId);
-  }, [query]);
+  }, [query, myId]); // Añadimos myId como dependencia para re-filtrar si cambia el login
 
+  // 3. Toggle Seguir/Dejar de seguir
   const handleFollowToggle = async (targetId, isFollowing) => {
+    if (!myId) return alert("Debes iniciar sesión");
+    
     const id = Number(targetId);
     try {
       if (isFollowing) {
@@ -72,7 +82,7 @@ const Explorer = () => {
         setFollowingIds((prev) => [...prev, id]);
       }
     } catch (err) {
-      console.error("Error al seguir/dejar de seguir:", err);
+      console.error("Error en Follow Toggle:", err);
     }
   };
 
@@ -80,13 +90,11 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 bg-base-100 text-base-content font-sans">
       <NavDesktop />
 
+      {/* Header buscador */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-100/90 backdrop-blur-md p-4 border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20"
-              size={18}
-            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20" size={18} />
             <input
               type="text"
               value={query}
@@ -128,62 +136,47 @@ const Explorer = () => {
           </div>
         )}
 
-        {activeTab === "cuentas" && (
+        {!loading && activeTab === "cuentas" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {users.length === 0 && <p className="text-center opacity-30 col-span-full py-10">No se encontraron usuarios</p>}
             {users.map((u) => {
-              const isFollowing = followingIds.includes(u.id);
-              const isMe = u.id === currentUser?.id; // Identificamos si soy yo
+              const isFollowing = followingIds.includes(Number(u.id));
 
               return (
                 <div
                   key={u.id}
-                  className="flex items-center justify-between p-4 bg-white/0.03 rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
+                  className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
                 >
-                  <Link
-                    to={isMe ? "/profile/me" : `/profile/${u.id}`}
-                    className="flex items-center gap-4 min-w-0"
-                  >
+                  <Link to={`/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-white/5 border border-white/10">
                       <img
-                        src={
-                          u.avatar ||
-                          `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`
-                        }
+                        src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`}
                         className="w-full h-full object-cover"
                         alt={u.username}
                       />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-sm truncate uppercase tracking-tighter text-white/90">
-                        @{u.username}{" "}
-                        {isMe && (
-                          <span className="text-[10px] text-primary ml-1">
-                            (TÚ)
-                          </span>
-                        )}
-                      </p>
+                      <p className="font-bold text-sm truncate text-white/90">@{u.username}</p>
                     </div>
                   </Link>
 
-                  {/* Solo mostramos botón seguir si NO soy yo */}
-                  {!isMe && (
-                    <button
-                      onClick={() => handleFollowToggle(u.id, isFollowing)}
-                      className={`btn btn-xs px-5 rounded-lg font-bold transition-all ${
-                        isFollowing ? "btn-neutral opacity-40" : "btn-primary"
-                      }`}
-                    >
-                      {isFollowing ? "Siguiendo" : "Seguir"}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleFollowToggle(u.id, isFollowing)}
+                    className={`btn btn-xs px-5 rounded-lg font-bold transition-all ${
+                      isFollowing ? "btn-neutral opacity-40" : "btn-primary"
+                    }`}
+                  >
+                    {isFollowing ? "Siguiendo" : "Seguir"}
+                  </button>
                 </div>
               );
             })}
           </div>
         )}
 
-        {activeTab === "colecciones" && (
+        {!loading && activeTab === "colecciones" && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+             {collections.length === 0 && <p className="text-center opacity-30 col-span-full py-10">No se encontraron colecciones</p>}
             {collections.map((col) => (
               <Link key={col.id} to={`/collection/${col.id}`} className="group">
                 <div className="flex flex-col gap-3">
@@ -199,8 +192,7 @@ const Explorer = () => {
                       {col.title}
                     </h3>
                     <p className="text-[10px] text-primary font-black uppercase tracking-widest">
-                      @{col.author}{" "}
-                      {col.creatorId === currentUser?.id && "(Mía)"}
+                      @{col.author}
                     </p>
                   </div>
                 </div>
