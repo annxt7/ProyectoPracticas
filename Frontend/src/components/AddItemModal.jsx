@@ -92,7 +92,6 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
   const handleAddFromDB = (item) => {
     const itemToSend = {
         ...item,
-        // En Custom guardamos el tipo real, en específicas forzamos el tipo de la colección
         item_type: collectionType === "Custom" ? item.realType : collectionType,
         reference_id: item.id
     };

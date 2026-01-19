@@ -92,12 +92,15 @@ const CollectionPage = () => {
 
 const handleAddNewItem = async (newItem) => {
   try {
+    if (newItem.coverFile) {
+      finalImage = await uploadFileToCloudinary(newItem.coverFile);
+    }
     const response = await api.post(`/collections/${id}/items`, {
       item_type: newItem.item_type || collectionInfo.type,
       reference_id: newItem.reference_id,
       custom_title: newItem.title,
       custom_subtitle: newItem.subtitle,
-      custom_image: newItem.cover,
+      custom_image: finalImage || newItem.cover,
       custom_description: newItem.description
     });
     if (response.data.success) {

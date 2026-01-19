@@ -12,11 +12,7 @@ const GRADIENTS = [
 
 const ItemCover = ({ src, title, className = "" }) => {
   const [imgError, setImgError] = useState(false);
-
-  // Normalizamos el título para evitar errores si es null/undefined
   const displayTitle = title?.trim() || "Sin Título";
-
-  // Usamos useMemo para el gradiente e iniciales para que no cambien en cada renderizado
   const { gradient, initials } = useMemo(() => {
     let hash = 0;
     for (let i = 0; i < displayTitle.length; i++) {
@@ -32,7 +28,6 @@ const ItemCover = ({ src, title, className = "" }) => {
     return { gradient: GRADIENTS[index], initials: textInitials || "??" };
   }, [displayTitle]);
 
-  // Si no hay src o hubo error, mostramos el degradado
   const showFallback = !src || src === "null" || src === "undefined" || imgError;
 
   return (
