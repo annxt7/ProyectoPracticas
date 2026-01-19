@@ -31,7 +31,7 @@ const ItemCover = ({ src, title, className = "" }) => {
   const showFallback = !src || src === "null" || src === "undefined" || imgError;
 
   return (
-    <div className={`w-full h-fullrelative flex items-center justify-center overflow-hidden select-none ${className} ${showFallback ? gradient : "bg-neutral"}`}>
+    <div className={`w-full h-full relative flex items-center justify-center overflow-hidden select-none ${className} ${showFallback ? gradient : "bg-neutral"}`}>
       {!showFallback && (
         <img
           src={src}
