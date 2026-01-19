@@ -31,14 +31,13 @@ const ItemCover = ({ src, title, className = "" }) => {
   const showFallback = !src || src === "null" || src === "undefined" || imgError;
 
   return (
-    <div className={`relative flex items-center justify-center overflow-hidden select-none ${className} ${showFallback ? gradient : "bg-neutral"}`}>
+    <div className={`w-full h-fullrelative flex items-center justify-center overflow-hidden select-none ${className} ${showFallback ? gradient : "bg-neutral"}`}>
       {!showFallback && (
         <img
           src={src}
           alt={displayTitle}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
-          // Al fallar la imagen, simplemente activamos el fallback sin bucles
           onError={() => setImgError(true)}
         />
       )}
