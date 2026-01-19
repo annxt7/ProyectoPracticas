@@ -52,6 +52,7 @@ exports.searchTribe = async (req, res, next) => {
 };
 
 exports.getSuggestedUsers = async (req, res) => {
+    const id = req.userId;
     try {
         const [rows] = await db.query(`
             SELECT 
@@ -60,7 +61,7 @@ exports.getSuggestedUsers = async (req, res) => {
                 CONCAT('@', username) AS handle, 
                 avatar_url AS img 
             FROM Users 
-            WHERE role != 'admin'
+            WHERE role != 'admin' and user_id != ?
             ORDER BY RAND() 
             LIMIT 3
         `);
