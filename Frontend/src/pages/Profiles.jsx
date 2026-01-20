@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast"; // Añadido
 import SettingsModal from "../components/Config";
 import FollowsModal from "../components/FollowsModal";
 import {
@@ -23,10 +24,8 @@ const Profile = () => {
   const { user, updateUser } = useAuth();
   const { userId } = useParams();
 
-  // Estado para controlar el modal de ajustes
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Perfil propio?? (Normalización de IDs)
   const isMe = userId === "me" || Number(userId) === Number(user?.id);
   const targetId = isMe ? user?.id : userId;
 
@@ -45,7 +44,6 @@ const Profile = () => {
     title: "",
   });
 
-  // Edición
   const avatarInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -59,7 +57,6 @@ const Profile = () => {
 
   const getImg = (url, fallback) => (url ? url : fallback);
 
-  // Sincronización inicial del usuario
   useEffect(() => {
     if (isMe && user) {
       const normalized = normalizeUser(user);
@@ -74,7 +71,6 @@ const Profile = () => {
       setIsLoading(true);
       
       try {
-        // Ejecutamos promesas en paralelo para velocidad
         const collectionsPromise = api.get(`/collections/user/${targetId}`);
         const statsPromise = api.get(`/users/follow-stats/${targetId}`);
         let userPromise = Promise.resolve({ data: null });
@@ -113,7 +109,7 @@ const Profile = () => {
     fetchData();
   }, [targetId, isMe]);
 
-  // --- HANDLERS ---
+  // --- HANDLERS CON TOAST ---
   const handleSaveBio = async (e) => {
     e.preventDefault();
     try {
@@ -122,8 +118,9 @@ const Profile = () => {
       });
       updateUser(res.data.user);
       setIsEditing(false);
+      toast.success("Bio actualizada"); // Reemplazo de alerta
     } catch (error) {
-      console.error(error);
+      toast.error("Error al guardar bio");
     }
   };
 
@@ -131,6 +128,7 @@ const Profile = () => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
+    const tId = toast.loading("Subiendo imagen...");
     try {
       const fd = new FormData();
       fd.append("imagen", file);
@@ -141,45 +139,71 @@ const Profile = () => {
           : { bannerUrl: uploadRes.data.url };
       const updateRes = await api.put("/users/update-profile", payload);
       updateUser(updateRes.data.user);
+      toast.success("Imagen actualizada", { id: tId });
     } catch (error) {
-      console.error(error);
+      toast.error("Error en la subida", { id: tId });
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleDeleteCollection = async (e, collection_id) => {
+  // Función de confirmación con Toast (reemplaza confirm)
+  const handleDeleteCollection = (e, collection_id) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (!window.confirm("¿Estás seguro de que quieres borrar esta colección?"))
-      return;
-    try {
-      await api.delete(`/collections/${collection_id}`);
-      setCollections((prev) =>
-        prev.filter((c) => c.collection_id !== collection_id)
-      );
-    } catch (error) {
-      console.error("Error al borrar:", error);
-    }
+    e.stopPropagation(); // Restaurado
+    
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-bold">¿Borrar esta colección?</p>
+        <div className="flex gap-2">
+          <button 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                await api.delete(`/collections/${collection_id}`);
+                setCollections(prev => prev.filter(c => c.collection_id !== collection_id));
+                toast.success("Colección eliminada");
+              } catch (err) { toast.error("Error al borrar"); }
+            }}
+            className="btn btn-xs btn-error text-white"
+          >
+            Confirmar
+          </button>
+          <button onClick={() => toast.dismiss(t.id)} className="btn btn-xs btn-ghost">Cancelar</button>
+        </div>
+      </div>
+    ), { duration: 5000 });
   };
 
-  const handleDeleteSavedCollection = async (e, collection_id) => {
+  const handleDeleteSavedCollection = (e, collection_id) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (!window.confirm("¿Eliminar de tus guardados?")) return;
-    try {
-      await api.delete(`/collections/saved/${collection_id}`);
-      setSavedCollections((prev) =>
-        prev.filter((c) => c.collection_id !== collection_id)
-      );
-    } catch (error) {
-      console.error("Error al eliminar de guardados:", error);
-    }
+    e.stopPropagation(); // Restaurado
+    
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-bold">¿Quitar de guardados?</p>
+        <div className="flex gap-2">
+          <button 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                await api.delete(`/collections/saved/${collection_id}`);
+                setSavedCollections(prev => prev.filter(c => c.collection_id !== collection_id));
+                toast.success("Quitado de guardados");
+              } catch (err) { toast.error("Error al quitar"); }
+            }}
+            className="btn btn-xs btn-primary"
+          >
+            Quitar
+          </button>
+          <button onClick={() => toast.dismiss(t.id)} className="btn btn-xs btn-ghost">Cancelar</button>
+        </div>
+      </div>
+    ), { duration: 5000 });
   };
 
   const handleFollowToggle = async () => {
     if (!targetId) return;
-    const prevFollowers = followStats.followers;
     const prevFollowingState = isFollowing;
 
     setIsFollowing(!isFollowing);
@@ -191,16 +215,18 @@ const Profile = () => {
     try {
       if (prevFollowingState) {
         await api.delete(`/users/unfollow/${targetId}`);
+        toast.success("Dejaste de seguir");
       } else {
         await api.post(`/users/follow/${targetId}`);
+        toast.success("Siguiendo");
       }
     } catch (error) {
-      console.error("Error al cambiar estado de seguimiento:", error);
       setIsFollowing(prevFollowingState);
       setFollowStats((prev) => ({
         ...prev,
-        followers: prevFollowers,
+        followers: prevFollowingState ? followStats.followers : followStats.followers,
       }));
+      toast.error("Error al procesar seguimiento");
     }
   };
 
@@ -214,10 +240,10 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
+      <Toaster position="bottom-center" reverseOrder={false} />
       <NavDesktop />
 
       <main className="mx-auto">
-        {/* HEADER: Banner */}
         <div className="relative h-40 md:h-80 w-full bg-neutral-900 overflow-hidden group">
           <img
             src={getImg(profileData?.banner, DEFAULT_BANNER)}
@@ -248,7 +274,6 @@ const Profile = () => {
 
         <div className="px-6 relative">
           <div className="flex justify-between items-end -mt-12 mb-4">
-            {/* AVATAR */}
             <div className="relative">
               <div
                 onClick={() =>
@@ -279,7 +304,6 @@ const Profile = () => {
               />
             </div>
 
-            {/* BOTONES DE ACCIÓN */}
             <div className="flex gap-2 mb-2">
               {isMe ? (
                 <>
@@ -326,7 +350,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* INFORMACIÓN DEL PERFIL */}
           <div className="space-y-3 mb-6">
             <h1 className="text-2xl md:text-4xl font-bold font-serif">
               {profileData?.username || "Usuario"}
@@ -362,7 +385,6 @@ const Profile = () => {
               )}
             </div>
 
-            {/* CONTADORES */}
             <div className="flex gap-6 py-4 mt-4">
               <div className="flex gap-1 items-baseline">
                 <span className="font-bold text-lg">{collections.length}</span>
@@ -410,7 +432,6 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* TABS NAVEGACIÓN */}
         <div className="border-t border-white/10 mt-4 sticky top-16 bg-base-100/95 z-30 flex justify-center gap-12 backdrop-blur-md">
           <button
             onClick={() => setActiveTab("collections")}
@@ -436,7 +457,6 @@ const Profile = () => {
           )}
         </div>
 
-        {/* GRID DE CONTENIDO */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 min-h-[300px] max-w-6xl mx-auto">
           {isMe && activeTab === "collections" && (
             <Link
@@ -448,7 +468,6 @@ const Profile = () => {
             </Link>
           )}
 
-          {/* RENDERIZADO DE COLECCIONES */}
           {(activeTab === "collections" ? collections : savedCollections).map((col) => (
             <div
               key={col.collection_id}
@@ -471,7 +490,6 @@ const Profile = () => {
                 </div>
               </Link>
 
-              {/* BOTÓN BORRAR PROPIO */}
               {isMe && activeTab === "collections" && (
                 <button
                   onClick={(e) => handleDeleteCollection(e, col.collection_id)}
@@ -481,7 +499,6 @@ const Profile = () => {
                 </button>
               )}
 
-              {/* BOTÓN QUITAR GUARDADO */}
               {isMe && activeTab === "saved" && (
                 <button
                   onClick={(e) => handleDeleteSavedCollection(e, col.collection_id)}
@@ -494,7 +511,6 @@ const Profile = () => {
           ))}
         </div>
 
-        {/* MODALES */}
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
