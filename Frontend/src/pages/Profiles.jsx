@@ -24,8 +24,10 @@ const Profile = () => {
   const { user, updateUser } = useAuth();
   const { userId } = useParams();
 
+  // Estado para controlar el modal de ajustes
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Perfil propio?? (Normalización de IDs)
   const isMe = userId === "me" || Number(userId) === Number(user?.id);
   const targetId = isMe ? user?.id : userId;
 
@@ -44,6 +46,15 @@ const Profile = () => {
     title: "",
   });
 
+  // ESTADO PARA EL MODAL DE CONFIRMACIÓN (Reemplaza al confirm del navegador)
+  const [deleteConfirm, setDeleteConfirm] = useState({ 
+    isOpen: false, 
+    id: null, 
+    type: null, 
+    title: "" 
+  });
+
+  // Edición
   const avatarInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -57,6 +68,7 @@ const Profile = () => {
 
   const getImg = (url, fallback) => (url ? url : fallback);
 
+  // Sincronización inicial del usuario
   useEffect(() => {
     if (isMe && user) {
       const normalized = normalizeUser(user);
@@ -71,6 +83,7 @@ const Profile = () => {
       setIsLoading(true);
       
       try {
+        // Ejecutamos promesas en paralelo para velocidad
         const collectionsPromise = api.get(`/collections/user/${targetId}`);
         const statsPromise = api.get(`/users/follow-stats/${targetId}`);
         let userPromise = Promise.resolve({ data: null });
@@ -109,7 +122,7 @@ const Profile = () => {
     fetchData();
   }, [targetId, isMe]);
 
-  // --- HANDLERS CON TOAST ---
+  // --- HANDLERS ---
   const handleSaveBio = async (e) => {
     e.preventDefault();
     try {
@@ -118,9 +131,9 @@ const Profile = () => {
       });
       updateUser(res.data.user);
       setIsEditing(false);
-      toast.success("Bio actualizada"); // Reemplazo de alerta
+      toast.success("Bio actualizada"); // Reemplaza alert
     } catch (error) {
-      toast.error("Error al guardar bio");
+      toast.error("Error al actualizar");
     }
   };
 
@@ -128,7 +141,7 @@ const Profile = () => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
-    const tId = toast.loading("Subiendo imagen...");
+    const loadingToast = toast.loading(`Subiendo ${type}...`);
     try {
       const fd = new FormData();
       fd.append("imagen", file);
@@ -139,67 +152,55 @@ const Profile = () => {
           : { bannerUrl: uploadRes.data.url };
       const updateRes = await api.put("/users/update-profile", payload);
       updateUser(updateRes.data.user);
-      toast.success("Imagen actualizada", { id: tId });
+      toast.success("Imagen actualizada", { id: loadingToast });
     } catch (error) {
-      toast.error("Error en la subida", { id: tId });
+      toast.error("Error al subir", { id: loadingToast });
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Función de confirmación con Toast (reemplaza confirm)
-  const handleDeleteCollection = (e, collection_id) => {
+  // Función para abrir el modal de confirmación en lugar de usar window.confirm
+  const handleDeleteCollection = (e, collection_id, name) => {
     e.preventDefault();
-    e.stopPropagation(); // Restaurado
-    
-    toast((t) => (
-      <div className="flex flex-col gap-3">
-        <p className="text-sm font-bold">¿Borrar esta colección?</p>
-        <div className="flex gap-2">
-          <button 
-            onClick={async () => {
-              toast.dismiss(t.id);
-              try {
-                await api.delete(`/collections/${collection_id}`);
-                setCollections(prev => prev.filter(c => c.collection_id !== collection_id));
-                toast.success("Colección eliminada");
-              } catch (err) { toast.error("Error al borrar"); }
-            }}
-            className="btn btn-xs btn-error text-white"
-          >
-            Confirmar
-          </button>
-          <button onClick={() => toast.dismiss(t.id)} className="btn btn-xs btn-ghost">Cancelar</button>
-        </div>
-      </div>
-    ), { duration: 5000 });
+    e.stopPropagation();
+    setDeleteConfirm({ 
+      isOpen: true, 
+      id: collection_id, 
+      type: "own", 
+      title: name 
+    });
   };
 
-  const handleDeleteSavedCollection = (e, collection_id) => {
+  const handleDeleteSavedCollection = (e, collection_id, name) => {
     e.preventDefault();
-    e.stopPropagation(); // Restaurado
-    
-    toast((t) => (
-      <div className="flex flex-col gap-3">
-        <p className="text-sm font-bold">¿Quitar de guardados?</p>
-        <div className="flex gap-2">
-          <button 
-            onClick={async () => {
-              toast.dismiss(t.id);
-              try {
-                await api.delete(`/collections/saved/${collection_id}`);
-                setSavedCollections(prev => prev.filter(c => c.collection_id !== collection_id));
-                toast.success("Quitado de guardados");
-              } catch (err) { toast.error("Error al quitar"); }
-            }}
-            className="btn btn-xs btn-primary"
-          >
-            Quitar
-          </button>
-          <button onClick={() => toast.dismiss(t.id)} className="btn btn-xs btn-ghost">Cancelar</button>
-        </div>
-      </div>
-    ), { duration: 5000 });
+    e.stopPropagation();
+    setDeleteConfirm({ 
+      isOpen: true, 
+      id: collection_id, 
+      type: "saved", 
+      title: name 
+    });
+  };
+
+  // Acción definitiva tras confirmar en el Modal
+  const executeDelete = async () => {
+    const { id, type } = deleteConfirm;
+    setDeleteConfirm({ ...deleteConfirm, isOpen: false });
+    const tId = toast.loading("Eliminando...");
+
+    try {
+      if (type === "own") {
+        await api.delete(`/collections/${id}`);
+        setCollections((prev) => prev.filter((c) => c.collection_id !== id));
+      } else {
+        await api.delete(`/collections/saved/${id}`);
+        setSavedCollections((prev) => prev.filter((c) => c.collection_id !== id));
+      }
+      toast.success("Eliminado", { id: tId });
+    } catch (error) {
+      toast.error("No se pudo eliminar", { id: tId });
+    }
   };
 
   const handleFollowToggle = async () => {
@@ -221,12 +222,13 @@ const Profile = () => {
         toast.success("Siguiendo");
       }
     } catch (error) {
+      console.error("Error al cambiar estado de seguimiento:", error);
       setIsFollowing(prevFollowingState);
       setFollowStats((prev) => ({
         ...prev,
-        followers: prevFollowingState ? followStats.followers : followStats.followers,
+        followers: prevFollowingState ? prev.followers : prev.followers,
       }));
-      toast.error("Error al procesar seguimiento");
+      toast.error("Error de conexión");
     }
   };
 
@@ -240,10 +242,11 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
-      <Toaster position="bottom-center" reverseOrder={false} />
+      <Toaster position="bottom-center" />
       <NavDesktop />
 
       <main className="mx-auto">
+        {/* HEADER: Banner */}
         <div className="relative h-40 md:h-80 w-full bg-neutral-900 overflow-hidden group">
           <img
             src={getImg(profileData?.banner, DEFAULT_BANNER)}
@@ -274,6 +277,7 @@ const Profile = () => {
 
         <div className="px-6 relative">
           <div className="flex justify-between items-end -mt-12 mb-4">
+            {/* AVATAR */}
             <div className="relative">
               <div
                 onClick={() =>
@@ -304,6 +308,7 @@ const Profile = () => {
               />
             </div>
 
+            {/* BOTONES DE ACCIÓN */}
             <div className="flex gap-2 mb-2">
               {isMe ? (
                 <>
@@ -350,6 +355,7 @@ const Profile = () => {
             </div>
           </div>
 
+          {/* INFORMACIÓN DEL PERFIL */}
           <div className="space-y-3 mb-6">
             <h1 className="text-2xl md:text-4xl font-bold font-serif">
               {profileData?.username || "Usuario"}
@@ -385,6 +391,7 @@ const Profile = () => {
               )}
             </div>
 
+            {/* CONTADORES */}
             <div className="flex gap-6 py-4 mt-4">
               <div className="flex gap-1 items-baseline">
                 <span className="font-bold text-lg">{collections.length}</span>
@@ -432,6 +439,7 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* TABS NAVEGACIÓN */}
         <div className="border-t border-white/10 mt-4 sticky top-16 bg-base-100/95 z-30 flex justify-center gap-12 backdrop-blur-md">
           <button
             onClick={() => setActiveTab("collections")}
@@ -457,6 +465,7 @@ const Profile = () => {
           )}
         </div>
 
+        {/* GRID DE CONTENIDO */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 min-h-[300px] max-w-6xl mx-auto">
           {isMe && activeTab === "collections" && (
             <Link
@@ -468,6 +477,7 @@ const Profile = () => {
             </Link>
           )}
 
+          {/* RENDERIZADO DE COLECCIONES */}
           {(activeTab === "collections" ? collections : savedCollections).map((col) => (
             <div
               key={col.collection_id}
@@ -490,18 +500,20 @@ const Profile = () => {
                 </div>
               </Link>
 
+              {/* BOTÓN BORRAR PROPIO (Con nuevo Modal) */}
               {isMe && activeTab === "collections" && (
                 <button
-                  onClick={(e) => handleDeleteCollection(e, col.collection_id)}
+                  onClick={(e) => handleDeleteCollection(e, col.collection_id, col.collection_name)}
                   className="absolute top-2 right-2 p-2 bg-red-600/80 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 backdrop-blur-sm"
                 >
                   <Trash2 size={16} />
                 </button>
               )}
 
+              {/* BOTÓN QUITAR GUARDADO (Con nuevo Modal) */}
               {isMe && activeTab === "saved" && (
                 <button
-                  onClick={(e) => handleDeleteSavedCollection(e, col.collection_id)}
+                  onClick={(e) => handleDeleteSavedCollection(e, col.collection_id, col.collection_name)}
                   className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 backdrop-blur-sm"
                 >
                   <X size={16} />
@@ -510,6 +522,38 @@ const Profile = () => {
             </div>
           ))}
         </div>
+
+        {/* MODAL DE CONFIRMACIÓN INTEGRADO */}
+        {deleteConfirm.isOpen && (
+          <div className="modal modal-open">
+            <div className="modal-box bg-base-200 border border-white/10 rounded-3xl max-w-xs text-center p-8">
+              <h3 className="font-bold text-lg mb-2">
+                {deleteConfirm.type === "own" ? "¿Borrar colección?" : "¿Quitar de guardados?"}
+              </h3>
+              <p className="text-sm opacity-60 mb-6 italic">
+                "{deleteConfirm.title}"
+              </p>
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={executeDelete}
+                  className="btn btn-primary rounded-2xl w-full"
+                >
+                  Confirmar
+                </button>
+                <button 
+                  onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+                  className="btn btn-ghost rounded-2xl w-full"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+            <div 
+              className="modal-backdrop bg-black/60" 
+              onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+            />
+          </div>
+        )}
 
         <SettingsModal
           isOpen={isSettingsOpen}
