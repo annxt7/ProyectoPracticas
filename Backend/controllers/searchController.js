@@ -17,9 +17,10 @@ exports.searchTribe = async (req, res, next) => {
                 CONCAT('@', username) AS handle, 
                 bio, 
                 avatar_url AS img,
+                role,
                 FALSE AS isFollowing 
             FROM Users 
-            WHERE username LIKE ? 
+            WHERE username LIKE ? and role != 'admin'
             LIMIT 20
         `, [searchTerm]);
 
@@ -51,6 +52,8 @@ exports.searchTribe = async (req, res, next) => {
 };
 
 exports.getSuggestedUsers = async (req, res) => {
+    const id = req.user.id;
+    console.log("ID de usuario para sugerencias:", id);
     try {
         const [rows] = await db.query(`
             SELECT 
@@ -59,9 +62,10 @@ exports.getSuggestedUsers = async (req, res) => {
                 CONCAT('@', username) AS handle, 
                 avatar_url AS img 
             FROM Users 
+            WHERE role != 'admin' and user_id != ?
             ORDER BY RAND() 
             LIMIT 3
-        `);
+        `, [id]);
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: "Error al obtener sugerencias reales" });
