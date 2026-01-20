@@ -9,6 +9,8 @@ import {
   Trash2,
   Camera,
   Check,
+  AlertCircle, // Nuevo icono para errores
+  X
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
@@ -37,11 +39,19 @@ const CollectionPage = () => {
   const [fileToUpload, setFileToUpload] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", description: "", cover: "" });
 
-  // Modales
+  // Modales y Notificaciones
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedItemForSave, setSelectedItemForSave] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const [itemToDelete, setItemToDelete] = useState(null); // Para sustituir el confirm()
 
-  // 1. CARGA DE DATOS Y PERSISTENCIA
+  // Función para mostrar notificaciones
+  const showNotification = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3000);
+  };
+
+  // 1. CARGA DE DATOS
   useEffect(() => {
     const fetchCollection = async () => {
       setLoading(true);
@@ -67,7 +77,6 @@ const CollectionPage = () => {
         if (data.items) {
           setItems(data.items.map(item => {
             const refId = item.music_id || item.book_id || item.movie_id || item.show_id || item.game_id;
-            
             return {
               id: item.item_id || item.id,
               title: item.display_title || item.custom_title || "Sin título",
@@ -75,12 +84,13 @@ const CollectionPage = () => {
               cover: item.display_image || item.custom_image,
               item_type: item.item_type,
               reference_id: refId,
-              is_custom: !refId // Si no hay refId, es un item manual
+              is_custom: !refId 
             };
           }));
         }
       } catch (err) {
         console.error("Error cargando colección:", err);
+        showNotification("No se pudo cargar la colección", "error");
       } finally {
         setLoading(false);
       }
@@ -91,51 +101,50 @@ const CollectionPage = () => {
 
   const isOwner = user && collectionInfo && String(user.id || user.userId) === String(collectionInfo.creatorId);
 
-const handleAddNewItem = async (newItem) => {
-  try {
-    let finalImageUrl = newItem.cover; 
+  const handleAddNewItem = async (newItem) => {
+    try {
+      let finalImageUrl = newItem.cover; 
+      if (newItem.isCustom && newItem.coverFile) {
+          finalImageUrl = await uploadFileToCloudinary(newItem.coverFile);
+      }
 
-    if (newItem.isCustom && newItem.coverFile) {
-        finalImageUrl = await uploadFileToCloudinary(newItem.coverFile);
+      const response = await api.post(`/collections/${id}/items`, {
+        item_type: newItem.item_type || collectionInfo.type,
+        reference_id: newItem.reference_id,
+        custom_title: newItem.title,
+        custom_subtitle: newItem.subtitle,
+        custom_image: finalImageUrl, 
+        custom_description: newItem.description
+      });
+
+      if (response.data.success) {
+        const itemParaLaVista = {
+          ...newItem,
+          cover: finalImageUrl, 
+          id: response.data.itemId 
+        };
+        setItems(prev => [...prev, itemParaLaVista]);
+        setIsAddItemOpen(false);
+        showNotification("Item añadido correctamente");
+      }
+    } catch (error) {
+      console.error("Error al guardar el item:", error);
+      showNotification("Error al guardar en la base de datos", "error");
     }
+  };
 
-    const response = await api.post(`/collections/${id}/items`, {
-      item_type: newItem.item_type || collectionInfo.type,
-      reference_id: newItem.reference_id,
-      custom_title: newItem.title,
-      custom_subtitle: newItem.subtitle,
-      custom_image: finalImageUrl, 
-      
-      custom_description: newItem.description
-    });
-
-    if (response.data.success) {
-      const itemParaLaVista = {
-        ...newItem,
-        cover: finalImageUrl, 
-        id: response.data.itemId 
-      };
-      setItems(prev => [...prev, itemParaLaVista]);
-      setIsAddItemOpen(false);
-    }
-  } catch (error) {
-    console.error("Error al guardar el item:", error);
-    alert("No se pudo guardar en la base de datos");
-  }
-};
-  // 2. LOGICA DE GUARDADO DE COLECCIÓN
   const handleSaveCollection = async () => {
     if (isSaved) return;
     setIsSaved(true);
     try {
       await api.post(`/collections/save/${id}`);
+      showNotification("Colección guardada en tu biblioteca");
     } catch (error) {
       setIsSaved(false);
-      console.error("Error al guardar colección:", error);
+      showNotification("Error al guardar colección", "error");
     }
   };
 
-  // 3. LOGICA DE EDICIÓN
   const handleSaveEditing = async () => {
     setIsUploading(true);
     try {
@@ -155,21 +164,23 @@ const handleAddNewItem = async (newItem) => {
 
       setCollectionInfo(prev => ({ ...prev, title: editForm.title, description: editForm.description, cover: finalCoverUrl }));
       setIsEditing(false);
+      showNotification("Cambios guardados");
     } catch (error) {
-      alert("Error al actualizar");
+      showNotification("Error al actualizar la colección", "error");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleDeleteItem = async (itemId) => {
-    if (window.confirm("¿Eliminar este item?")) {
-      try {
-        await api.delete(`/collections/items/${itemId}`);
-        setItems(prev => prev.filter(i => i.id !== itemId));
-      } catch (error) {
-        console.error("Error borrando item:", error);
-      }
+  const handleDeleteItem = async () => {
+    if (!itemToDelete) return;
+    try {
+      await api.delete(`/collections/items/${itemToDelete}`);
+      setItems(prev => prev.filter(i => i.id !== itemToDelete));
+      setItemToDelete(null);
+      showNotification("Item eliminado", "success");
+    } catch (error) {
+      showNotification("No se pudo eliminar el item", "error");
     }
   };
 
@@ -178,6 +189,30 @@ const handleAddNewItem = async (newItem) => {
   return (
     <div className="min-h-screen pb-24 bg-base-100 text-base-content">
       <NavDesktop />
+
+      {/* --- SISTEMA DE TOAST (VISUAL) --- */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className={`alert ${toast.type === "error" ? "alert-error" : "alert-success"} shadow-lg rounded-2xl py-3 px-6 flex items-center gap-3`}>
+            {toast.type === "error" ? <AlertCircle size={20} /> : <Check size={20} />}
+            <span className="font-bold text-sm">{toast.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL CONFIRMACIÓN ELIMINAR (SUSTITUYE CONFIRM) --- */}
+      {itemToDelete && (
+        <div className="modal modal-open">
+          <div className="modal-box rounded-3xl border border-white/10 bg-base-200">
+            <h3 className="font-bold text-lg">¿Eliminar item?</h3>
+            <p className="py-4 opacity-70 text-sm">Esta acción quitará el elemento de esta colección de forma permanente.</p>
+            <div className="modal-action">
+              <button onClick={() => setItemToDelete(null)} className="btn btn-ghost rounded-full px-6">Cancelar</button>
+              <button onClick={handleDeleteItem} className="btn btn-error rounded-full px-6 text-white">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* --- HERO SECTION CON BLUR --- */}
       <div className="relative">
@@ -236,7 +271,9 @@ const handleAddNewItem = async (newItem) => {
                   {isOwner ? (
                     isEditing ? (
                       <>
-                        <button onClick={handleSaveEditing} className="btn btn-primary btn-sm rounded-full px-6" disabled={isUploading}>Guardar</button>
+                        <button onClick={handleSaveEditing} className="btn btn-primary btn-sm rounded-full px-6" disabled={isUploading}>
+                          {isUploading ? <span className="loading loading-spinner loading-xs"></span> : "Guardar"}
+                        </button>
                         <button onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm rounded-full">Cancelar</button>
                       </>
                     ) : (
@@ -268,10 +305,9 @@ const handleAddNewItem = async (newItem) => {
               <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-300 shadow-lg border border-white/5">
                 <ItemCover src={item.cover} title={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 
-                {/* BOTÓN PLUS (ESQUINA SUPERIOR DERECHA) */}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                   {isOwner ? (
-                    <button onClick={() => handleDeleteItem(item.id)} className="btn btn-square btn-xs btn-error shadow-xl"><Trash2 size={14} /></button>
+                    <button onClick={() => setItemToDelete(item.id)} className="btn btn-square btn-xs btn-error shadow-xl"><Trash2 size={14} /></button>
                   ) : (
                     <button 
                       onClick={() => setSelectedItemForSave(item)}
@@ -297,13 +333,12 @@ const handleAddNewItem = async (newItem) => {
         </div>
       </main>
 
-      {/* --- MODALES CON LÓGICA DE COINCIDENCIA EXACTA --- */}
+      {/* --- MODALES --- */}
       {selectedItemForSave && (
         <AddToCollectionModal 
           isOpen={!!selectedItemForSave} 
           onClose={() => setSelectedItemForSave(null)} 
           item={{
-            // Intentamos pasar el ID del catálogo original
             id: selectedItemForSave.reference_id, 
             type: selectedItemForSave.item_type,
             title: selectedItemForSave.title,
