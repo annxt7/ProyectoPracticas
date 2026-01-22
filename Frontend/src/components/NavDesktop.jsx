@@ -22,8 +22,6 @@ const NavDesktop = () => {
     logout();
     navigate("/login");
   };
-
-  // Función para saber si el tema actual es de tipo "oscuro" para el logo
   const isDark = ["dark", "synthwave", "aqua"].includes(theme);
 
   return (
@@ -40,25 +38,6 @@ const NavDesktop = () => {
         <NavLinkDesktop icon={<Search size={24} />} page={"/explorer"} label="Explorar" active={isActive("/explorer")} />
         <NavLinkDesktop icon={<Heart size={24} />} page={"/activity"} label="Actividad" active={isActive("/activity")} />
         <NavLinkDesktop icon={<User size={24} />} page={"/profile/me"} label="Perfil" active={location.pathname.startsWith("/profile")} />
-
-        {/* SELECTOR DE TEMAS (DROPDOWN) */}
-        <div className="dropdown dropdown-end">
-          <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-            <Palette size={24} />
-          </div>
-          <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52 border border-base-content/10">
-            {availableThemes.map((t) => (
-              <li key={t}>
-                <button 
-                  onClick={() => setTheme(t)}
-                  className={`capitalize ${theme === t ? "active" : ""}`}
-                >
-                  {t}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
 
         <button
           onClick={handleLogout}

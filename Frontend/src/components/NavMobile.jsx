@@ -9,19 +9,12 @@ const NavMobile = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const { theme, setTheme } = useTheme(); 
-  const availableThemes = ["light", "dark", "cupcake", "synthwave", "retro", "aqua"];
 
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
     logout();
     navigate("/login");
-  };
-  const handleNextTheme = () => {
-    const currentIndex = availableThemes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % availableThemes.length;
-    setTheme(availableThemes[nextIndex]);
   };
 
   return (
@@ -39,16 +32,6 @@ const NavMobile = () => {
           active={isActive("/explorer")}
           page={"/explorer"}
         />
-        
-        {/* BOTÓN ROTADOR DE TEMAS */}
-        <button
-          onClick={handleNextTheme}
-          className="p-2 flex flex-col items-center gap-0.5 active:scale-90 transition-transform"
-          aria-label="Cambiar tema"
-        >
-          <Palette size={24} className="text-primary" />
-          <span className="text-[8px] uppercase font-bold opacity-50">{theme}</span>
-        </button>
 
         <NavLinkMobile
           icon={<Heart size={24} />}
