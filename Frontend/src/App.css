@@ -469,4 +469,56 @@
   --border: 3px;             
 }
 
+@plugin "daisyui/theme" {
+  name: "jamaica-style";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  /* --- SECCIÓN BASE: Noche en Kingston --- */
+  /* Negro profundo para que los colores "canten" */
+  --color-base-100: #0B0B0B; 
+  /* Gris carbón muy oscuro */
+  --color-base-200: #1A1A1A; 
+  /* Verde selva oscuro para bordes */
+  --color-base-300: #004D2C; 
+  /* Blanco hueso para el texto */
+  --color-base-content: #F2F2F2; 
+
+  /* --- COLORES PRINCIPALES: Rasta Power --- */
+  /* Verde Pan-Africano (Naturaleza) */
+  --color-primary: #009946; 
+  --color-primary-content: #FFFFFF;
+  
+  /* Amarillo Oro (Riqueza y Sol) */
+  --color-secondary: #FFD700; 
+  --color-secondary-content: #000000;
+  
+  /* Rojo Pasión (Sangre y Sacrificio) */
+  --color-accent: #E81123; 
+  --color-accent-content: #FFFFFF;
+  
+  /* Negro Mate para botones neutrales */
+  --color-neutral: #262626; 
+  --color-neutral-content: #FFD700; 
+
+  /* --- ESTADOS SEMÁNTICOS --- */
+  /* Info: Azul Mar Caribe */
+  --color-info: #00A3E0; 
+  /* Success: Verde Limón brillante */
+  --color-success: #32CD32; 
+  /* Warning: Naranja Papaya */
+  --color-warning: #FF8C00; 
+  /* Error: Rojo Volcánico */
+  --color-error: #B22222; 
+
+  /* --- GEOMETRÍA: Chill & Relax --- */
+  /* Bordes suaves y amigables */
+  --radius-selector: 1rem; 
+  --radius-field: 0.25rem;       
+  --radius-box: 1.5rem;        
+  /* Bordes presentes pero no agresivos */
+  --border: 2px;             
+}
+
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
