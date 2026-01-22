@@ -574,4 +574,56 @@
   --radius-field: 0.3rem;       
   --radius-box: 1rem;        
 }
+
+@plugin "daisyui/theme" {
+  name: "grove-street";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  /* --- SECCIÓN BASE: El Barrio --- */
+  /* Negro Asfalto / Noche en el callejón */
+  --color-base-100: #0f0f0f; 
+  /* Gris cemento de las aceras */
+  --color-base-200: #1a1a1a; 
+  /* Verde oscuro de las bandas para bordes */
+  --color-base-300: #1b4d21; 
+  /* Blanco "Camiseta de CJ" para el texto */
+  --color-base-content: #f2f2f2; 
+
+  /* --- COLORES PRINCIPALES: Families 4 Life --- */
+  /* Verde Grove Street (El color de la banda) */
+  --color-primary: #2e8b57; 
+  --color-primary-content: #ffffff;
+  
+  /* Amarillo "Lowrider" (Cromados y detalles) */
+  --color-secondary: #c5a059; 
+  --color-secondary-content: #000000;
+  
+  /* Gris Grafiti */
+  --color-accent: #4a4a4a; 
+  --color-accent-content: #ffffff;
+  
+  /* Negro Tinta de Tatuaje */
+  --color-neutral: #000000; 
+  --color-neutral-content: #2e8b57; 
+
+  /* --- ESTADOS SEMÁNTICOS: Respeto y Peligro --- */
+  /* Info: Azul "Luz de Policía" */
+  --color-info: #1c4b82; 
+  /* Success: Verde Dinero / Respeto + */
+  --color-success: #00ff00; 
+  /* Warning: Amarillo Bandas Rivales (Vagos) */
+  --color-warning: #ffd700; 
+  /* Error: Morado Ballas (El enemigo) */
+  --color-error: #800080; 
+
+  /* --- GEOMETRÍA: Estilo San Andreas --- */
+  /* Bordes marcados como en los menús del juego */
+  --border: 3px;             
+  /* Esquinas ligeramente redondeadas pero duras */
+  --radius-selector: 0.2rem; 
+  --radius-field: 0rem;       
+  --radius-box: 0.5rem;        
+}
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
