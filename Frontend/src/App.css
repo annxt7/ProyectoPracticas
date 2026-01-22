@@ -1,16 +1,8 @@
-/* App.css */
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* Configuración de temas para v4 */
-@config "../tailwind.config.js"; /* Si prefieres mantener el archivo separado */
-/* O directamente aquí: */
-@layer base {
-  :root {
-    --fallback-bc: 0 0% 100%;
-  }
-}
-
+/* Si necesitas el fondo gris, úsalo de forma estándar por ahora */
 html, body, #root {
-  @apply bg-base-200 text-base-content h-full;
+  background-color: var(--color-base-200);
+  height: 100%;
 }
