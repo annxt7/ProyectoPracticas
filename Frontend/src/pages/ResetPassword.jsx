@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import fotoLogin from "../assets/foto-login.webp";
-import Logo from "../assets/LogoClaro.png";
+import Logo from "../assets/LogoClaro.webp";
 import api from "../services/api";
 
 const resetSchema = z
