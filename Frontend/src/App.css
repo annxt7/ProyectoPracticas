@@ -527,5 +527,56 @@
   --border: 1px;             
 }
 
+@plugin "daisyui/theme" {
+  name: "mozart-hibrido";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  /* --- SECCIÓN BASE: Ópera en el Barrio --- */
+  /* El morado oscuro del logo de Faraón */
+  --color-base-100: #1a012e; 
+  /* Oro viejo empolvado (Viena 1791) */
+  --color-base-200: #c5a059; 
+  /* Crema pergamino de partitura antigua */
+  --color-base-300: #f4ecd8; 
+  /* Texto en blanco diamante */
+  --color-base-content: #ffffff; 
+
+  /* --- COLORES PRINCIPALES: El Genio y el Híbrido --- */
+  /* Morado Neón Intenso (Pura sensualidad) */
+  --color-primary: #a020f0; 
+  --color-primary-content: #ffffff;
+  
+  /* Dorado Real / Medallón de Faraón */
+  --color-secondary: #ffd700; 
+  --color-secondary-content: #1a012e;
+  
+  /* Verde Peluca (Ese verde agua clásico) */
+  --color-accent: #7fb5b5; 
+  --color-accent-content: #1a012e;
+  
+  /* Negro Azabache */
+  --color-neutral: #000000; 
+  --color-neutral-content: #ff00ff; /* Texto fucsia sobre negro */
+
+  /* --- ESTADOS: Sinfonía del Autotune --- */
+  /* Info: Azul "Duro 2 Horas" */
+  --color-info: #00d2ff; 
+  /* Success: Verde "Soy Guapo" */
+  --color-success: #39ff14; 
+  /* Warning: Amarillo "¡Raaa!" */
+  --color-warning: #ffcc00; 
+  /* Error: Rojo Sangre de Salieri */
+  --color-error: #ff003c; 
+
+  /* --- GEOMETRÍA: Elegancia Callejera --- */
+  /* Bordes de marco de cuadro del Louvre */
+  --border: 4px;             
+  /* Muy redondo (Pelucas) vs Cuadrado (Trap) */
+  --radius-selector: 9999px; 
+  --radius-field: 0rem;       
+  --radius-box: 2rem;        
+}
 
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
