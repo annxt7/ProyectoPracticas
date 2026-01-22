@@ -64,9 +64,9 @@ const Explorer = () => {
       }
     };
 
-    const timeoutId = setTimeout(fetchData, 400); // Un poco más de margen para el servidor
+    const timeoutId = setTimeout(fetchData, 400); 
     return () => clearTimeout(timeoutId);
-  }, [query, myId]); // Añadimos myId como dependencia para re-filtrar si cambia el login
+  }, [query, myId]);
 
   // 3. Toggle Seguir/Dejar de seguir
   const handleFollowToggle = async (targetId, isFollowing) => {
