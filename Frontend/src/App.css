@@ -110,8 +110,6 @@
 }
 
 @plugin "daisyui/theme" {
-  
-@plugin "daisyui/theme" {
   name: "hawaii";
   default: false;
   prefersdark: false;
