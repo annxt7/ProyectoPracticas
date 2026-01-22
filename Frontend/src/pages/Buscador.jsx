@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import NavMobile from "../components/NavMobile";
 import ItemCover from "../components/ItemCover";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -219,7 +218,6 @@ const Explorer = () => {
           </div>
         )}
       </main>
-      <NavMobile />
     </div>
   );
 };

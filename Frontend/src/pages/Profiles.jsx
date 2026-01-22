@@ -12,8 +12,6 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import NavMobile from "../components/NavMobile";
-import NavDesktop from "../components/NavDesktop";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import ItemCover from "../components/ItemCover";
@@ -242,7 +240,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
       <Toaster position="bottom-center" />
-      <NavDesktop />
+      
 
       <main className="mx-auto">
         {/* HEADER: Banner */}
@@ -567,7 +565,7 @@ const Profile = () => {
         />
       </main>
 
-      <NavMobile />
+      
     </div>
   );
 };

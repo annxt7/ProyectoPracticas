@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Heart, UserPlus, MessageSquare, Bell, Info, Filter as FilterIcon, CheckCircle } from "lucide-react";
 import api from "../services/api.js";
-import NavMobile from "../components/NavMobile";
+
 
 
 const Activity = () => {
@@ -157,7 +157,7 @@ const Activity = () => {
         </aside>
       </div>
 
-      <NavMobile />
+      
     </div>
   );
 };
