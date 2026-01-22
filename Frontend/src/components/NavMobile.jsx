@@ -9,7 +9,7 @@ const NavMobile = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-console.log(user)
+
 
   const isActive = (path) => location.pathname === path;
 
