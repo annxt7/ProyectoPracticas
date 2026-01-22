@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast"; // Añadido
 import SettingsModal from "../components/Config";
 import FollowsModal from "../components/FollowsModal";
 import {
@@ -43,6 +44,14 @@ const Profile = () => {
     open: false,
     type: "followers",
     title: "",
+  });
+
+  // ESTADO PARA EL MODAL DE CONFIRMACIÓN (Reemplaza al confirm del navegador)
+  const [deleteConfirm, setDeleteConfirm] = useState({ 
+    isOpen: false, 
+    id: null, 
+    type: null, 
+    title: "" 
   });
 
   // Edición
@@ -122,8 +131,9 @@ const Profile = () => {
       });
       updateUser(res.data.user);
       setIsEditing(false);
+      toast.success("Bio actualizada"); // Reemplaza alert
     } catch (error) {
-      console.error(error);
+      toast.error("Error al actualizar");
     }
   };
 
@@ -131,6 +141,7 @@ const Profile = () => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
+    const loadingToast = toast.loading(`Subiendo ${type}...`);
     try {
       const fd = new FormData();
       fd.append("imagen", file);
@@ -141,45 +152,59 @@ const Profile = () => {
           : { bannerUrl: uploadRes.data.url };
       const updateRes = await api.put("/users/update-profile", payload);
       updateUser(updateRes.data.user);
+      toast.success("Imagen actualizada", { id: loadingToast });
     } catch (error) {
-      console.error(error);
+      toast.error("Error al subir", { id: loadingToast });
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleDeleteCollection = async (e, collection_id) => {
+  // Función para abrir el modal de confirmación en lugar de usar window.confirm
+  const handleDeleteCollection = (e, collection_id, name) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm("¿Estás seguro de que quieres borrar esta colección?"))
-      return;
-    try {
-      await api.delete(`/collections/${collection_id}`);
-      setCollections((prev) =>
-        prev.filter((c) => c.collection_id !== collection_id)
-      );
-    } catch (error) {
-      console.error("Error al borrar:", error);
-    }
+    setDeleteConfirm({ 
+      isOpen: true, 
+      id: collection_id, 
+      type: "own", 
+      title: name 
+    });
   };
 
-  const handleDeleteSavedCollection = async (e, collection_id) => {
+  const handleDeleteSavedCollection = (e, collection_id, name) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm("¿Eliminar de tus guardados?")) return;
+    setDeleteConfirm({ 
+      isOpen: true, 
+      id: collection_id, 
+      type: "saved", 
+      title: name 
+    });
+  };
+
+  // Acción definitiva tras confirmar en el Modal
+  const executeDelete = async () => {
+    const { id, type } = deleteConfirm;
+    setDeleteConfirm({ ...deleteConfirm, isOpen: false });
+    const tId = toast.loading("Eliminando...");
+
     try {
-      await api.delete(`/collections/saved/${collection_id}`);
-      setSavedCollections((prev) =>
-        prev.filter((c) => c.collection_id !== collection_id)
-      );
+      if (type === "own") {
+        await api.delete(`/collections/${id}`);
+        setCollections((prev) => prev.filter((c) => c.collection_id !== id));
+      } else {
+        await api.delete(`/collections/saved/${id}`);
+        setSavedCollections((prev) => prev.filter((c) => c.collection_id !== id));
+      }
+      toast.success("Eliminado", { id: tId });
     } catch (error) {
-      console.error("Error al eliminar de guardados:", error);
+      toast.error("No se pudo eliminar", { id: tId });
     }
   };
 
   const handleFollowToggle = async () => {
     if (!targetId) return;
-    const prevFollowers = followStats.followers;
     const prevFollowingState = isFollowing;
 
     setIsFollowing(!isFollowing);
@@ -191,16 +216,19 @@ const Profile = () => {
     try {
       if (prevFollowingState) {
         await api.delete(`/users/unfollow/${targetId}`);
+        toast.success("Dejaste de seguir");
       } else {
         await api.post(`/users/follow/${targetId}`);
+        toast.success("Siguiendo");
       }
     } catch (error) {
       console.error("Error al cambiar estado de seguimiento:", error);
       setIsFollowing(prevFollowingState);
       setFollowStats((prev) => ({
         ...prev,
-        followers: prevFollowers,
+        followers: prevFollowingState ? prev.followers : prev.followers,
       }));
+      toast.error("Error de conexión");
     }
   };
 
@@ -214,6 +242,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
+      <Toaster position="bottom-center" />
       <NavDesktop />
 
       <main className="mx-auto">
@@ -471,20 +500,20 @@ const Profile = () => {
                 </div>
               </Link>
 
-              {/* BOTÓN BORRAR PROPIO */}
+              {/* BOTÓN BORRAR PROPIO (Con nuevo Modal) */}
               {isMe && activeTab === "collections" && (
                 <button
-                  onClick={(e) => handleDeleteCollection(e, col.collection_id)}
+                  onClick={(e) => handleDeleteCollection(e, col.collection_id, col.collection_name)}
                   className="absolute top-2 right-2 p-2 bg-red-600/80 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 backdrop-blur-sm"
                 >
                   <Trash2 size={16} />
                 </button>
               )}
 
-              {/* BOTÓN QUITAR GUARDADO */}
+              {/* BOTÓN QUITAR GUARDADO (Con nuevo Modal) */}
               {isMe && activeTab === "saved" && (
                 <button
-                  onClick={(e) => handleDeleteSavedCollection(e, col.collection_id)}
+                  onClick={(e) => handleDeleteSavedCollection(e, col.collection_id, col.collection_name)}
                   className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 backdrop-blur-sm"
                 >
                   <X size={16} />
@@ -494,7 +523,38 @@ const Profile = () => {
           ))}
         </div>
 
-        {/* MODALES */}
+        {/* MODAL DE CONFIRMACIÓN INTEGRADO */}
+        {deleteConfirm.isOpen && (
+          <div className="modal modal-open">
+            <div className="modal-box bg-base-200 border border-white/10 rounded-3xl max-w-xs text-center p-8">
+              <h3 className="font-bold text-lg mb-2">
+                {deleteConfirm.type === "own" ? "¿Borrar colección?" : "¿Quitar de guardados?"}
+              </h3>
+              <p className="text-sm opacity-60 mb-6 italic">
+                "{deleteConfirm.title}"
+              </p>
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={executeDelete}
+                  className="btn btn-primary rounded-2xl w-full"
+                >
+                  Confirmar
+                </button>
+                <button 
+                  onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+                  className="btn btn-ghost rounded-2xl w-full"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+            <div 
+              className="modal-backdrop bg-black/60" 
+              onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+            />
+          </div>
+        )}
+
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}

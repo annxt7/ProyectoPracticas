@@ -51,7 +51,7 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
     setLoading(true);
     try {
       await api.post(`/collections/${collection_id}/items`, {
-        reference_id: item.id,      // ID que viene del catálogo (Books, Music...)
+        reference_id: item.id,      
         item_type: item.type,       // Ej: 'books'
         custom_title: item.title,   // Por si acaso el backend necesita fallback
         custom_subtitle: item.author,

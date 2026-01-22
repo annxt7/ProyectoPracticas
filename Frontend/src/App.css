@@ -1,6 +1,8 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @plugin "daisyui";
 
+/* Si necesitas el fondo gris, úsalo de forma estándar por ahora */
 html, body, #root {
-  @apply bg-base-200 text-base-content h-full;
+  background-color: var(--color-base-200);
+  height: 100%;
 }
