@@ -1,13 +1,21 @@
+/* src/index.css o el que uses */
 @import "tailwindcss";
-@plugin "daisyui" {
-  /* Aquí definimos los temas que cargará el proyecto */
-  themes: lofi, black; 
+@import "daisyui";
+
+@config {
+  daisyui: {
+    themes: [
+      "light", 
+      "dark", 
+      "cupcake", 
+      "synthwave", 
+      "retro", 
+      "cyberpunk", 
+      "valentine", 
+      "aqua"
+    ];
+  }
 }
 
-/* Forzamos que el fondo y el texto sigan al tema de DaisyUI */
-html, body, #root {
-  background-color: var(--color-base-content-bg-primary);
-  color: var(--color-base-content-text-secondary);
-  min-height: 100vh;
-  transition: background-color 0.3s ease; /* Para que el cambio no sea brusco */
-}
+/* Para que Tailwind v4 detecte si el tema de DaisyUI es oscuro o claro */
+@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, [data-theme="synthwave"], [data-theme="synthwave"] *));

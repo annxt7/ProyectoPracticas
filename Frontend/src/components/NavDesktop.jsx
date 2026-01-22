@@ -1,23 +1,20 @@
 import React from "react";
+import Logo from "../assets/LogoClaro.webp";
+import LogoOscuro from "../assets/LogoOscuro.webp"; 
+import NavLinkDesktop from "./NavLinkDesktop"; 
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Search, Heart, User, LogOut, Sun, Moon } from "lucide-react";
-
-// Contextos
+import { Home, Search, Heart, User, LogOut, Palette } from "lucide-react"; 
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
-
-// Componentes
-import NavLinkDesktop from "./NavLinkDesktop";
-
-// Assets
-import LogoClaro from "../assets/LogoClaro.webp";
-import LogoOscuro from "../assets/LogoOscuro.webp";
+import { useTheme } from "../context/ThemeContext"; 
 
 const NavDesktop = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme(); 
+
+  // Lista de temas que configuramos en el CSS
+  const availableThemes = ["light", "dark", "cupcake", "synthwave", "retro", "aqua"];
 
   const isActive = (path) => location.pathname === path;
 
@@ -26,64 +23,49 @@ const NavDesktop = () => {
     navigate("/login");
   };
 
+  // Función para saber si el tema actual es de tipo "oscuro" para el logo
+  const isDark = ["dark", "synthwave", "aqua"].includes(theme);
+
   return (
-    <nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-base-content/10 z-50 px-6 py-3 justify-between items-center transition-colors duration-300">
+    <nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-base-content/10 z-40 px-6 py-3 justify-between items-center transition-colors duration-300">
       
-      {/* LOGO DINÁMICO */}
       <img
-        src={isDarkMode ? LogoOscuro : LogoClaro}
+        src={isDark ? LogoOscuro : Logo}
         alt="Tribe Logo"
-        className="h-12 w-auto object-contain"
+        className="h-14 w-auto object-contain transition-all"
       />
 
-      <div className="flex gap-8 items-center">
-        <NavLinkDesktop
-          icon={<Home size={24} />}
-          page="/feed"
-          label="Inicio"
-          active={isActive("/feed")}
-        />
-        <NavLinkDesktop
-          icon={<Search size={24} />}
-          page="/explorer"
-          label="Explorar"
-          active={isActive("/explorer")}
-        />
-        <NavLinkDesktop
-          icon={<Heart size={24} />}
-          page="/activity"
-          label="Actividad"
-          active={isActive("/activity")}
-        />
-        <NavLinkDesktop
-          icon={<User size={24} />}
-          page="/profile/me"
-          label="Perfil"
-          active={location.pathname.startsWith("/profile")}
-        />
+      <div className="flex gap-6 items-center">
+        <NavLinkDesktop icon={<Home size={28} />} page={"/feed"} label="Inicio" active={isActive("/feed")} />
+        <NavLinkDesktop icon={<Search size={24} />} page={"/explorer"} label="Explorar" active={isActive("/explorer")} />
+        <NavLinkDesktop icon={<Heart size={24} />} page={"/activity"} label="Actividad" active={isActive("/activity")} />
+        <NavLinkDesktop icon={<User size={24} />} page={"/profile/me"} label="Perfil" active={location.pathname.startsWith("/profile")} />
 
-        {/* BOTÓN CAMBIO DE TEMA */}
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="btn btn-ghost btn-circle text-base-content hover:bg-base-200 transition-colors"
-          aria-label="Cambiar tema"
-        >
-          {isDarkMode ? (
-            <Sun size={22} className="text-yellow-400" />
-          ) : (
-            <Moon size={22} className="text-slate-600" />
-          )}
-        </button>
+        {/* SELECTOR DE TEMAS (DROPDOWN) */}
+        <div className="dropdown dropdown-end">
+          <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
+            <Palette size={24} />
+          </div>
+          <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52 border border-base-content/10">
+            {availableThemes.map((t) => (
+              <li key={t}>
+                <button 
+                  onClick={() => setTheme(t)}
+                  className={`capitalize ${theme === t ? "active" : ""}`}
+                >
+                  {t}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {/* BOTÓN CERRAR SESIÓN */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 transition-all opacity-60 hover:opacity-100 hover:text-error"
-          title="Cerrar Sesión"
+          className="flex items-center gap-2 opacity-50 hover:opacity-100 hover:text-error transition-all"
         >
-          <LogOut size={22} />
-          <span className="text-sm font-medium">Salir</span>
+          <LogOut size={24} />
+          <span className="text-sm">Salir</span>
         </button>
       </div>
     </nav>
