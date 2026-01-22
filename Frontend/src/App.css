@@ -461,64 +461,48 @@
 }
 
 @plugin "daisyui/theme" {
+Si el diseño de Hotline Miami no se termina de ver bien, suele ser por una de estas tres razones: falta de contraste en el texto, el fondo no es lo suficientemente oscuro, o el "brillo" del neón se ve apagado.
+
+Vamos a ajustar los colores para que "peguen" de verdad. He oscurecido más el fondo (casi negro pero con alma morada) y he subido la saturación de los colores de acción.
+
+El CSS corregido (Estructura @plugin):
+CSS
+
+@plugin "daisyui/theme" {
   name: "hotline-miami";
   default: false;
   prefersdark: true;
-  color-scheme: "dark";
+  color-scheme: "light";
 
-  /* --- SECCIÓN BASE: Noche de Neón --- */
-  /* Morado ultra-oscuro de callejón */
-  --color-base-100: #12061F; 
-  /* Tono medianoche azulado para capas */
-  --color-base-200: #0D0217; 
-  /* El fucsia eléctrico que delimita el peligro */
-  --color-base-300: #FF00FF; 
-  /* Texto en cian pálido (efecto fósforo) */
-  --color-base-content: #9CFFF9; 
+  /* --- FONDO MÁS PROFUNDO (Para que el neón resalte) --- */
+  --color-base-100: #08020d; /* Negro morado profundo */
+  --color-base-200: #12061f; 
+  --color-base-300: #ff00ff; 
+  --color-base-content: #ffffff; /* Blanco puro para lectura clara */
 
-  /* --- COLORES PRINCIPALES: Miami Retro --- */
-  /* Rosa Neón (Violencia Estética) */
-  --color-primary: #FF52AF; 
-  --color-primary-content: #FFFFFF;
+  /* --- NEONES VIBRANTES --- */
+  --color-primary: #ff0077; /* Rosa fucsia agresivo */
+  --color-primary-content: #ffffff;
   
-  /* Cian Brillante (Luz de Discoteca) */
-  --color-secondary: #00E5FF; 
+  --color-secondary: #00f2ff; /* Cian puro */
   --color-secondary-content: #000000;
   
-  /* Amarillo Ácido de las Máscaras */
-  --color-accent: #F7FF00; 
-  --color-accent-content: #12061F;
+  --color-accent: #fbff00; /* Amarillo flúor */
+  --color-accent-content: #000000;
   
-  /* Negro profundo para los menús */
-  --color-neutral: #000000; 
-  /* Texto en rosa neón sobre negro */
-  --color-neutral-content: #FF00FF; 
+  --color-neutral: #1a1a1a; 
+  --color-neutral-content: #00f2ff; 
 
-  /* --- ESTADOS: Estética VHS y Sangre --- */
-  /* Info: Azul Cobalto */
-  --color-info: #3D5AFE; 
-  --color-info-content: #FFFFFF;
-  
-  /* Success: Verde Palmera Radiactiva */
-  --color-success: #00FF85; 
-  --color-success-content: #000000;
-  
-  /* Warning: Naranja Atardecer */
-  --color-warning: #FF8C00; 
-  --color-warning-content: #FFFFFF;
-  
-  /* Error: Rojo Sangre / Luz de Alerta */
-  --color-error: #FF003C; 
-  --color-error-content: #FFFFFF;
+  /* --- ESTADOS SEMÁNTICOS --- */
+  --color-info: #0077ff; 
+  --color-success: #22ff00; 
+  --color-warning: #ffae00; 
+  --color-error: #ff0000; 
 
-  /* --- GEOMETRÍA RETRO-ARCADE --- */
-  /* Botones redondos tipo "insert coin" */
-  --radius-selector: 9999px; 
-  /* Inputs totalmente cuadrados (Retro-PC) */
-  --radius-field: 0rem;       
-  /* Cajas con curvas de diseño 80s */
-  --radius-box: 1.5rem;        
-  /* Bordes gruesos para definir el estilo art-deco */
+  /* --- GEOMETRÍA --- */
+  --radius-selector: 0rem;   /* ¡Cuadrado total para estilo retro! */
+  --radius-field: 0rem;
+  --radius-box: 0rem;
   --border: 3px;             
 }
 
