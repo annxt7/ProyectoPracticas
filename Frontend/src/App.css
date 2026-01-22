@@ -626,4 +626,4 @@
   --radius-field: 0rem;       
   --radius-box: 0.5rem;        
 }
-@variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
+@variant dark (&:where([data-theme="dark"], [data-theme="chocolatero"], [data-theme="grove-street"], [data-theme="horror-night"], [data-theme="natura-dark"]));
