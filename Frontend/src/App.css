@@ -246,35 +246,33 @@
   prefersdark: false;
   color-scheme: "light";
 
-  /* Bases: Fondo lila muy pálido pero que se distingue del blanco puro */
-  --color-base-100: oklch(97% 0.02 285);  /* Fondo principal */
-  --color-base-200: oklch(93% 0.04 285);  /* Tarjetas y Modales */
-  --color-base-300: oklch(88% 0.06 285);  /* Bordes y elementos de contraste */
-  --color-base-content: oklch(25% 0.08 285); /* Texto (morado muy oscuro) */
+  /* Bases basadas en tu morado #d1a6d1 */
+  --color-base-100: oklch(78% 0.1 300);  
+  --color-base-200: oklch(74% 0.09 300); 
+  --color-base-300: oklch(68% 0.08 300);
+  --color-base-content: oklch(20% 0.06 300);
 
-  /* Principal: Lavanda Pastel Intenso (Para botones que resalten) */
-  --color-primary: oklch(80% 0.15 285);
-  --color-primary-content: oklch(35% 0.1 285);
+  /* Colores de Marca */
+  --color-primary: oklch(60% 0.15 300);
+  --color-primary-content: oklch(98% 0.01 300);
+  --color-secondary: oklch(82% 0.12 320);
+  --color-secondary-content: oklch(30% 0.1 320);
+  --color-accent: oklch(55% 0.18 285);
+  --color-accent-content: oklch(98% 0.01 285);
+  --color-neutral: oklch(45% 0.06 300);
+  --color-neutral-content: oklch(95% 0.02 300);
 
-  /* Secundario: Un lila rosado para detalles suaves */
-  --color-secondary: oklch(85% 0.12 305);
-  --color-secondary-content: oklch(35% 0.1 305);
+  /* ESTADOS (Ajustados para resaltar sobre el fondo morado) */
+  --color-info: oklch(75% 0.13 240);      /* Azul profundo */
+  --color-info-content: oklch(98% 0.01 240);
+  --color-success: oklch(78% 0.15 150);   /* Verde menta fuerte */
+  --color-success-content: oklch(20% 0.1 150);
+  --color-warning: oklch(85% 0.16 90);    /* Dorado/Amarillo */
+  --color-warning-content: oklch(35% 0.12 90);
+  --color-error: oklch(72% 0.18 20);      /* Rojo rosado */
+  --color-error-content: oklch(98% 0.02 20);
 
-  /* Accent: Violeta profundo para llamadas a la acción */
-  --color-accent: oklch(72% 0.18 290);
-  --color-accent-content: oklch(98% 0.02 290);
-
-  /* Neutrales: Gris lavanda */
-  --color-neutral: oklch(50% 0.05 285);
-  --color-neutral-content: oklch(98% 0.01 285);
-
-  /* Estados equilibrados con el tema */
-  --color-info: oklch(85% 0.1 240);    /* Azul cielo lila */
-  --color-success: oklch(85% 0.12 150); /* Verde menta */
-  --color-warning: oklch(90% 0.12 85);  /* Amarillo crema */
-  --color-error: oklch(80% 0.15 25);    /* Coral pastel */
-
-  /* Estilo visual coherente */
+  /* Estilo */
   --radius-selector: 1.5rem;
   --radius-field: 1rem;
   --radius-box: 2rem;
@@ -286,35 +284,33 @@
   prefersdark: false;
   color-scheme: "light";
 
-  /* Bases: Un fondo verde crema muy sutil pero perceptible */
-  --color-base-100: oklch(98% 0.015 145);  /* Fondo principal */
-  --color-base-200: oklch(95% 0.025 145);  /* Tarjetas/Modales */
-  --color-base-300: oklch(91% 0.035 145);  /* Bordes y zonas de contraste */
-  --color-base-content: oklch(25% 0.04 145); /* Texto principal (verde muy oscuro) */
+  /* Bases basadas en tu verde #b2faa4 */
+  --color-base-100: oklch(93% 0.18 140);  
+  --color-base-200: oklch(89% 0.15 140);  
+  --color-base-300: oklch(84% 0.12 140);
+  --color-base-content: oklch(25% 0.05 140);
 
-  /* Principal: Verde Hoja Pastel (Se nota bien en botones) */
-  --color-primary: oklch(82% 0.12 145);
-  --color-primary-content: oklch(35% 0.08 145);
+  /* Colores de Marca */
+  --color-primary: oklch(75% 0.2 140);
+  --color-primary-content: oklch(98% 0.02 140);
+  --color-secondary: oklch(85% 0.1 160);
+  --color-secondary-content: oklch(30% 0.05 160);
+  --color-accent: oklch(65% 0.15 130);
+  --color-accent-content: oklch(98% 0.01 130);
+  --color-neutral: oklch(40% 0.04 140);
+  --color-neutral-content: oklch(95% 0.02 140);
 
-  /* Secundario: Menta suave */
-  --color-secondary: oklch(88% 0.06 160);
-  --color-secondary-content: oklch(35% 0.06 160);
+  /* ESTADOS (Ajustados para resaltar sobre el fondo verde) */
+  --color-info: oklch(78% 0.12 210);      /* Azul cielo */
+  --color-info-content: oklch(25% 0.05 210);
+  --color-success: oklch(75% 0.16 155);   /* Verde bosque brillante */
+  --color-success-content: oklch(20% 0.05 155);
+  --color-warning: oklch(85% 0.15 85);    /* Amarillo mostaza suave */
+  --color-warning-content: oklch(30% 0.1 85);
+  --color-error: oklch(70% 0.18 25);      /* Rojo coral cálido */
+  --color-error-content: oklch(98% 0.02 25);
 
-  /* Accent: Un verde musgo más saturado para destacar */
-  --color-accent: oklch(75% 0.14 140);
-  --color-accent-content: oklch(98% 0.01 140);
-
-  /* Neutrales: Gris verdoso */
-  --color-neutral: oklch(45% 0.02 145);
-  --color-neutral-content: oklch(98% 0.01 145);
-
-  /* Estados ajustados al estilo natura */
-  --color-info: oklch(85% 0.08 190); 
-  --color-success: oklch(80% 0.12 150);
-  --color-warning: oklch(88% 0.1 80);
-  --color-error: oklch(75% 0.12 25);
-
-  /* Estilo visual */
+  /* Estilo */
   --radius-selector: 1.5rem;
   --radius-field: 1rem;
   --radius-box: 2rem;
