@@ -257,39 +257,39 @@
   prefersdark: false;
   color-scheme: "light";
 
-  /* Bases lavanda (más visibles) */
-  --color-base-100: oklch(96% 0.035 290);
-  --color-base-200: oklch(92% 0.04 290);
-  --color-base-300: oklch(87% 0.045 290);
-  --color-base-content: oklch(22% 0.04 290);
+  /* Bases lavanda (más morado) */
+  --color-base-100: oklch(95% 0.05 280);
+  --color-base-200: oklch(91% 0.055 280);
+  --color-base-300: oklch(86% 0.06 280);
+  --color-base-content: oklch(22% 0.05 280);
 
-  /* Principal lavanda pastel */
-  --color-primary: oklch(80% 0.14 290);
-  --color-primary-content: oklch(32% 0.2 290);
+  /* Principal lavanda pastel más intenso */
+  --color-primary: oklch(78% 0.18 280);
+  --color-primary-content: oklch(32% 0.22 280);
 
   /* Secundario lila suave */
-  --color-secondary: oklch(84% 0.11 305);
-  --color-secondary-content: oklch(36% 0.18 305);
+  --color-secondary: oklch(82% 0.14 300);
+  --color-secondary-content: oklch(36% 0.2 300);
 
   /* Accent violeta romántico */
-  --color-accent: oklch(78% 0.16 270);
+  --color-accent: oklch(76% 0.18 270);
   --color-accent-content: oklch(96% 0.02 270);
 
   /* Neutrales fríos */
-  --color-neutral: oklch(68% 0.04 290);
-  --color-neutral-content: oklch(20% 0.04 290);
+  --color-neutral: oklch(66% 0.05 280);
+  --color-neutral-content: oklch(20% 0.05 280);
 
   /* Estados */
-  --color-info: oklch(83% 0.1 230);
-  --color-info-content: oklch(38% 0.14 230);
+  --color-info: oklch(82% 0.12 230);
+  --color-info-content: oklch(38% 0.16 230);
 
-  --color-success: oklch(84% 0.12 150);
-  --color-success-content: oklch(36% 0.16 150);
+  --color-success: oklch(84% 0.14 150);
+  --color-success-content: oklch(36% 0.18 150);
 
-  --color-warning: oklch(86% 0.14 80);
-  --color-warning-content: oklch(40% 0.18 80);
+  --color-warning: oklch(86% 0.16 80);
+  --color-warning-content: oklch(40% 0.2 80);
 
-  --color-error: oklch(76% 0.16 15);
+  --color-error: oklch(76% 0.18 15);
   --color-error-content: oklch(96% 0.02 15);
 
   /* Estilo */
@@ -302,6 +302,58 @@
   --depth: 0;
   --noise: 0;
 }
+@plugin "daisyui/theme" {
+  name: "natura";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+
+  /* Bases naturales */
+  --color-base-100: oklch(97% 0.02 130);  /* verde muy suave, casi crema */
+  --color-base-200: oklch(94% 0.03 130);
+  --color-base-300: oklch(90% 0.035 130);
+  --color-base-content: oklch(22% 0.04 130);
+
+  /* Principal verde hoja pastel */
+  --color-primary: oklch(78% 0.12 130);
+  --color-primary-content: oklch(28% 0.08 130);
+
+  /* Secundario beige natural */
+  --color-secondary: oklch(85% 0.05 90);
+  --color-secondary-content: oklch(32% 0.06 90);
+
+  /* Accent verde más vivo */
+  --color-accent: oklch(72% 0.15 120);
+  --color-accent-content: oklch(95% 0.02 120);
+
+  /* Neutrales tierra */
+  --color-neutral: oklch(70% 0.03 90);
+  --color-neutral-content: oklch(20% 0.03 90);
+
+  /* Estados */
+  --color-info: oklch(80% 0.1 200);       /* azul verdoso suave */
+  --color-info-content: oklch(20% 0.03 200);
+
+  --color-success: oklch(75% 0.12 140);   /* verde natural */
+  --color-success-content: oklch(28% 0.05 140);
+
+  --color-warning: oklch(85% 0.12 60);    /* amarillo suave */
+  --color-warning-content: oklch(40% 0.08 60);
+
+  --color-error: oklch(78% 0.14 10);      /* rojo tierra */
+  --color-error-content: oklch(35% 0.1 10);
+
+  /* Estilo */
+  --radius-selector: 1rem;
+  --radius-field: 1.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 2px;
+  --depth: 0;
+  --noise: 0;
+}
+
 
 @plugin "daisyui/theme" {
   name: "sandstone";

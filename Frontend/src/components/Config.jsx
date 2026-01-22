@@ -62,17 +62,25 @@ const SettingsModal = ({ isOpen, onClose }) => {
       primary: "bg-[#E6C48A]", // crema mocha
     },
     {
-      id: "lavender-dream",
-      name: "Lavender Dream",
-      bg: "bg-[#F4F1FA]",
-      primary: "bg-[#c1b1dd]",
-    },
+  id: 'lavender-dream',
+  name: 'Lavender Dream',
+  bg: 'bg-[#EDE6F8]',       // fondo lavanda más morado visible
+  primary: 'bg-[#C4A1E8]'    // morado pastel más marcado
+}
+,
     {
       id: "sandstone",
       name: "Sandstone",
       bg: "bg-[#FAF6F0]",
       primary: "bg-[#C4A484]",
     },
+    {
+  id: 'natura',
+  name: 'Natura',
+  bg: 'bg-[#F3FAF3]',       // verde muy suave de fondo
+  primary: 'bg-[#A7D7A7]'    // verde hoja pastel
+}
+,
    
   ];
 
