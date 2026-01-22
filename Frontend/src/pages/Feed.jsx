@@ -3,7 +3,6 @@ import { Heart, ShieldAlert } from "lucide-react";
 import { Link } from "react-router-dom";
 import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
-import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
