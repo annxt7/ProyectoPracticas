@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Heart, UserPlus, MessageSquare, Bell, Info, Filter as FilterIcon, CheckCircle } from "lucide-react";
 import api from "../services/api.js";
-import NavMobile from "../components/NavMobile";
-import NavDesktop from "../components/NavDesktop";
+
+
 
 const Activity = () => {
   const [notifications, setNotifications] = useState([]);
@@ -60,7 +60,7 @@ const Activity = () => {
 
   return (
     <div className="min-h-screen pb-28 md:pb-10 bg-base-300 text-base-content font-sans transition-colors duration-300">
-      <NavDesktop />
+      
       
       {/* Header con blur adaptativo */}
       <header className="sticky top-0 z-30 bg-base-200 backdrop-blur-md border-b border-base-content/10 py-4">
@@ -157,7 +157,7 @@ const Activity = () => {
         </aside>
       </div>
 
-      <NavMobile />
+      
     </div>
   );
 };

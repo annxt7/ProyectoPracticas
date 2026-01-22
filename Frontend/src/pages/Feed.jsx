@@ -3,8 +3,6 @@ import { Heart, ShieldAlert } from "lucide-react";
 import { Link } from "react-router-dom";
 import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
-import NavDesktop from "../components/NavDesktop.jsx";
-import NavMobile from "../components/NavMobile.jsx";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeUser } from "../services/normalizers";
@@ -120,7 +118,7 @@ const Feed = () => {
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
-      <NavDesktop />
+      
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
         
         {/* COLUMNA IZQUIERDA: FEED */}
@@ -236,7 +234,6 @@ const Feed = () => {
           </div>
         </div>
       </main>
-      <NavMobile />
     </div>
   );
 };
