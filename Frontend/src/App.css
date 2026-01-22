@@ -150,59 +150,57 @@
   prefersdark: false;
   color-scheme: "light";
 
-  /* --- SECCIÓN BASE (Fondos alucinógenos) --- */
-  /* Un violeta neón que hará que todo explote */
   --color-base-100: #6A00FF; 
-  /* Un verde lima radioactivo para capas */
+  /* Verde Ácido Radioactivo (para que las capas duelan) */
   --color-base-200: #ADFF00; 
-  /* Un plata metálico para bordes */
-  --color-base-300: #E0E0E0; 
-  /* Texto en negro puro para que "grite" sobre el violeta */
-  --color-base-content: #000000; 
+  /* Fucsia Láser para bordes y separadores */
+  --color-base-300: #FF0099; 
+  /* Blanco Puro para que el texto salte del fondo oscuro */
+  --color-base-content: #FFFFFF; 
 
-  /* --- COLORES PRINCIPALES (Contraste Máximo) --- */
-  /* Amarillo Eléctrico */
+  /* --- COLORES PRINCIPALES: El Circo del Caos --- */
+  /* Amarillo Neón "Cuidado con el Perro" */
   --color-primary: #FFF000; 
   --color-primary-content: #000000;
   
-  /* Rosa Chicle Neón */
+  /* Rosa Chicle Incandescente */
   --color-secondary: #FF00FF; 
   --color-secondary-content: #FFFFFF;
   
-  /* Turquesa Ultra-Saturado */
+  /* Cian Ultravioleta */
   --color-accent: #00F5FF; 
   --color-accent-content: #000000;
   
-  /* Negro Azabache para anclar el caos */
-  --color-neutral: #000000; 
-  --color-neutral-content: #00FF00; /* Texto verde neón sobre fondo negro */
+  /* Negro Abismo con Brillo Verde Matrix */
+  --color-neutral: #0D0D0D; 
+  --color-neutral-content: #39FF14; 
 
-  /* --- ESTADOS DEL SISTEMA (Semántica Alocada) --- */
-  /* Info: Azul Eléctrico */
-  --color-info: #3D5AFE; 
+  /* --- ESTADOS: Semántica Alucinógena --- */
+  /* Info: Azul "Pantallazo de la Muerte" */
+  --color-info: #0022FF; 
   --color-info-content: #FFFFFF;
   
-  /* Success: Verde Alienígena */
-  --color-success: #00FF66; 
+  /* Success: Verde Alien Snot */
+  --color-success: #00FF41; 
   --color-success-content: #000000;
   
-  /* Warning: Naranja Incandescente */
-  --color-warning: #FF5E00; 
+  /* Warning: Naranja Lava Hirviente */
+  --color-warning: #FF4E00; 
   --color-warning-content: #FFFFFF;
   
-  /* Error: Rojo Sangre Neón */
+  /* Error: Rojo "Pánico en la Disco" */
   --color-error: #FF003C; 
   --color-error-content: #FFFFFF;
 
-  /* --- VARIABLES DE ESTILO (Geometría Agresiva) --- */
-  --radius-selector: 1.5rem; /* Muy redondeado */
-  --radius-field: 0rem;       /* Totalmente cuadrado para los inputs */
-  --radius-box: 2rem;        /* Burbujas gigantes para las cajas */
-  --size-selector: 0.5rem;
-  --size-field: 0.1rem;
-  --border: 4px;             /* Bordes gruesos y pesados */
-  --depth: 1;
-  --noise: 1;                /* ¡Que ruede el ruido! */
+  /* --- GEOMETRÍA PSICÓTICA --- */
+  /* Botones redondos como canicas */
+  --radius-selector: 9999px; 
+  /* Inputs puntiagudos y agresivos */
+  --radius-field: 0rem;       
+  /* Cajas con curvas imposibles */
+  --radius-box: 3rem;        
+  /* Bordes de cómic super gruesos */
+  --border: 6px;                /* ¡Que ruede el ruido! */
 }
 
 @plugin "daisyui/theme" {
@@ -257,58 +255,4 @@
   --noise: 0;
 }
 
-
-@plugin "daisyui/theme" {
-  --color-scheme: "rainbow";
-  
-  /* --- BASE: El Reino de las Nubes --- */
-  /* Un blanco rosado con destellos */
-  --color-base-100: #FFF5FF; 
-  /* Lavanda suave para secciones */
-  --color-base-200: #F3E8FF; 
-  /* Azul cielo pastel para bordes */
-  --color-base-300: #E0F2FE; 
-  /* Púrpura oscuro para que el texto sea legible entre tanta magia */
-  --color-base-content: #4A044E; 
-
-  /* --- COLORES UNICORNIO --- */
-  /* Rosa Chicle (El corazón del arcoíris) */
-  --color-primary: #FF71CE; 
-  --color-primary-content: #FFFFFF;
-  
-  /* Cian Mágico */
-  --color-secondary: #01CDFE; 
-  --color-secondary-content: #FFFFFF;
-  
-  /* Amarillo Estelar */
-  --color-accent: #FFF587; 
-  --color-accent-content: #7A5100;
-  
-  /* Violeta Galáctico */
-  --color-neutral: #B967FF; 
-  --color-neutral-content: #FFFFFF;
-
-  /* --- ESTADOS ARCOÍRIS --- */
-  /* Info: Turquesa Sirena */
-  --color-info: #05FFA1; 
-  --color-info-content: #004D33;
-  
-  /* Success: Verde Menta Brillante */
-  --color-success: #A5FFD6; 
-  --color-success-content: #004F2D;
-  
-  /* Warning: Melocotón Neón */
-  --color-warning: #FFA384; 
-  --color-warning-content: #4D1A00;
-  
-  /* Error: Fucsia Intenso */
-  --color-error: #FF007F; 
-  --color-error-content: #FFFFFF;
-
-  /* --- GEOMETRÍA DE FANTASÍA --- */
-  --radius-selector: 2rem;    /* Todo súper redondeado como nubes */
-  --radius-field: 1rem;       /* Inputs suaves */
-  --radius-box: 2.5rem;      /* Cajas muy circulares */
-  --border: 2px;
-   }
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
