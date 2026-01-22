@@ -26,7 +26,7 @@ exports.getAdminData = async (req, res) => {
             ORDER BY created_at DESC
         `);
 
-        // Coleccione
+        // Colecciones
         const [collections] = await db.query(`
             SELECT 
                 c.collection_id AS id, 

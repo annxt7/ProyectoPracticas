@@ -75,7 +75,7 @@ const CollectionPage = () => {
               cover: item.display_image || item.custom_image,
               item_type: item.item_type,
               reference_id: refId,
-              is_custom: !refId // Si no hay refId, es un item manual
+              is_custom: !refId 
             };
           }));
         }
