@@ -524,53 +524,57 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "hibrido-v4";
+  name: "paquito-chocolatero";
   default: false;
   prefersdark: false;
   color-scheme: "light";
 
-  /* --- SECCIÓN BASE: El Palacio ocupado --- */
-  /* Blanco Mármol Carrara (La base de Mozart) */
-  --color-base-100: #F2F2F2; 
-  /* Rosa Fucsia "Duro 2 Horas" para capas */
-  --color-base-200: #FF00FF; 
-  /* Oro viejo oxidado para bordes */
-  --color-base-300: #B8860B; 
-  /* Texto en negro puro (como tinta de pluma) */
-  --color-base-content: #000000; 
+  /* --- SECCIÓN BASE: Plaza del Pueblo --- */
+  /* Blanco "Papel de envolver caramelos" */
+  --color-base-100: #FFFFFF; 
+  /* Azul "Luces de verbena" suave */
+  --color-base-200: #E3F2FD; 
+  /* Gris "Serrín de la plaza" */
+  --color-base-300: #F5E6CC; 
+  /* Negro "Tinta de cartel de fiestas" */
+  --color-base-content: #1A1A1A; 
 
-  /* --- COLORES CORE: Contradicción Pura --- */
-  /* El Morado de las portadas de Faraón */
-  --color-primary: #8B00FF; 
+  /* --- COLORES PRINCIPALES: ¡Que empiece la banda! --- */
+  /* Rojo "Pasodoble" (Pasión de fiesta) */
+  --color-primary: #D32F2F; 
   --color-primary-content: #FFFFFF;
   
-  /* Verde Peluca Barroca (Ese tono empolvado) */
-  --color-secondary: #A9D1C1; 
+  /* Amarillo "Trompeta de Oro" */
+  --color-secondary: #FFD700; 
   --color-secondary-content: #000000;
   
-  /* Amarillo "Cadenas de Oro" */
-  --color-accent: #FFD700; 
-  --color-accent-content: #000000;
+  /* Azul "Orquesta Panorama" */
+  --color-accent: #1976D2; 
+  --color-accent-content: #FFFFFF;
   
-  /* Piel de Tigre / Animal Print (Naranja sucio) */
-  --color-neutral: #E67E22; 
-  --color-neutral-content: #FFFFFF;
+  /* Marrón "Chocolate de Paquito" */
+  --color-neutral: #4E342E; 
+  --color-neutral-content: #FFD700; 
 
-  /* --- ESTADOS SEMÁNTICOS --- */
-  --color-info: #00BFFF; 
-  --color-success: #39FF14; /* Verde neón "Híbrido" */
-  --color-warning: #FFCC00; 
-  --color-error: #FF003C; 
+  /* --- ESTADOS SEMÁNTICOS: ¡Alegría! --- */
+  /* Info: Celeste confeti */
+  --color-info: #4FC3F7; 
+  /* Success: Verde "Césped de la plaza" */
+  --color-success: #388E3C; 
+  /* Warning: Naranja "Churreria" */
+  --color-warning: #F57C00; 
+  /* Error: Rojo "Vino tinto" */
+  --color-error: #B71C1C; 
 
-  /* --- GEOMETRÍA: Caos Estructural --- */
-  /* Los botones son redondos como monedas de oro */
+  /* --- GEOMETRÍA: ¡A bailar! --- */
+  /* Botones redondos como bombos de banda */
   --radius-selector: 9999px; 
-  /* Los inputs son cuadrados como un piano */
-  --radius-field: 0rem;       
-  /* Las cajas tienen un radio exagerado de peluca */
-  --radius-box: 3rem;        
-  /* Bordes de 5px: Mitad marco dorado, mitad graffiti */
-  --border: 5px;       
+  /* Inputs rectos como la partitura */
+  --radius-field: 0.25rem;       
+  /* Cajas con curvas de verbena */
+  --radius-box: 1.5rem;        
+  /* Bordes alegres y definidos */
+  --border: 3px;             
 }
 
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
