@@ -43,7 +43,7 @@ const CollectionPage = () => {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedItemForSave, setSelectedItemForSave] = useState(null);
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
-  const [itemToDelete, setItemToDelete] = useState(null); // Para sustituir el confirm()
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   // Función para mostrar notificaciones
   const showNotification = (message, type = "success") => {
@@ -200,7 +200,6 @@ const CollectionPage = () => {
         </div>
       )}
 
-      {/* --- MODAL CONFIRMACIÓN ELIMINAR (SUSTITUYE CONFIRM) --- */}
       {itemToDelete && (
         <div className="modal modal-open">
           <div className="modal-box rounded-3xl border border-white/10 bg-base-200">
@@ -218,7 +217,7 @@ const CollectionPage = () => {
       <div className="relative">
         <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-25">
           <img src={isEditing ? editForm.cover : collectionInfo.cover} className="w-full h-full object-cover blur-3xl" alt="" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-base-100"></div>
+          <div className="absolute inset-0 bg-linear-to-b from-transparent to-base-100"></div>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 pt-8">
