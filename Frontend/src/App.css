@@ -470,55 +470,50 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "jamaica-style";
+name: "jamaican-roots";
   default: false;
   prefersdark: true;
-  color-scheme: "dark";
+  color-scheme: "light";
 
-  /* --- SECCIÓN BASE: Noche en Kingston --- */
-  /* Negro profundo para que los colores "canten" */
-  --color-base-100: #0B0B0B; 
-  /* Gris carbón muy oscuro */
-  --color-base-200: #1A1A1A; 
-  /* Verde selva oscuro para bordes */
-  --color-base-300: #004D2C; 
-  /* Blanco hueso para el texto */
-  --color-base-content: #F2F2F2; 
+  /* --- FONDO: Noche cerrada en Trenchtown --- */
+  --color-base-100: #050505; 
+  /* Verde selva radioactivo para las capas profundas */
+  --color-base-200: #002B17; 
+  /* Amarillo sol para los bordes */
+  --color-base-300: #FFD700; 
+  /* Texto en blanco puro para que destaque entre el caos */
+  --color-base-content: #FFFFFF; 
 
-  /* --- COLORES PRINCIPALES: Rasta Power --- */
-  /* Verde Pan-Africano (Naturaleza) */
-  --color-primary: #009946; 
+  /* --- TRINIDAD RASTAFARI (Máxima Saturación) --- */
+  /* Verde Ganja Profundo */
+  --color-primary: #008542; 
   --color-primary-content: #FFFFFF;
   
-  /* Amarillo Oro (Riqueza y Sol) */
-  --color-secondary: #FFD700; 
+  /* Amarillo Oro Neón (El Sol de Zion) */
+  --color-secondary: #FFCC00; 
   --color-secondary-content: #000000;
   
-  /* Rojo Pasión (Sangre y Sacrificio) */
-  --color-accent: #E81123; 
+  /* Rojo Sangre / Fuego (Burning Spear) */
+  --color-accent: #E11C24; 
   --color-accent-content: #FFFFFF;
   
-  /* Negro Mate para botones neutrales */
-  --color-neutral: #262626; 
-  --color-neutral-content: #FFD700; 
+  /* Negro puro con borde amarillo */
+  --color-neutral: #000000; 
+  --color-neutral-content: #FFCC00; 
 
-  /* --- ESTADOS SEMÁNTICOS --- */
-  /* Info: Azul Mar Caribe */
-  --color-info: #00A3E0; 
-  /* Success: Verde Limón brillante */
-  --color-success: #32CD32; 
-  /* Warning: Naranja Papaya */
-  --color-warning: #FF8C00; 
-  /* Error: Rojo Volcánico */
-  --color-error: #B22222; 
+  /* --- ESTADOS CON FLOW --- */
+  --color-info: #00E5FF; 
+  --color-success: #39FF14; 
+  --color-warning: #FF8000; 
+  --color-error: #FF0000; 
 
-  /* --- GEOMETRÍA: Chill & Relax --- */
-  /* Bordes suaves y amigables */
-  --radius-selector: 1rem; 
-  --radius-field: 0.25rem;       
-  --radius-box: 1.5rem;        
-  /* Bordes presentes pero no agresivos */
-  --border: 2px;             
+  /* --- GEOMETRÍA: Rudeboy Style --- */
+  /* Bordes gruesos de cartel de concierto de Reggae */
+  --border: 5px;             
+  /* Cajas muy cuadradas (estilo altavoz/speaker) */
+  --radius-selector: 0rem; 
+  --radius-field: 0rem;       
+  --radius-box: 0rem;             
 }
 
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
