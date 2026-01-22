@@ -211,40 +211,40 @@
   prefersdark: false;
   color-scheme: "light";
 
-  /* Bases */
-  --color-base-100: oklch(99% 0.01 350);
-  --color-base-200: oklch(96% 0.015 350);
-  --color-base-300: oklch(92% 0.02 350);
-  --color-base-content: oklch(22% 0.02 350);
+  /* Bases (más rosita, sigue pastel) */
+  --color-base-100: oklch(98% 0.02 350);
+  --color-base-200: oklch(95% 0.025 350);
+  --color-base-300: oklch(91% 0.03 350);
+  --color-base-content: oklch(22% 0.025 350);
 
-  /* Principal rosita */
-  --color-primary: oklch(85% 0.12 350);
-  --color-primary-content: oklch(35% 0.18 350);
+  /* Principal rosita pastel */
+  --color-primary: oklch(83% 0.15 350);
+  --color-primary-content: oklch(34% 0.2 350);
 
   /* Secundario rosa melocotón */
-  --color-secondary: oklch(88% 0.08 20);
-  --color-secondary-content: oklch(40% 0.15 20);
+  --color-secondary: oklch(86% 0.1 18);
+  --color-secondary-content: oklch(38% 0.17 18);
 
-  /* Accent rosa-lila */
-  --color-accent: oklch(87% 0.1 320);
-  --color-accent-content: oklch(38% 0.16 320);
+  /* Accent rosa-lila más marcado */
+  --color-accent: oklch(85% 0.13 320);
+  --color-accent-content: oklch(36% 0.18 320);
 
-  /* Neutrales suaves */
-  --color-neutral: oklch(70% 0.02 350);
-  --color-neutral-content: oklch(20% 0.02 350);
+  /* Neutrales cálidos */
+  --color-neutral: oklch(72% 0.03 350);
+  --color-neutral-content: oklch(20% 0.025 350);
 
-  /* Estados */
-  --color-info: oklch(85% 0.08 230);
-  --color-info-content: oklch(40% 0.1 230);
+  /* Estados (ligeramente más vivos pero suaves) */
+  --color-info: oklch(84% 0.1 230);
+  --color-info-content: oklch(38% 0.12 230);
 
-  --color-success: oklch(86% 0.1 150);
-  --color-success-content: oklch(38% 0.14 150);
+  --color-success: oklch(85% 0.12 150);
+  --color-success-content: oklch(36% 0.16 150);
 
-  --color-warning: oklch(88% 0.12 80);
-  --color-warning-content: oklch(42% 0.16 80);
+  --color-warning: oklch(87% 0.14 80);
+  --color-warning-content: oklch(40% 0.18 80);
 
-  --color-error: oklch(80% 0.14 10);
-  --color-error-content: oklch(35% 0.18 10);
+  --color-error: oklch(78% 0.16 10);
+  --color-error-content: oklch(33% 0.2 10);
 
   /* Estilo */
   --radius-selector: 1rem;
@@ -256,6 +256,7 @@
   --depth: 0;
   --noise: 0;
 }
+
 
 
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
