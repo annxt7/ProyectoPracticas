@@ -150,20 +150,6 @@
   prefersdark: false;
   color-scheme: "light";
 
- ¡Agárrate! Si querías que el diseño fuera una explosión, esto ya es terrorismo visual de nivel galáctico. Hemos pasado de la "locura" al "Caos Absoluto 404: Reality Not Found".
-
-He retorcido los colores para que sean tan saturados que casi emitan luz propia y he configurado la geometría para que la interfaz parezca sacada de una pesadilla de arcade de los años 80.
-
-Aquí tienes el código de la "Ultra-Mega-Giga-Locura" (compatible con el build de Tailwind 4):
-
-CSS
-
-@import "tailwindcss";
-@plugin "daisyui";
-
-@theme {
-  --color-scheme: "light";
-
   /* --- FONDOS: El Abismo Psicodélico --- */
   /* Magenta Eléctrico (Fondo principal, prepárate) */
   --color-base-100: #FF00AA; 
@@ -216,7 +202,7 @@ CSS
   /* Bordes de camión: 10px de puro caos */
   --border: 10px;             
   /* Sombras que se ven a kilómetros */
-  --depth: 10;            /* ¡Que ruede el ruido! */
+  --depth: 10;/* ¡Que ruede el ruido! */
 }
 
 @plugin "daisyui/theme" {
