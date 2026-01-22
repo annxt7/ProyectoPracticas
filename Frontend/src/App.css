@@ -150,57 +150,73 @@
   prefersdark: false;
   color-scheme: "light";
 
-  --color-base-100: #6A00FF; 
-  /* Verde Ácido Radioactivo (para que las capas duelan) */
-  --color-base-200: #ADFF00; 
-  /* Fucsia Láser para bordes y separadores */
-  --color-base-300: #FF0099; 
-  /* Blanco Puro para que el texto salte del fondo oscuro */
-  --color-base-content: #FFFFFF; 
+ ¡Agárrate! Si querías que el diseño fuera una explosión, esto ya es terrorismo visual de nivel galáctico. Hemos pasado de la "locura" al "Caos Absoluto 404: Reality Not Found".
 
-  /* --- COLORES PRINCIPALES: El Circo del Caos --- */
-  /* Amarillo Neón "Cuidado con el Perro" */
-  --color-primary: #FFF000; 
-  --color-primary-content: #000000;
-  
-  /* Rosa Chicle Incandescente */
-  --color-secondary: #FF00FF; 
-  --color-secondary-content: #FFFFFF;
-  
-  /* Cian Ultravioleta */
-  --color-accent: #00F5FF; 
-  --color-accent-content: #000000;
-  
-  /* Negro Abismo con Brillo Verde Matrix */
-  --color-neutral: #0D0D0D; 
-  --color-neutral-content: #39FF14; 
+He retorcido los colores para que sean tan saturados que casi emitan luz propia y he configurado la geometría para que la interfaz parezca sacada de una pesadilla de arcade de los años 80.
 
-  /* --- ESTADOS: Semántica Alucinógena --- */
-  /* Info: Azul "Pantallazo de la Muerte" */
-  --color-info: #0022FF; 
-  --color-info-content: #FFFFFF;
+Aquí tienes el código de la "Ultra-Mega-Giga-Locura" (compatible con el build de Tailwind 4):
+
+CSS
+
+@import "tailwindcss";
+@plugin "daisyui";
+
+@theme {
+  --color-scheme: "light";
+
+  /* --- FONDOS: El Abismo Psicodélico --- */
+  /* Magenta Eléctrico (Fondo principal, prepárate) */
+  --color-base-100: #FF00AA; 
+  /* Amarillo Radiactivo para contrastes */
+  --color-base-200: #DEFF0A; 
+  /* Cian Ultravioleta para bordes */
+  --color-base-300: #1AD6FF; 
+  /* El texto es Verde Neón sobre Magenta... ¡Dolor visual! */
+  --color-base-content: #39FF14; 
+
+  /* --- COLORES CORE: Contraste de Infarto --- */
+  /* Naranja Incandescente */
+  --color-primary: #FF5E00; 
+  --color-primary-content: #FFFFFF;
   
-  /* Success: Verde Alien Snot */
-  --color-success: #00FF41; 
+  /* Púrpura "Glow" */
+  --color-secondary: #BD00FF; 
+  --color-secondary-content: #00FFD1;
+  
+  /* Lima Ácida */
+  --color-accent: #CCFF00; 
+  --color-accent-content: #FF00FF;
+  
+  /* Negro Carbón con texto Blanco */
+  --color-neutral: #000000; 
+  --color-neutral-content: #FFFFFF;
+
+  /* --- ESTADOS: El Apocalipsis de Color --- */
+  /* Info: El azul más saturado que existe */
+  --color-info: #0000FF; 
+  --color-info-content: #FFFF00;
+  
+  /* Success: Verde Flúor */
+  --color-success: #00FF00; 
   --color-success-content: #000000;
   
-  /* Warning: Naranja Lava Hirviente */
-  --color-warning: #FF4E00; 
-  --color-warning-content: #FFFFFF;
+  /* Warning: Amarillo Tráfico Agresivo */
+  --color-warning: #FFFF00; 
+  --color-warning-content: #FF0000;
   
-  /* Error: Rojo "Pánico en la Disco" */
-  --color-error: #FF003C; 
+  /* Error: El rojo más violento */
+  --color-error: #FF0000; 
   --color-error-content: #FFFFFF;
 
-  /* --- GEOMETRÍA PSICÓTICA --- */
-  /* Botones redondos como canicas */
-  --radius-selector: 9999px; 
-  /* Inputs puntiagudos y agresivos */
-  --radius-field: 0rem;       
-  /* Cajas con curvas imposibles */
-  --radius-box: 3rem;        
-  /* Bordes de cómic super gruesos */
-  --border: 6px;                /* ¡Que ruede el ruido! */
+  /* --- GEOMETRÍA: Esquizofrenia Estructural --- */
+  /* Todo es un círculo */
+  --radius-selector: 50%;     
+  /* Los inputs son diamantes cortantes */
+  --radius-field: 0.5rem;      
+  /* Bordes de camión: 10px de puro caos */
+  --border: 10px;             
+  /* Sombras que se ven a kilómetros */
+  --depth: 10;            /* ¡Que ruede el ruido! */
 }
 
 @plugin "daisyui/theme" {
