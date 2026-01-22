@@ -85,7 +85,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
    
    { id: 'gipsy-style', name: 'Gipsy Style', bg: 'bg-[#FFFFFF]', primary: 'bg-[#C0392B]' },
    { id: 'horror-night', name: 'Horror Night', bg: 'bg-[#050505]', primary: 'bg-[#880808]' },
-   { id: 'paquito-chocolatero', name: 'Paquito Style 🎺', bg: 'bg-[#FFFFFF]', primary: 'bg-[#D32F2F]' },
+   { id: 'chocolatero', name: 'Sólo Chocolate 🍫', bg: 'bg-[#1B100F]', primary: 'bg-[#7B3F00]' },
   ];
 
   if (!isOpen) return null;
