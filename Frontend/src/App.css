@@ -524,53 +524,106 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "hibrido-v4";
+  name: "chocolatero";
   default: false;
-  prefersdark: false;
-  color-scheme: "light";
+  prefersdark: true;
+  color-scheme: "dark";
 
-  /* --- SECCIÓN BASE: El Palacio ocupado --- */
-  /* Blanco Mármol Carrara (La base de Mozart) */
-  --color-base-100: #F2F2F2; 
-  /* Rosa Fucsia "Duro 2 Horas" para capas */
-  --color-base-200: #FF00FF; 
-  /* Oro viejo oxidado para bordes */
-  --color-base-300: #B8860B; 
-  /* Texto en negro puro (como tinta de pluma) */
-  --color-base-content: #000000; 
+  /* --- SECCIÓN BASE: La Tableta --- */
+  /* Chocolate Negro Intenso (Fondo principal) */
+  --color-base-100: #1B100F; 
+  /* Chocolate Amargo para capas */
+  --color-base-200: #2D1B19; 
+  /* Chocolate con Leche para bordes y separadores */
+  --color-base-300: #7B3F00; 
+  /* Chocolate Blanco (Texto crema) */
+  --color-base-content: #F5E6CC; 
 
-  /* --- COLORES CORE: Contradicción Pura --- */
-  /* El Morado de las portadas de Faraón */
-  --color-primary: #8B00FF; 
-  --color-primary-content: #FFFFFF;
+  /* --- COLORES PRINCIPALES: Variedades de Cacao --- */
+  /* Chocolate con Leche Cremoso */
+  --color-primary: #7B3F00; 
+  --color-primary-content: #F5E6CC;
   
-  /* Verde Peluca Barroca (Ese tono empolvado) */
-  --color-secondary: #A9D1C1; 
-  --color-secondary-content: #000000;
+  /* Caramelo Salado / Toffee */
+  --color-secondary: #C68E17; 
+  --color-secondary-content: #1B100F;
   
-  /* Amarillo "Cadenas de Oro" */
-  --color-accent: #FFD700; 
-  --color-accent-content: #000000;
+  /* Chocolate Blanco Marfil */
+  --color-accent: #FFF5E1; 
+  --color-accent-content: #3D2314;
   
-  /* Piel de Tigre / Animal Print (Naranja sucio) */
-  --color-neutral: #E67E22; 
-  --color-neutral-content: #FFFFFF;
+  /* Cacao Puro en Polvo */
+  --color-neutral: #3D2314; 
+  --color-neutral-content: #F5E6CC; 
 
-  /* --- ESTADOS SEMÁNTICOS --- */
-  --color-info: #00BFFF; 
-  --color-success: #39FF14; /* Verde neón "Híbrido" */
-  --color-warning: #FFCC00; 
-  --color-error: #FF003C; 
+  /* --- ESTADOS SEMÁNTICOS: Sabores --- */
+  /* Info: Menta y Chocolate */
+  --color-info: #3E8E7E; 
+  /* Success: Pistacho */
+  --color-success: #88B04B; 
+  /* Warning: Piel de Naranja Confitada */
+  --color-warning: #FF8C00; 
+  /* Error: Licor de Cereza */
+  --color-error: #800000; 
 
-  /* --- GEOMETRÍA: Caos Estructural --- */
-  /* Los botones son redondos como monedas de oro */
-  --radius-selector: 9999px; 
-  /* Los inputs son cuadrados como un piano */
-  --radius-field: 0rem;       
-  /* Las cajas tienen un radio exagerado de peluca */
-  --radius-box: 3rem;        
-  /* Bordes de 5px: Mitad marco dorado, mitad graffiti */
-  --border: 5px;       
+  /* --- GEOMETRÍA: Formas de Onza --- */
+  /* Bordes gruesos como una tableta de calidad */
+  --border: 4px;             
+  /* Esquinas suavizadas como chocolate fundido */
+  --radius-selector: 0.5rem; 
+  --radius-field: 0.3rem;       
+  --radius-box: 1rem;        
 }
 
+@plugin "daisyui/theme" {
+  name: "grove-street";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  /* --- SECCIÓN BASE: El Barrio --- */
+  /* Negro Asfalto / Noche en el callejón */
+  --color-base-100: #0f0f0f; 
+  /* Gris cemento de las aceras */
+  --color-base-200: #1a1a1a; 
+  /* Verde oscuro de las bandas para bordes */
+  --color-base-300: #1b4d21; 
+  /* Blanco "Camiseta de CJ" para el texto */
+  --color-base-content: #f2f2f2; 
+
+  /* --- COLORES PRINCIPALES: Families 4 Life --- */
+  /* Verde Grove Street (El color de la banda) */
+  --color-primary: #2e8b57; 
+  --color-primary-content: #ffffff;
+  
+  /* Amarillo "Lowrider" (Cromados y detalles) */
+  --color-secondary: #c5a059; 
+  --color-secondary-content: #000000;
+  
+  /* Gris Grafiti */
+  --color-accent: #4a4a4a; 
+  --color-accent-content: #ffffff;
+  
+  /* Negro Tinta de Tatuaje */
+  --color-neutral: #000000; 
+  --color-neutral-content: #2e8b57; 
+
+  /* --- ESTADOS SEMÁNTICOS: Respeto y Peligro --- */
+  /* Info: Azul "Luz de Policía" */
+  --color-info: #1c4b82; 
+  /* Success: Verde Dinero / Respeto + */
+  --color-success: #00ff00; 
+  /* Warning: Amarillo Bandas Rivales (Vagos) */
+  --color-warning: #ffd700; 
+  /* Error: Morado Ballas (El enemigo) */
+  --color-error: #800080; 
+
+  /* --- GEOMETRÍA: Estilo San Andreas --- */
+  /* Bordes marcados como en los menús del juego */
+  --border: 3px;             
+  /* Esquinas ligeramente redondeadas pero duras */
+  --radius-selector: 0.2rem; 
+  --radius-field: 0rem;       
+  --radius-box: 0.5rem;        
+}
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));

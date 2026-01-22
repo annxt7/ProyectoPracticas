@@ -85,7 +85,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
    
    { id: 'gipsy-style', name: 'Gipsy Style', bg: 'bg-[#FFFFFF]', primary: 'bg-[#C0392B]' },
    { id: 'horror-night', name: 'Horror Night', bg: 'bg-[#050505]', primary: 'bg-[#880808]' },
-   { id: 'hibrido-v4', name: 'Arequipa', bg: 'bg-[#1a012e]', primary: 'bg-[#a020f0]' },
+   { id: 'chocolatero', name: 'Chocolate', bg: 'bg-[#1B100F]', primary: 'bg-[#7B3F00]' },
+   { id: 'grove-street', name: 'Grove Street Families', bg: 'bg-[#0f0f0f]', primary: 'bg-[#2e8b57]' },
   ];
 
   if (!isOpen) return null;
