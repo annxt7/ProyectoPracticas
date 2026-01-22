@@ -27,6 +27,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
     { id: 'synthwave', name: 'Synthwave', bg: 'bg-[#2d1b69]', primary: 'bg-[#e779c1]' },
     { id: 'retro', name: 'Retro', bg: 'bg-[#ece3ca]', primary: 'bg-[#ef9995]' },
     { id: 'aqua', name: 'Aqua', bg: 'bg-[#0b25b7]', primary: 'bg-[#09ecf3]' },
+    { id: 'hawaii', name: 'Hawaii', bg: 'bg-[#f8f9f1]', primary: 'bg-[#ffb703]' },
   ];
 
   if (!isOpen) return null;
