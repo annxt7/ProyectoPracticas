@@ -26,6 +26,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
     { id: 'retro', name: 'Retro', bg: 'bg-[#ece3ca]', primary: 'bg-[#ef9995]' },
     { id: 'aqua', name: 'Aqua', bg: 'bg-[#0b25b7]', primary: 'bg-[#09ecf3]' },
     { id: 'hawaii', name: 'Hawaii', bg: 'bg-[#f8f9f1]', primary: 'bg-[#ffb703]' },
+    { id: 'locura-total', name: 'Locura Total', bg: 'bg-[#6A00FF]', primary: 'bg-[#FFF000]' },
+
   ];
 
   if (!isOpen) return null;

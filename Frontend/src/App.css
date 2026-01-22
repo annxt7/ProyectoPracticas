@@ -146,5 +146,65 @@
   --noise: 1;
 }
 
+@plugin "daisyui/theme" {
+  name: "locura-total";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+
+  /* --- SECCIÓN BASE (Fondos alucinógenos) --- */
+  /* Un violeta neón que hará que todo explote */
+  --color-base-100: #6A00FF; 
+  /* Un verde lima radioactivo para capas */
+  --color-base-200: #ADFF00; 
+  /* Un plata metálico para bordes */
+  --color-base-300: #E0E0E0; 
+  /* Texto en negro puro para que "grite" sobre el violeta */
+  --color-base-content: #000000; 
+
+  /* --- COLORES PRINCIPALES (Contraste Máximo) --- */
+  /* Amarillo Eléctrico */
+  --color-primary: #FFF000; 
+  --color-primary-content: #000000;
+  
+  /* Rosa Chicle Neón */
+  --color-secondary: #FF00FF; 
+  --color-secondary-content: #FFFFFF;
+  
+  /* Turquesa Ultra-Saturado */
+  --color-accent: #00F5FF; 
+  --color-accent-content: #000000;
+  
+  /* Negro Azabache para anclar el caos */
+  --color-neutral: #000000; 
+  --color-neutral-content: #00FF00; /* Texto verde neón sobre fondo negro */
+
+  /* --- ESTADOS DEL SISTEMA (Semántica Alocada) --- */
+  /* Info: Azul Eléctrico */
+  --color-info: #3D5AFE; 
+  --color-info-content: #FFFFFF;
+  
+  /* Success: Verde Alienígena */
+  --color-success: #00FF66; 
+  --color-success-content: #000000;
+  
+  /* Warning: Naranja Incandescente */
+  --color-warning: #FF5E00; 
+  --color-warning-content: #FFFFFF;
+  
+  /* Error: Rojo Sangre Neón */
+  --color-error: #FF003C; 
+  --color-error-content: #FFFFFF;
+
+  /* --- VARIABLES DE ESTILO (Geometría Agresiva) --- */
+  --radius-selector: 1.5rem; /* Muy redondeado */
+  --radius-field: 0rem;       /* Totalmente cuadrado para los inputs */
+  --radius-box: 2rem;        /* Burbujas gigantes para las cajas */
+  --size-selector: 0.5rem;
+  --size-field: 0.1rem;
+  --border: 4px;             /* Bordes gruesos y pesados */
+  --depth: 1;
+  --noise: 1;                /* ¡Que ruede el ruido! */
+}
 }
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
