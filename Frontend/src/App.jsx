@@ -9,7 +9,7 @@ import { AuthProvider } from "./context/AuthContext.jsx"; // Asegúrate de tener
 // Componentes y Rutas Protegidas
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
 import NavDesktop from "./components/NavDesktop.jsx";
-
+import NavMobile from "./components/NavMobile.jsx";
 // Importaciones con Lazy Loading
 const AuthScreen = lazy(() => import("./pages/LoginCard.jsx"));
 const Landing = lazy(() => import("./pages/Landing.jsx"));
