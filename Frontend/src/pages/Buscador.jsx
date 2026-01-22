@@ -42,7 +42,7 @@ const Explorer = () => {
       try {
         const res = await api.get(`/search?query=${encodeURIComponent(query)}`);
         const data = res.data;
-        console.log("Datos recibidos del buscador:", data);
+        
         const cleanUsers = (data.users || [])
           .map((u) => normalizeUser(u))
           .filter((u) => {
@@ -68,10 +68,8 @@ const Explorer = () => {
     return () => clearTimeout(timeoutId);
   }, [query, myId]);
 
-  // 3. Toggle Seguir/Dejar de seguir
   const handleFollowToggle = async (targetId, isFollowing) => {
     if (!myId) return alert("Debes iniciar sesión");
-
     const id = Number(targetId);
     try {
       if (isFollowing) {
@@ -90,12 +88,12 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 bg-base-300 text-base-content font-sans">
       <NavDesktop />
 
-      {/* Header buscador */}
-      <div className="sticky top-0 md:top-16 z-40 bg-base-200 backdrop-blur-md p-4 border-b border-base-100">
+      {/* Header buscador - Ajustado a base-200 */}
+      <div className="sticky top-0 md:top-16 z-40 bg-base-200/80 backdrop-blur-md p-4 border-b border-base-100">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
             <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20"
+              className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40"
               size={18}
             />
             <input
@@ -103,7 +101,8 @@ const Explorer = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar en Tribe..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-10 outline-none focus:border-primary/50 transition-all text-sm"
+              // Eliminado bg-white/5 por bg-base-100 para que sea dinámico
+              className="w-full bg-base-100 border border-base-300 rounded-2xl py-3 pl-12 pr-10 outline-none focus:border-primary/50 transition-all text-sm"
             />
             {query && (
               <X
@@ -122,7 +121,7 @@ const Explorer = () => {
                 className={`pb-2 text-xs font-bold uppercase tracking-widest transition-all ${
                   activeTab === tab
                     ? "text-primary border-b-2 border-primary"
-                    : "opacity-30 hover:opacity-100"
+                    : "opacity-40 hover:opacity-100"
                 }`}
               >
                 {tab}
@@ -142,7 +141,7 @@ const Explorer = () => {
         {!loading && activeTab === "cuentas" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {users.length === 0 && (
-              <p className="text-center opacity-30 col-span-full py-10">
+              <p className="text-center opacity-40 col-span-full py-10">
                 No se encontraron usuarios
               </p>
             )}
@@ -152,13 +151,14 @@ const Explorer = () => {
               return (
                 <div
                   key={u.id}
-                  className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
+                  // Usamos bg-base-200 para las cards
+                  className="flex items-center justify-between p-4 bg-base-200 rounded-2xl border border-base-100 hover:border-primary/20 transition-all shadow-sm"
                 >
                   <Link
                     to={`/profile/${u.id}`}
                     className="flex items-center gap-4 min-w-0"
                   >
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-white/5 border border-white/10">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-base-300 border border-base-100">
                       <img
                         src={
                           u.avatar ||
@@ -169,7 +169,7 @@ const Explorer = () => {
                       />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-sm truncate text-white/90">
+                      <p className="font-bold text-sm truncate">
                         @{u.username}
                       </p>
                     </div>
@@ -178,7 +178,7 @@ const Explorer = () => {
                   <button
                     onClick={() => handleFollowToggle(u.id, isFollowing)}
                     className={`btn btn-xs px-5 rounded-lg font-bold transition-all ${
-                      isFollowing ? "btn-neutral opacity-40" : "btn-primary"
+                      isFollowing ? "btn-ghost bg-base-300" : "btn-primary"
                     }`}
                   >
                     {isFollowing ? "Siguiendo" : "Seguir"}
@@ -192,14 +192,15 @@ const Explorer = () => {
         {!loading && activeTab === "colecciones" && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {collections.length === 0 && (
-              <p className="text-center opacity-30 col-span-full py-10">
+              <p className="text-center opacity-40 col-span-full py-10">
                 No se encontraron colecciones
               </p>
             )}
             {collections.map((col) => (
               <Link key={col.id} to={`/collection/${col.id}`} className="group">
                 <div className="flex flex-col gap-3">
-                  <div className="aspect-video rounded-2xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-primary/40 transition-all relative">
+                  {/* Aspect-video con fondo de base-200 */}
+                  <div className="aspect-video rounded-2xl overflow-hidden bg-base-200 border border-base-200 group-hover:border-primary/40 transition-all relative shadow-sm">
                     <ItemCover
                       src={col.cover}
                       title={col.title}
@@ -207,7 +208,7 @@ const Explorer = () => {
                     />
                   </div>
                   <div className="px-1">
-                    <h3 className="font-bold truncate text-[13px] text-white/90 group-hover:text-primary">
+                    <h3 className="font-bold truncate text-[13px] group-hover:text-primary transition-colors">
                       {col.title}
                     </h3>
                     <p className="text-[10px] text-primary font-black uppercase tracking-widest">

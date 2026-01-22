@@ -204,5 +204,58 @@
   --depth: 1;
   --noise: 1;                /* ¡Que ruede el ruido! */
 }
+
+@plugin "daisyui/theme" {
+  name: "pinky";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+
+  /* Bases */
+  --color-base-100: oklch(99% 0.01 350);
+  --color-base-200: oklch(96% 0.015 350);
+  --color-base-300: oklch(92% 0.02 350);
+  --color-base-content: oklch(22% 0.02 350);
+
+  /* Principal rosita */
+  --color-primary: oklch(85% 0.12 350);
+  --color-primary-content: oklch(35% 0.18 350);
+
+  /* Secundario rosa melocotón */
+  --color-secondary: oklch(88% 0.08 20);
+  --color-secondary-content: oklch(40% 0.15 20);
+
+  /* Accent rosa-lila */
+  --color-accent: oklch(87% 0.1 320);
+  --color-accent-content: oklch(38% 0.16 320);
+
+  /* Neutrales suaves */
+  --color-neutral: oklch(70% 0.02 350);
+  --color-neutral-content: oklch(20% 0.02 350);
+
+  /* Estados */
+  --color-info: oklch(85% 0.08 230);
+  --color-info-content: oklch(40% 0.1 230);
+
+  --color-success: oklch(86% 0.1 150);
+  --color-success-content: oklch(38% 0.14 150);
+
+  --color-warning: oklch(88% 0.12 80);
+  --color-warning-content: oklch(42% 0.16 80);
+
+  --color-error: oklch(80% 0.14 10);
+  --color-error-content: oklch(35% 0.18 10);
+
+  /* Estilo */
+  --radius-selector: 1rem;
+  --radius-field: 1.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 2px;
+  --depth: 0;
+  --noise: 0;
 }
+
+
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
