@@ -1,25 +1,26 @@
 import React from "react";
 import Logo from "../assets/LogoClaro.webp";
 import NavLinkDesktop from "./NavLinkDesktop";
-import { useLocation, useNavigate } from "react-router-dom"; // Importamos useNavigate
-import { Home, Search, Heart, User, LogOut } from "lucide-react"; // Añadimos LogOut
-import { useAuth } from "../context/AuthContext"; // Importamos el contexto
+import { useLocation, useNavigate } from "react-router-dom";
+import { Home, Search, Heart, User, LogOut } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const NavDesktop = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth(); // Sacamos la función logout
+  const { logout } = useAuth(); 
 
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
     logout();
-    navigate("/login"); // Redirigimos al login al salir
+    navigate("/login");
   };
 
   return (
     <>
-      <nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-white/40 z-40 px-6 py-3 justify-between items-center">
+      
+      <nav className="hidden md:flex sticky top-0 bg-base-100/90 backdrop-blur-md border-b border-base-200 z-40 px-6 py-3 justify-between items-center shadow-sm">
         <img
           src={Logo}
           alt="Tribe Logo"
@@ -52,8 +53,6 @@ const NavDesktop = () => {
             active={location.pathname.startsWith("/profile")}
           />
 
-          {/* BOTÓN DE LOGOUT */}
-          {/* Usamos los mismos estilos que NavLinkDesktop pero en un button */}
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 transition opacity-50 hover:opacity-100 hover:text-error"

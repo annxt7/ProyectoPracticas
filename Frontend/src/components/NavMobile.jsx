@@ -1,13 +1,13 @@
 import React from "react";
 import NavLinkMobile from "./NavLinkMobile";
-import { Home, Search, Heart, LogOut } from "lucide-react"; // Importamos LogOut
-import { useLocation, useNavigate, Link } from "react-router-dom"; // Importamos Link y useNavigate
-import { useAuth } from "../context/AuthContext"; // Importamos el contexto
+import { Home, Search, Heart, LogOut } from "lucide-react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const NavMobile = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useAuth(); // Sacamos logout y el usuario real
+  const { logout, user } = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
@@ -18,7 +18,8 @@ const NavMobile = () => {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-200 px-6 py-3 md:hidden z-50">
+      
+      <div className="fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-200 px-6 py-3 md:hidden z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="flex justify-between items-center max-w-sm mx-auto">
           <NavLinkMobile
             icon={<Home size={24} />}
@@ -36,7 +37,6 @@ const NavMobile = () => {
             page={"/activity"}
           />
 
-          {/* FOTO DE PERFIL REAL (Enlace al perfil) */}
           <Link 
             to="/profile/me"
             className={`cursor-pointer border-2 rounded-full p-0.5 transition ${isActive('/profile/me') ? 'border-primary' : 'border-transparent'}`}
@@ -50,7 +50,6 @@ const NavMobile = () => {
             </div>
           </Link>
 
-          {/* BOTÓN DE LOGOUT (Solo icono para ahorrar espacio) */}
           <button 
             onClick={handleLogout}
             className="p-2 text-base-content/50 hover:text-error transition"
