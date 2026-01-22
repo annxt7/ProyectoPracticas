@@ -5,10 +5,7 @@ import "./App.css";
 // Contextos
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx"; // Asegúrate de tenerlo
-
-// Componentes y Rutas Protegidas
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
-// Importaciones con Lazy Loading
 const AuthScreen = lazy(() => import("./pages/LoginCard.jsx"));
 const Landing = lazy(() => import("./pages/Landing.jsx"));
 const Feed = lazy(() => import("./pages/Feed.jsx"));
@@ -43,7 +40,6 @@ function App() {
 
             {/* --- RUTAS PRIVADAS (Con Navbar Único) --- */}
             <Route element={<ProtectedRoute />}>
-              <Route element={<PrivateLayout />}>
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/explorer" element={<Explorer />} />
                 <Route path="/activity" element={<Activity />} />
@@ -53,7 +49,6 @@ function App() {
                 <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/admin" element={<AdminDashboard />} />
               </Route>
-            </Route>
           </Routes>
         </Suspense>
       </ThemeProvider>
