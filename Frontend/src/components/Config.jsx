@@ -81,6 +81,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
   primary: 'bg-[#A7D7A7]'    // verde hoja pastel
 }
 ,
+{ id: 'natura-dark', name: 'Natura Dark', bg: 'bg-[#1a241a]', primary: 'bg-[#70c070]' },
    
    { id: 'gipsy-style', name: 'Gipsy Style', bg: 'bg-[#FFFFFF]', primary: 'bg-[#C0392B]' },
    { id: 'jamaica-style', name: 'Jamaica Style', bg: 'bg-[#0B0B0B]', primary: 'bg-[#009946]' },
