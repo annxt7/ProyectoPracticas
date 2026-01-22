@@ -575,7 +575,6 @@
   --radius-box: 1rem;        
 }
 
-@plugin "daisyui/theme" {
   
 @plugin "daisyui/theme" {
   name: "inspiration-park";
@@ -612,5 +611,4 @@
   --noise: 1;
 }
         
-}
 @variant dark (&:where([data-theme="dark"], [data-theme="chocolatero"], [data-theme="grove-street"], [data-theme="horror-night"], [data-theme="natura-dark"]));
