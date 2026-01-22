@@ -49,7 +49,7 @@ console.log(user)
         >
           <div className="w-7 h-7 rounded-full bg-base-300 overflow-hidden">
             <img
-              src={user?.avatar_url || `https://ui-avatars.com/api/?name=${user?.username || 'U'}&background=random`}
+              src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username || 'U'}&background=random`}
               alt="me"
               className="w-full h-full object-cover"
             />
