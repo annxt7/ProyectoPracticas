@@ -358,6 +358,108 @@
   --depth: 1;
   --noise: 0;
 }
+@plugin "daisyui/theme" {
+  name: "lavender-dream";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+
+  /* Bases lavanda */
+  --color-base-100: oklch(98% 0.015 290);
+  --color-base-200: oklch(95% 0.02 290);
+  --color-base-300: oklch(91% 0.025 290);
+  --color-base-content: oklch(22% 0.03 290);
+
+  /* Principal lavanda pastel */
+  --color-primary: oklch(82% 0.12 290);
+  --color-primary-content: oklch(34% 0.18 290);
+
+  /* Secundario lila suave */
+  --color-secondary: oklch(86% 0.09 305);
+  --color-secondary-content: oklch(38% 0.16 305);
+
+  /* Accent violeta romántico */
+  --color-accent: oklch(80% 0.14 270);
+  --color-accent-content: oklch(95% 0.02 270);
+
+  /* Neutrales fríos */
+  --color-neutral: oklch(70% 0.03 290);
+  --color-neutral-content: oklch(20% 0.03 290);
+
+  /* Estados */
+  --color-info: oklch(85% 0.08 230);
+  --color-info-content: oklch(40% 0.12 230);
+
+  --color-success: oklch(86% 0.1 150);
+  --color-success-content: oklch(38% 0.14 150);
+
+  --color-warning: oklch(88% 0.12 80);
+  --color-warning-content: oklch(42% 0.16 80);
+
+  --color-error: oklch(78% 0.14 15);
+  --color-error-content: oklch(95% 0.02 15);
+
+  /* Estilo */
+  --radius-selector: 1rem;
+  --radius-field: 1.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 2px;
+  --depth: 0;
+  --noise: 0;
+}
+@plugin "daisyui/theme" {
+  name: "sandstone";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+
+  /* Bases arena */
+  --color-base-100: oklch(98% 0.01 85);
+  --color-base-200: oklch(95% 0.015 85);
+  --color-base-300: oklch(91% 0.02 85);
+  --color-base-content: oklch(22% 0.02 85);
+
+  /* Principal beige piedra */
+  --color-primary: oklch(78% 0.06 80);
+  --color-primary-content: oklch(30% 0.08 80);
+
+  /* Secundario arena cálida */
+  --color-secondary: oklch(85% 0.04 90);
+  --color-secondary-content: oklch(32% 0.06 90);
+
+  /* Accent marrón suave */
+  --color-accent: oklch(70% 0.07 65);
+  --color-accent-content: oklch(96% 0.01 65);
+
+  /* Neutrales */
+  --color-neutral: oklch(72% 0.015 85);
+  --color-neutral-content: oklch(20% 0.02 85);
+
+  /* Estados */
+  --color-info: oklch(82% 0.07 230);
+  --color-info-content: oklch(35% 0.1 230);
+
+  --color-success: oklch(80% 0.08 150);
+  --color-success-content: oklch(32% 0.1 150);
+
+  --color-warning: oklch(86% 0.1 80);
+  --color-warning-content: oklch(38% 0.14 80);
+
+  --color-error: oklch(75% 0.12 20);
+  --color-error-content: oklch(95% 0.02 20);
+
+  /* Estilo */
+  --radius-selector: 1rem;
+  --radius-field: 1.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 2px;
+  --depth: 0;
+  --noise: 0;
+}
 
 
 

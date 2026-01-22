@@ -80,7 +80,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
   name: 'Mocha Night',
   bg: 'bg-[#1C1612]',      // café oscuro
   primary: 'bg-[#E6C48A]'  // crema mocha
-}
+},
+{ id: 'lavender-dream', name: 'Lavender Dream', bg: 'bg-[#F4F1FA]', primary: 'bg-[#C6B7E2]' }
+, { id: 'sandstone', name: 'Sandstone', bg: 'bg-[#FAF6F0]', primary: 'bg-[#C4A484]' }
+
 
   ];
 
