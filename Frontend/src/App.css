@@ -459,6 +459,58 @@
   --depth: 0;
   --noise: 0;
 }
+@plugin "daisyui/theme" {
+  name: "cyber-y2k";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  /* Bases oscuras tech */
+  --color-base-100: oklch(12% 0.02 300);
+  --color-base-200: oklch(10% 0.02 300);
+  --color-base-300: oklch(8% 0.025 300);
+  --color-base-content: oklch(95% 0.02 300);
+
+  /* Principal neón rosa/fucsia */
+  --color-primary: oklch(75% 0.35 330);
+  --color-primary-content: oklch(10% 0.05 330);
+
+  /* Secundario cyan eléctrico */
+  --color-secondary: oklch(72% 0.3 200);
+  --color-secondary-content: oklch(10% 0.02 200);
+
+  /* Accent morado neón */
+  --color-accent: oklch(70% 0.25 290);
+  --color-accent-content: oklch(95% 0.02 290);
+
+  /* Neutrales oscuros */
+  --color-neutral: oklch(15% 0.01 300);
+  --color-neutral-content: oklch(92% 0.02 300);
+
+  /* Estados */
+  --color-info: oklch(70% 0.25 210);
+  --color-info-content: oklch(10% 0.02 210);
+
+  --color-success: oklch(72% 0.22 150);
+  --color-success-content: oklch(10% 0.02 150);
+
+  --color-warning: oklch(78% 0.28 80);
+  --color-warning-content: oklch(10% 0.02 80);
+
+  --color-error: oklch(70% 0.3 20);
+  --color-error-content: oklch(10% 0.02 20);
+
+  /* Estilo */
+  --radius-selector: 1rem;
+  --radius-field: 1.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 2px;
+  --depth: 1;
+  --noise: 0;
+}
+
 
 
 

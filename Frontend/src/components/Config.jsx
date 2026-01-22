@@ -82,7 +82,14 @@ const SettingsModal = ({ isOpen, onClose }) => {
   primary: 'bg-[#E6C48A]'  // crema mocha
 },
 { id: 'lavender-dream', name: 'Lavender Dream', bg: 'bg-[#F4F1FA]', primary: 'bg-[#C6B7E2]' }
-, { id: 'sandstone', name: 'Sandstone', bg: 'bg-[#FAF6F0]', primary: 'bg-[#C4A484]' }
+, { id: 'sandstone', name: 'Sandstone', bg: 'bg-[#FAF6F0]', primary: 'bg-[#C4A484]' },
+{
+  id: 'cyber-y2k',
+  name: 'Cyber Y2K',
+  bg: 'bg-[#0A0A1F]',      // fondo oscuro tech
+  primary: 'bg-[#FF2CF7]'  // neón fucsia
+}
+
 
 
   ];
