@@ -439,7 +439,7 @@ const Profile = () => {
         </div>
 
         {/* TABS NAVEGACIÓN */}
-        <div className="border-t border-white/10 mt-4 sticky top-16 bg-base-100/95 z-30 flex justify-center gap-12 backdrop-blur-md">
+        <div className="border-t border-secondary mt-4 sticky top-16 bg-base-100/80 z-30 flex justify-center gap-12 backdrop-blur-md">
           <button
             onClick={() => setActiveTab("collections")}
             className={`py-4 border-b-2 px-4 text-sm font-bold transition-all ${
