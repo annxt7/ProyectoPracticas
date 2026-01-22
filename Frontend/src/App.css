@@ -362,5 +362,57 @@
 
 
 
+@plugin "daisyui/theme" {
+  --color-scheme: "rainbow";
+  
+  /* --- BASE: El Reino de las Nubes --- */
+  /* Un blanco rosado con destellos */
+  --color-base-100: #FFF5FF; 
+  /* Lavanda suave para secciones */
+  --color-base-200: #F3E8FF; 
+  /* Azul cielo pastel para bordes */
+  --color-base-300: #E0F2FE; 
+  /* Púrpura oscuro para que el texto sea legible entre tanta magia */
+  --color-base-content: #4A044E; 
 
+  /* --- COLORES UNICORNIO --- */
+  /* Rosa Chicle (El corazón del arcoíris) */
+  --color-primary: #FF71CE; 
+  --color-primary-content: #FFFFFF;
+  
+  /* Cian Mágico */
+  --color-secondary: #01CDFE; 
+  --color-secondary-content: #FFFFFF;
+  
+  /* Amarillo Estelar */
+  --color-accent: #FFF587; 
+  --color-accent-content: #7A5100;
+  
+  /* Violeta Galáctico */
+  --color-neutral: #B967FF; 
+  --color-neutral-content: #FFFFFF;
+
+  /* --- ESTADOS ARCOÍRIS --- */
+  /* Info: Turquesa Sirena */
+  --color-info: #05FFA1; 
+  --color-info-content: #004D33;
+  
+  /* Success: Verde Menta Brillante */
+  --color-success: #A5FFD6; 
+  --color-success-content: #004F2D;
+  
+  /* Warning: Melocotón Neón */
+  --color-warning: #FFA384; 
+  --color-warning-content: #4D1A00;
+  
+  /* Error: Fucsia Intenso */
+  --color-error: #FF007F; 
+  --color-error-content: #FFFFFF;
+
+  /* --- GEOMETRÍA DE FANTASÍA --- */
+  --radius-selector: 2rem;    /* Todo súper redondeado como nubes */
+  --radius-field: 1rem;       /* Inputs suaves */
+  --radius-box: 2.5rem;      /* Cajas muy circulares */
+  --border: 2px;
+   }
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));

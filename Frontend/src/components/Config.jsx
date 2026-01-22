@@ -64,6 +64,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
       primary: "bg-[#F4A3C4]",
     },
     {
+      id: "rainbow",
+      name: "Rainbow",
+      bg: "bg-[#FFF1F2]", 
+      primary: "bg-[#F4A3B2]",
+    },
+    {
       id: "midnight-rose",
       name: "Midnight Rose",
       bg: "bg-[#1A141C]", // base-100 oscuro
