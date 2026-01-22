@@ -1,13 +1,15 @@
 import React from "react";
 import NavLinkMobile from "./NavLinkMobile";
-import { Home, Search, Heart, LogOut } from "lucide-react";
+import { Home, Search, Heart, LogOut, Sun, Moon } from "lucide-react"; // Añadimos Sun y Moon
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext"; // Importamos el hook del tema
 
 const NavMobile = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme(); // Consumimos el estado del tema
 
   const isActive = (path) => location.pathname === path;
 
@@ -29,6 +31,20 @@ const NavMobile = () => {
           active={isActive("/explorer")}
           page={"/explorer"}
         />
+        
+        {/* INTERRUPTOR DE TEMA MÓVIL */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 text-base-content/70"
+          aria-label="Cambiar tema"
+        >
+          {isDarkMode ? (
+            <Sun size={24} className="text-yellow-400" />
+          ) : (
+            <Moon size={24} className="text-slate-600" />
+          )}
+        </button>
+
         <NavLinkMobile
           icon={<Heart size={24} />}
           active={isActive("/activity")}
@@ -49,7 +65,7 @@ const NavMobile = () => {
           </div>
         </Link>
 
-        {/* Logout */}
+        {/* Logout opcional (o podrías quitarlo de aquí para no saturar) */}
         <button 
           onClick={handleLogout}
           className="p-2 text-base-content/60 hover:text-error transition"

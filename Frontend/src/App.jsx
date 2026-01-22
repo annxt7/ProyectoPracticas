@@ -9,7 +9,7 @@ import { AuthProvider } from "./context/AuthContext.jsx"; // Asegúrate de tener
 // Componentes y Rutas Protegidas
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
 import NavDesktop from "./components/NavDesktop.jsx";
-
+import NavMobile from "./components/NavMobile.jsx";
 // Importaciones con Lazy Loading
 const AuthScreen = lazy(() => import("./pages/LoginCard.jsx"));
 const Landing = lazy(() => import("./pages/Landing.jsx"));
@@ -26,10 +26,13 @@ const ResetPasswordScreen = lazy(() => import("./pages/ResetPassword.jsx"));
 // Componente Layout para evitar duplicidad del Nav
 const PrivateLayout = () => (
   <div className="min-h-screen bg-base-100 transition-colors duration-300">
-    <NavDesktop />
-    <main>
-      <Outlet /> {/* Aquí se renderizarán las páginas como Feed, Perfil, etc. */}
+    <NavDesktop /> {/* Se oculta en móvil por su propia clase 'hidden md:flex' */}
+    
+    <main className="pb-20 md:pb-0"> {/* Añadimos padding abajo en móvil para que el Nav no tape el contenido */}
+      <Outlet />
     </main>
+
+    <NavMobile /> {/* Se oculta en escritorio por su propia clase 'md:hidden' */}
   </div>
 );
 
