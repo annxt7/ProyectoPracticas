@@ -6,6 +6,8 @@ import MiniUserCard from "../components/MiniUserCard.jsx";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeUser } from "../services/normalizers";
+import NavDesktop from "../components/NavDesktop.jsx";
+import NavMobile from "../components/NavMobile.jsx";
 
 const Feed = () => {
   const { user: currentUser } = useAuth();
@@ -120,7 +122,7 @@ const Feed = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
       
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
-        
+        <NavDesktop />
         {/* COLUMNA IZQUIERDA: FEED */}
         <div className="md:col-span-2 space-y-6">
           <div className="md:hidden flex items-center justify-between mb-4">
@@ -233,6 +235,7 @@ const Feed = () => {
             </div>
           </div>
         </div>
+        <NavMobile />
       </main>
     </div>
   );
