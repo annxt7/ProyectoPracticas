@@ -104,50 +104,39 @@
   prefersdark: false;
   color-scheme: "light";
 
-  /* Bases (más rosita, sigue pastel) */
-  --color-base-100: oklch(96% 0.02 350);
-  --color-base-200: oklch(95% 0.025 350);
-  --color-base-300: oklch(91% 0.03 350);
-  --color-base-content: oklch(22% 0.025 350);
+  /* Bases: He aumentado el contraste para que las cards (base-200) se noten */
+  --color-base-100: oklch(98% 0.015 340);  /* Fondo principal (casi blanco rosado) */
+  --color-base-200: oklch(94% 0.03 340);   /* Tarjetas y Modales */
+  --color-base-300: oklch(89% 0.05 340);   /* Bordes y hovers */
+  --color-base-content: oklch(30% 0.06 340); /* Texto (Rosa muy oscuro para lectura) */
 
-  /* Principal rosita pastel */
-  --color-primary: oklch(83% 0.15 350);
-  --color-primary-content: oklch(34% 0.2 350);
+  /* Principal: Rosa Pastel Vibrante */
+  --color-primary: oklch(80% 0.14 340);
+  --color-primary-content: oklch(98% 0.01 340); /* Texto claro sobre botón rosa */
 
-  /* Secundario rosa melocotón */
-  --color-secondary: oklch(86% 0.1 18);
-  --color-secondary-content: oklch(38% 0.17 18);
+  /* Secundario: Rosa Melocotón (Mantenido pero con mejor contraste) */
+  --color-secondary: oklch(86% 0.08 25);
+  --color-secondary-content: oklch(40% 0.08 25);
 
-  /* Accent rosa-lila más marcado */
-  --color-accent: oklch(85% 0.13 320);
-  --color-accent-content: oklch(36% 0.18 320);
+  /* Accent: Rosa-Lila (Más marcado para botones de acción) */
+  --color-accent: oklch(75% 0.15 320);
+  --color-accent-content: oklch(98% 0.01 320);
 
-  /* Neutrales cálidos */
-  --color-neutral: oklch(72% 0.03 350);
-  --color-neutral-content: oklch(20% 0.025 350);
+  /* Neutral: Gris cálido rosado */
+  --color-neutral: oklch(55% 0.03 340);
+  --color-neutral-content: oklch(98% 0.01 340);
 
-  /* Estados (ligeramente más vivos pero suaves) */
-  --color-info: oklch(84% 0.1 230);
-  --color-info-content: oklch(38% 0.12 230);
+  /* Estados: Suavizados para que no rompan la estética pastel */
+  --color-info: oklch(85% 0.08 240);
+  --color-success: oklch(85% 0.1 145);
+  --color-warning: oklch(90% 0.1 85);
+  --color-error: oklch(80% 0.12 25);
 
-  --color-success: oklch(85% 0.12 150);
-  --color-success-content: oklch(36% 0.16 150);
-
-  --color-warning: oklch(87% 0.14 80);
-  --color-warning-content: oklch(40% 0.18 80);
-
-  --color-error: oklch(78% 0.16 10);
-  --color-error-content: oklch(33% 0.2 10);
-
-  /* Estilo */
-  --radius-selector: 1rem;
-  --radius-field: 1.75rem;
-  --radius-box: 1.25rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 2px;
-  --depth: 0;
-  --noise: 0;
+  /* Estilo visual Tribe */
+  --radius-selector: 1.5rem;
+  --radius-field: 1rem;
+  --radius-box: 2rem;
+  --border: 1px;
 }
 @plugin "daisyui/theme" {
   name: "midnight-rose";
@@ -257,50 +246,39 @@
   prefersdark: false;
   color-scheme: "light";
 
-  /* Bases lavanda (más morado) */
-  --color-base-100: oklch(95% 0.05 280);
-  --color-base-200: oklch(91% 0.055 280);
-  --color-base-300: oklch(86% 0.06 280);
-  --color-base-content: oklch(22% 0.05 280);
+  /* Bases: Fondo lila muy pálido pero que se distingue del blanco puro */
+  --color-base-100: oklch(97% 0.02 285);  /* Fondo principal */
+  --color-base-200: oklch(93% 0.04 285);  /* Tarjetas y Modales */
+  --color-base-300: oklch(88% 0.06 285);  /* Bordes y elementos de contraste */
+  --color-base-content: oklch(25% 0.08 285); /* Texto (morado muy oscuro) */
 
-  /* Principal lavanda pastel más intenso */
-  --color-primary: oklch(78% 0.18 280);
-  --color-primary-content: oklch(32% 0.22 280);
+  /* Principal: Lavanda Pastel Intenso (Para botones que resalten) */
+  --color-primary: oklch(80% 0.15 285);
+  --color-primary-content: oklch(35% 0.1 285);
 
-  /* Secundario lila suave */
-  --color-secondary: oklch(82% 0.14 300);
-  --color-secondary-content: oklch(36% 0.2 300);
+  /* Secundario: Un lila rosado para detalles suaves */
+  --color-secondary: oklch(85% 0.12 305);
+  --color-secondary-content: oklch(35% 0.1 305);
 
-  /* Accent violeta romántico */
-  --color-accent: oklch(76% 0.18 270);
-  --color-accent-content: oklch(96% 0.02 270);
+  /* Accent: Violeta profundo para llamadas a la acción */
+  --color-accent: oklch(72% 0.18 290);
+  --color-accent-content: oklch(98% 0.02 290);
 
-  /* Neutrales fríos */
-  --color-neutral: oklch(66% 0.05 280);
-  --color-neutral-content: oklch(20% 0.05 280);
+  /* Neutrales: Gris lavanda */
+  --color-neutral: oklch(50% 0.05 285);
+  --color-neutral-content: oklch(98% 0.01 285);
 
-  /* Estados */
-  --color-info: oklch(82% 0.12 230);
-  --color-info-content: oklch(38% 0.16 230);
+  /* Estados equilibrados con el tema */
+  --color-info: oklch(85% 0.1 240);    /* Azul cielo lila */
+  --color-success: oklch(85% 0.12 150); /* Verde menta */
+  --color-warning: oklch(90% 0.12 85);  /* Amarillo crema */
+  --color-error: oklch(80% 0.15 25);    /* Coral pastel */
 
-  --color-success: oklch(84% 0.14 150);
-  --color-success-content: oklch(36% 0.18 150);
-
-  --color-warning: oklch(86% 0.16 80);
-  --color-warning-content: oklch(40% 0.2 80);
-
-  --color-error: oklch(76% 0.18 15);
-  --color-error-content: oklch(96% 0.02 15);
-
-  /* Estilo */
-  --radius-selector: 1rem;
-  --radius-field: 1.75rem;
-  --radius-box: 1.25rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 2px;
-  --depth: 0;
-  --noise: 0;
+  /* Estilo visual coherente */
+  --radius-selector: 1.5rem;
+  --radius-field: 1rem;
+  --radius-box: 2rem;
+  --border: 1px;
 }
 @plugin "daisyui/theme" {
   name: "natura";
@@ -308,50 +286,79 @@
   prefersdark: false;
   color-scheme: "light";
 
-  /* Bases naturales */
-  --color-base-100: oklch(97% 0.02 130);  /* verde muy suave, casi crema */
-  --color-base-200: oklch(94% 0.03 130);
-  --color-base-300: oklch(90% 0.035 130);
-  --color-base-content: oklch(22% 0.04 130);
+  /* Bases: Un fondo verde crema muy sutil pero perceptible */
+  --color-base-100: oklch(98% 0.015 145);  /* Fondo principal */
+  --color-base-200: oklch(95% 0.025 145);  /* Tarjetas/Modales */
+  --color-base-300: oklch(91% 0.035 145);  /* Bordes y zonas de contraste */
+  --color-base-content: oklch(25% 0.04 145); /* Texto principal (verde muy oscuro) */
 
-  /* Principal verde hoja pastel */
-  --color-primary: oklch(78% 0.12 130);
-  --color-primary-content: oklch(28% 0.08 130);
+  /* Principal: Verde Hoja Pastel (Se nota bien en botones) */
+  --color-primary: oklch(82% 0.12 145);
+  --color-primary-content: oklch(35% 0.08 145);
 
-  /* Secundario beige natural */
-  --color-secondary: oklch(85% 0.05 90);
-  --color-secondary-content: oklch(32% 0.06 90);
+  /* Secundario: Menta suave */
+  --color-secondary: oklch(88% 0.06 160);
+  --color-secondary-content: oklch(35% 0.06 160);
 
-  /* Accent verde más vivo */
-  --color-accent: oklch(72% 0.15 120);
-  --color-accent-content: oklch(95% 0.02 120);
+  /* Accent: Un verde musgo más saturado para destacar */
+  --color-accent: oklch(75% 0.14 140);
+  --color-accent-content: oklch(98% 0.01 140);
 
-  /* Neutrales tierra */
-  --color-neutral: oklch(70% 0.03 90);
-  --color-neutral-content: oklch(20% 0.03 90);
+  /* Neutrales: Gris verdoso */
+  --color-neutral: oklch(45% 0.02 145);
+  --color-neutral-content: oklch(98% 0.01 145);
 
-  /* Estados */
-  --color-info: oklch(80% 0.1 200);       /* azul verdoso suave */
-  --color-info-content: oklch(20% 0.03 200);
+  /* Estados ajustados al estilo natura */
+  --color-info: oklch(85% 0.08 190); 
+  --color-success: oklch(80% 0.12 150);
+  --color-warning: oklch(88% 0.1 80);
+  --color-error: oklch(75% 0.12 25);
 
-  --color-success: oklch(75% 0.12 140);   /* verde natural */
-  --color-success-content: oklch(28% 0.05 140);
+  /* Estilo visual */
+  --radius-selector: 1.5rem;
+  --radius-field: 1rem;
+  --radius-box: 2rem;
+  --border: 1px;
+}
+@plugin "daisyui/theme" {
+  name: "natura-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
 
-  --color-warning: oklch(85% 0.12 60);    /* amarillo suave */
-  --color-warning-content: oklch(40% 0.08 60);
+  /* Bases: Un bosque profundo y oscuro */
+  --color-base-100: oklch(18% 0.03 145);  /* Fondo principal (Verde casi negro) */
+  --color-base-200: oklch(22% 0.04 145);  /* Tarjetas/Modales (Verde musgo oscuro) */
+  --color-base-300: oklch(26% 0.05 145);  /* Contrastes y bordes */
+  --color-base-content: oklch(92% 0.03 145); /* Texto (Verde crema muy claro) */
 
-  --color-error: oklch(78% 0.14 10);      /* rojo tierra */
-  --color-error-content: oklch(35% 0.1 10);
+  /* Principal: Verde Hoja Eléctrico (Resalta mucho en la oscuridad) */
+  --color-primary: oklch(75% 0.15 145);
+  --color-primary-content: oklch(20% 0.08 145);
 
-  /* Estilo */
-  --radius-selector: 1rem;
-  --radius-field: 1.75rem;
-  --radius-box: 1.25rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 2px;
-  --depth: 0;
-  --noise: 0;
+  /* Secundario: Verde Bosque */
+  --color-secondary: oklch(45% 0.1 145);
+  --color-secondary-content: oklch(98% 0.02 145);
+
+  /* Accent: Menta brillante para detalles */
+  --color-accent: oklch(85% 0.12 160);
+  --color-accent-content: oklch(25% 0.1 160);
+
+  /* Neutrales: Gris verdoso profundo */
+  --color-neutral: oklch(32% 0.04 145);
+  --color-neutral-content: oklch(95% 0.02 145);
+
+  /* Estados ajustados para modo oscuro */
+  --color-info: oklch(70% 0.1 190); 
+  --color-success: oklch(72% 0.15 150);
+  --color-warning: oklch(80% 0.15 85);
+  --color-error: oklch(65% 0.18 25);
+
+  /* Estilo visual */
+  --radius-selector: 1.5rem;
+  --radius-field: 1rem;
+  --radius-box: 2rem;
+  --border: 1px;
 }
 
 
