@@ -60,9 +60,22 @@ const SettingsModal = ({ isOpen, onClose }) => {
     {
       id: "pinky",
       name: "Rosa Pastel",
-      bg: "bg-[#FFF1F7]", 
+      bg: "bg-[#FFF1F7]",
       primary: "bg-[#F4A3C4]",
     },
+    {
+      id: "midnight-rose",
+      name: "Midnight Rose",
+      bg: "bg-[#1A141C]", // base-100 oscuro
+      primary: "bg-[#E07AAE]", // rosa elegante
+    },
+    {
+  id: 'mocha-night',
+  name: 'Mocha Night',
+  bg: 'bg-[#1C1612]',      // café oscuro
+  primary: 'bg-[#E6C48A]'  // crema mocha
+}
+
   ];
 
   if (!isOpen) return null;
