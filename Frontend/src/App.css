@@ -6,8 +6,8 @@
 
 /* Forzamos que el fondo y el texto sigan al tema de DaisyUI */
 html, body, #root {
-  background-color: var(--color-base-100);
-  color: var(--color-base-content);
+  background-color: var(--color-base-content-bg-primary);
+  color: var(--color-base-content-text-secondary);
   min-height: 100vh;
   transition: background-color 0.3s ease; /* Para que el cambio no sea brusco */
 }
