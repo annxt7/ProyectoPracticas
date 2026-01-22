@@ -512,7 +512,51 @@
 }
 
 
+@plugin "daisyui/theme" {
+Si el diseño de Hotline Miami no se termina de ver bien, suele ser por una de estas tres razones: falta de contraste en el texto, el fondo no es lo suficientemente oscuro, o el "brillo" del neón se ve apagado.
 
+Vamos a ajustar los colores para que "peguen" de verdad. He oscurecido más el fondo (casi negro pero con alma morada) y he subido la saturación de los colores de acción.
+
+El CSS corregido (Estructura @plugin):
+CSS
+
+@plugin "daisyui/theme" {
+  name: "hotline-miami";
+  default: false;
+  prefersdark: true;
+  color-scheme: "light";
+
+  /* --- FONDO MÁS PROFUNDO (Para que el neón resalte) --- */
+  --color-base-100: #08020d; /* Negro morado profundo */
+  --color-base-200: #12061f; 
+  --color-base-300: #ff00ff; 
+  --color-base-content: #ffffff; /* Blanco puro para lectura clara */
+
+  /* --- NEONES VIBRANTES --- */
+  --color-primary: #ff0077; /* Rosa fucsia agresivo */
+  --color-primary-content: #ffffff;
+  
+  --color-secondary: #00f2ff; /* Cian puro */
+  --color-secondary-content: #000000;
+  
+  --color-accent: #fbff00; /* Amarillo flúor */
+  --color-accent-content: #000000;
+  
+  --color-neutral: #1a1a1a; 
+  --color-neutral-content: #00f2ff; 
+
+  /* --- ESTADOS SEMÁNTICOS --- */
+  --color-info: #0077ff; 
+  --color-success: #22ff00; 
+  --color-warning: #ffae00; 
+  --color-error: #ff0000; 
+
+  /* --- GEOMETRÍA --- */
+  --radius-selector: 0rem;   /* ¡Cuadrado total para estilo retro! */
+  --radius-field: 0rem;
+  --radius-box: 0rem;
+  --border: 3px;             
+}
 
 
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
