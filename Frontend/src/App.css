@@ -475,52 +475,57 @@
   /* Bordes dorados marcados */
   --border: 3px;             
 }
-
 @plugin "daisyui/theme" {
-name: "jamaican-roots";
+  name: "horror-night";
   default: false;
   prefersdark: true;
   color-scheme: "dark";
 
-  /* --- FONDO: Noche cerrada en Trenchtown --- */
+  /* --- SECCIÓN BASE: La Oscuridad Total --- */
+  /* Negro Abismo (Fondo principal) */
   --color-base-100: #050505; 
-  /* Verde selva radioactivo para las capas profundas */
-  --color-base-200: #002B17; 
-  /* Amarillo sol para los bordes */
-  --color-base-300: #FFD700; 
-  /* Texto en blanco puro para que destaque entre el caos */
-  --color-base-content: #FFFFFF; 
+  /* Gris Tumba para capas y tarjetas */
+  --color-base-200: #1a1a1a; 
+  /* Rojo Sangre Seca para bordes sutiles */
+  --color-base-300: #4a0404; 
+  /* Blanco Hueso para el texto (no cansa la vista en la oscuridad) */
+  --color-base-content: #e0d9c1; 
 
-  /* --- TRINIDAD RASTAFARI (Máxima Saturación) --- */
-  /* Verde Ganja Profundo */
-  --color-primary: #008542; 
-  --color-primary-content: #FFFFFF;
+  /* --- COLORES PRINCIPALES: Sangre y Sombras --- */
+  /* Rojo Arterial (Brillante y alarmante) */
+  --color-primary: #880808; 
+  --color-primary-content: #ffffff;
   
-  /* Amarillo Oro Neón (El Sol de Zion) */
-  --color-secondary: #FFCC00; 
-  --color-secondary-content: #000000;
+  /* Violeta Hematoma (Para elementos secundarios) */
+  --color-secondary: #310a31; 
+  --color-secondary-content: #e0d9c1;
   
-  /* Rojo Sangre / Fuego (Burning Spear) */
-  --color-accent: #E11C24; 
-  --color-accent-content: #FFFFFF;
+  /* Verde Moho / Putrefacción */
+  --color-accent: #2d3b2d; 
+  --color-accent-content: #ffffff;
   
-  /* Negro puro con borde amarillo */
+  /* Negro Azabache */
   --color-neutral: #000000; 
-  --color-neutral-content: #FFCC00; 
+  --color-neutral-content: #880808; /* Texto rojo sobre fondo negro */
 
-  /* --- ESTADOS CON FLOW --- */
-  --color-info: #00E5FF; 
-  --color-success: #39FF14; 
-  --color-warning: #FF8000; 
-  --color-error: #FF0000; 
+  /* --- ESTADOS SEMÁNTICOS: La Pesadilla --- */
+  /* Info: Azul Fantasmal */
+  --color-info: #2c3e50; 
+  /* Success: Verde Veneno */
+  --color-success: #00ff41; 
+  /* Warning: Naranja Calabaza Siniestra */
+  --color-warning: #d35400; 
+  /* Error: Rojo Hemorragia */
+  --color-error: #ff0000; 
 
-  /* --- GEOMETRÍA: Rudeboy Style --- */
-  /* Bordes gruesos de cartel de concierto de Reggae */
-  --border: 5px;             
-  /* Cajas muy cuadradas (estilo altavoz/speaker) */
+  /* --- GEOMETRÍA: Afilada y Brutalista --- */
+  /* Nada de curvas: todo puntas afiladas */
   --radius-selector: 0rem; 
   --radius-field: 0rem;       
-  --radius-box: 0rem;             
+  --radius-box: 0rem;        
+  /* Bordes finos como una cicatriz o muy gruesos */
+  --border: 1px;             
 }
+
 
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
