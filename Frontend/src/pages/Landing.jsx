@@ -1,7 +1,7 @@
 import React from "react";
 import Logo from "../assets/LogoClaro.webp";
 import LogoOscuro from "../assets/LogoOscuro.webp"; // Importa el logo oscuro
-import NavLinkDesktop from "./NavLinkDesktop";
+import NavLinkDesktop from "../NavLinkDesktop";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Search, Heart, User, LogOut, Sun, Moon } from "lucide-react"; // Añadimos Sun y Moon
 import { useAuth } from "../context/AuthContext";
