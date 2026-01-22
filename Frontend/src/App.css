@@ -511,15 +511,6 @@
   --noise: 0;
 }
 
-
-@plugin "daisyui/theme" {
-Si el diseño de Hotline Miami no se termina de ver bien, suele ser por una de estas tres razones: falta de contraste en el texto, el fondo no es lo suficientemente oscuro, o el "brillo" del neón se ve apagado.
-
-Vamos a ajustar los colores para que "peguen" de verdad. He oscurecido más el fondo (casi negro pero con alma morada) y he subido la saturación de los colores de acción.
-
-El CSS corregido (Estructura @plugin):
-CSS
-
 @plugin "daisyui/theme" {
   name: "hotline-miami";
   default: false;
