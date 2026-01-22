@@ -476,4 +476,51 @@
   --border: 3px;             
 }
 
-@variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
+@plugin "daisyui/theme" {
+name: "jamaican-roots";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  /* --- FONDO: Noche cerrada en Trenchtown --- */
+  --color-base-100: #050505; 
+  /* Verde selva radioactivo para las capas profundas */
+  --color-base-200: #002B17; 
+  /* Amarillo sol para los bordes */
+  --color-base-300: #FFD700; 
+  /* Texto en blanco puro para que destaque entre el caos */
+  --color-base-content: #FFFFFF; 
+
+  /* --- TRINIDAD RASTAFARI (Máxima Saturación) --- */
+  /* Verde Ganja Profundo */
+  --color-primary: #008542; 
+  --color-primary-content: #FFFFFF;
+  
+  /* Amarillo Oro Neón (El Sol de Zion) */
+  --color-secondary: #FFCC00; 
+  --color-secondary-content: #000000;
+  
+  /* Rojo Sangre / Fuego (Burning Spear) */
+  --color-accent: #E11C24; 
+  --color-accent-content: #FFFFFF;
+  
+  /* Negro puro con borde amarillo */
+  --color-neutral: #000000; 
+  --color-neutral-content: #FFCC00; 
+
+  /* --- ESTADOS CON FLOW --- */
+  --color-info: #00E5FF; 
+  --color-success: #39FF14; 
+  --color-warning: #FF8000; 
+  --color-error: #FF0000; 
+
+  /* --- GEOMETRÍA: Rudeboy Style --- */
+  /* Bordes gruesos de cartel de concierto de Reggae */
+  --border: 5px;             
+  /* Cajas muy cuadradas (estilo altavoz/speaker) */
+  --radius-selector: 0rem; 
+  --radius-field: 0rem;       
+  --radius-box: 0rem;             
+}
+
+@variant dark (&:where([data-theme="dark"], [data-theme="jamaican"], [data-theme="aqua"]));
