@@ -1,5 +1,15 @@
-@import 'tailwindcss';
+/* App.css */
+@import "tailwindcss";
 @plugin "daisyui";
+
+/* Configuración de temas para v4 */
+@config "./tailwind.config.cjs"; /* Si prefieres mantener el archivo separado */
+/* O directamente aquí: */
+@layer base {
+  :root {
+    --fallback-bc: 0 0% 100%;
+  }
+}
 
 html, body, #root {
   @apply bg-base-200 text-base-content h-full;
