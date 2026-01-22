@@ -10,7 +10,6 @@ const NavMobile = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
 
-
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
@@ -41,6 +40,7 @@ const NavMobile = () => {
         />
 
         {/* Avatar de Perfil */}
+      
         <Link 
           to="/profile/me"
           className={`border-2 rounded-full p-0.5 transition-all ${
