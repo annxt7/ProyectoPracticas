@@ -3,7 +3,7 @@
 @plugin "daisyui";
 
 /* Configuración de temas para v4 */
-@config "./tailwind.config.cjs"; /* Si prefieres mantener el archivo separado */
+@config "./tailwind.config.js"; /* Si prefieres mantener el archivo separado */
 /* O directamente aquí: */
 @layer base {
   :root {
