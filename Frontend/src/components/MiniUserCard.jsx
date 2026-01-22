@@ -36,7 +36,7 @@ const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
           </div>
 
           <div className="min-w-0">
-            <h3 className="font-bold text-sm text-white truncate group-hover:text-primary transition-colors">
+            <h3 className="font-bold text-sm text-base-content truncate group-hover:text-primary transition-colors">
               {displayName}
             </h3>
             <p className="text-[10px] opacity-40 leading-none">
