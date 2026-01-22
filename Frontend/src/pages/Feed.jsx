@@ -120,9 +120,9 @@ const Feed = () => {
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
-      
+      <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
-        <NavDesktop />
+        
         {/* COLUMNA IZQUIERDA: FEED */}
         <div className="md:col-span-2 space-y-6">
           <div className="md:hidden flex items-center justify-between mb-4">

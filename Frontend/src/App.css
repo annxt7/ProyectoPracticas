@@ -1,7 +1,9 @@
 @import "tailwindcss";
+
+@config "../tailwind.config.js"; 
+
+
 @plugin "daisyui";
 
-/* Referencia al archivo de configuración externo */
-@config "../tailwind.config.js";
-
-@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, [data-theme="synthwave"], [data-theme="synthwave"] *));
+/* Variante para que Tailwind entienda cuáles de tus temas son oscuros */
+@variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
