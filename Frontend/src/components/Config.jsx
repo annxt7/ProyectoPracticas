@@ -63,6 +63,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
       bg: "bg-[#FFF1F7]", 
       primary: "bg-[#F4A3C4]",
     },
+    {
+      id: "rainbow",
+      name: "Arcoíris",
+      bg: "bg-[#FFF1F8]", 
+      primary: "bg-[#F4A3C2]",
+    },
   ];
 
   if (!isOpen) return null;
