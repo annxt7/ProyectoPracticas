@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Heart, ShieldAlert, MessageCircle, MoreHorizontal, UserPlus, UserCheck, Clock } from "lucide-react";
+import { Heart, ShieldAlert, ArrowUpRight, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import ItemCover from "../components/ItemCover.jsx";
-import MiniUserCard from "../components/MiniUserCard.jsx";
 import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
 import api from "../services/api.js";
@@ -18,6 +17,7 @@ const Feed = () => {
 
   const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
 
+  // --- LÓGICA (Se mantiene igual) ---
   useEffect(() => {
     if (!myId) return;
     const fetchMyFollowing = async () => {
@@ -102,201 +102,186 @@ const Feed = () => {
   };
 
   function timeAgo(dateString) {
-    if (!dateString) return "Ahora";
+    if (!dateString) return "Hoy";
     const date = new Date(dateString);
     const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
-    if (seconds < 60) return "Ahora";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h`;
+    const hours = Math.floor((now - date) / 3600000); // Horas
+    if (hours < 1) return "Reciente";
+    if (hours < 24) return `hace ${hours}h`;
     const days = Math.floor(hours / 24);
-    return `${days}d`;
+    return `hace ${days}d`;
   }
 
+  // --- RENDERIZADO ---
   return (
-    <div className="min-h-screen pb-24 bg-[#0a0a0a] text-[#e0e0e0] selection:bg-primary/30">
+    <div className="min-h-screen pb-24 bg-base-100 text-base-content font-sans selection:bg-primary selection:text-white">
       <NavDesktop />
       
-      <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 pt-8 px-4">
-        
-        {/* LADO IZQUIERDO: SECCIÓN DE FEED */}
-        <div className="lg:col-span-8 space-y-10">
-          <header className="flex items-end justify-between border-b border-white/5 pb-6">
-            <div>
-              <h1 className="text-4xl font-serif italic tracking-tight text-white">Tu Galería</h1>
-              <p className="text-sm opacity-40 mt-1">Novedades de tu círculo en la Tribu</p>
-            </div>
-            <button className="text-xs font-bold uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">
-              Filtros
-            </button>
-          </header>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          {/* COLUMNA PRINCIPAL (FEED) */}
+          <div className="lg:col-span-8">
+            <header className="mb-12 border-b border-base-content/10 pb-4">
+              <h1 className="text-6xl md:text-8xl font-serif font-medium tracking-tighter opacity-90">
+                Feed
+              </h1>
+            </header>
 
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <span className="loading loading-ring loading-lg text-primary"></span>
-            </div>
-          ) : activities.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-32 bg-white/[0.02] rounded-[3rem] border border-dashed border-white/10">
-              <ShieldAlert size={40} className="mb-4 opacity-20" />
-              <p className="font-serif italic text-xl opacity-60">El feed está en silencio</p>
-              <p className="text-xs opacity-40 mt-2">Sigue a nuevos curadores para ver sus colecciones</p>
-            </div>
-          ) : (
-            <div className="space-y-12">
-              {activities.map((item) => (
-                <article
-                  key={`${item.collection_id}-${item.created_at}`}
-                  className="group relative animate-in fade-in slide-in-from-bottom-4 duration-700"
-                >
-                  {/* Info del usuario superior */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <Link to={`/profile/${item.user_id}`} className="relative">
-                        <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all duration-500">
-                          <img
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <span className="loading loading-dots loading-lg opacity-20"></span>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="py-20 text-center border-y border-base-content/5">
+                <ShieldAlert className="mx-auto mb-4 opacity-20" size={40} />
+                <p className="font-serif text-2xl italic opacity-50">Nada por aquí aún.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-16">
+                {activities.map((item) => (
+                  <article key={`${item.collection_id}-${item.created_at}`} className="group relative">
+                    
+                    {/* 1. Header del Post: Línea superior con datos técnicos */}
+                    <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest opacity-40 mb-3 border-t border-base-content/10 pt-4">
+                      <div className="flex items-center gap-2">
+                        <span>01 // {item.collection_type}</span>
+                      </div>
+                      <span>{timeAgo(item.created_at)}</span>
+                    </div>
+
+                    {/* 2. Cuerpo: Título e Imagen */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                      
+                      {/* Info Lateral (Solo Desktop) */}
+                      <div className="hidden md:flex md:col-span-1 flex-col items-center gap-4 pt-2">
+                        <Link to={`/profile/${item.user_id}`} className="block w-10 h-10 rounded-full overflow-hidden border border-base-content/10 hover:border-primary transition-colors">
+                           <img
                             src={item.avatar_url || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
                             alt={item.username}
-                            className="w-full h-full object-cover scale-110"
+                            className="w-full h-full object-cover"
                           />
-                        </div>
-                      </Link>
-                      <div>
-                        <Link to={`/profile/${item.user_id}`} className="block font-bold text-sm text-white hover:text-primary transition-colors">
-                          @{item.username}
                         </Link>
-                        <div className="flex items-center gap-2 opacity-40 text-[11px] font-medium">
-                          <Clock size={12} />
-                          <span>{timeAgo(item.created_at)}</span>
+                         <div className="w-px h-20 bg-base-content/5"></div>
+                      </div>
+
+                      {/* Contenido Principal */}
+                      <div className="md:col-span-11">
+                        <div className="mb-4">
+                           <Link to={`/profile/${item.user_id}`} className="md:hidden flex items-center gap-2 mb-2">
+                              <img src={item.avatar_url} className="w-6 h-6 rounded-full"/>
+                              <span className="text-sm font-bold">@{item.username}</span>
+                           </Link>
+                           
+                           {/* Título GIGANTE clickeable */}
+                           <Link to={`/collection/${item.collection_id}`} className="block group-hover:opacity-70 transition-opacity">
+                              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-[0.9] md:leading-[0.85] tracking-tight mb-6">
+                                {item.collection_name}
+                              </h2>
+                           </Link>
+                        </div>
+
+                        {/* Portada */}
+                        <Link to={`/collection/${item.collection_id}`} className="block relative aspect-[16/9] overflow-hidden bg-base-200">
+                           <ItemCover
+                            src={item.cover_url}
+                            title={item.collection_name}
+                            className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
+                          />
+                          {/* Botón flotante sutil */}
+                          <div className="absolute top-4 right-4 bg-base-100 text-base-content rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl">
+                            <ArrowUpRight size={24} />
+                          </div>
+                        </Link>
+
+                        {/* Footer del post */}
+                        <div className="flex items-center justify-between mt-4">
+                           <div className="flex items-center gap-4">
+                              <button 
+                                onClick={() => handleToggleLike(item.collection_id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 ${
+                                  item.has_liked 
+                                  ? "border-error text-error bg-error/5" 
+                                  : "border-base-content/20 hover:border-base-content hover:bg-base-content hover:text-base-100"
+                                }`}
+                              >
+                                <Heart size={16} fill={item.has_liked ? "currentColor" : "none"} />
+                                <span className="text-xs font-bold">{item.likes || 0}</span>
+                              </button>
+                           </div>
+                           
+                           <div className="flex items-center gap-2 text-xs font-medium opacity-50">
+                              <span className="hidden sm:inline">Curada por</span>
+                              <Link to={`/profile/${item.user_id}`} className="hover:underline text-base-content opacity-100">
+                                @{item.username}
+                              </Link>
+                           </div>
                         </div>
                       </div>
                     </div>
-                    <button className="btn btn-ghost btn-circle btn-sm opacity-30 hover:opacity-100 transition-opacity">
-                      <MoreHorizontal size={18} />
-                    </button>
-                  </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
 
-                  {/* Tarjeta de Contenido */}
-                  <div className="relative overflow-hidden rounded-[2rem] bg-base-200 border border-white/5 shadow-2xl">
-                    <Link to={`/collection/${item.collection_id}`} className="block overflow-hidden aspect-[16/10] md:aspect-video relative">
-                      <ItemCover
-                        src={item.cover_url}
-                        title={item.collection_name}
-                        className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                      
-                      <div className="absolute bottom-6 left-8 right-8">
-                        <span className="inline-block px-3 py-1 rounded-full bg-primary/20 backdrop-blur-md border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-3">
-                          {item.collection_type}
-                        </span>
-                        <h2 className="text-3xl md:text-4xl font-serif font-bold text-white leading-none">
-                          {item.collection_name}
-                        </h2>
-                      </div>
-                    </Link>
+          {/* COLUMNA LATERAL (SUGERENCIAS) - Estilo Lista Técnica */}
+          <aside className="hidden lg:block lg:col-span-4 pl-8 border-l border-base-content/10">
+            <div className="sticky top-24">
+              <h3 className="text-sm font-bold uppercase tracking-widest opacity-40 mb-8 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                Curadores Activos
+              </h3>
 
-                    {/* Acciones del Post */}
-                    <div className="p-6 bg-[#121212] flex items-center justify-between">
-                      <div className="flex items-center gap-6">
+              <ul className="space-y-0">
+                {suggestedUsers.map((u, index) => {
+                  const isFollowing = followingIds.includes(Number(u.id));
+                  return (
+                    <li key={u.id} className="group border-b border-base-content/5 last:border-0">
+                      <div className="py-4 flex items-center justify-between transition-all hover:pl-2">
+                        <Link to={`/profile/${u.id}`} className="flex items-center gap-4">
+                           <span className="text-xs font-mono opacity-30">{(index + 1).toString().padStart(2, '0')}</span>
+                           <div className="flex flex-col">
+                              <span className="font-bold text-lg leading-none group-hover:text-primary transition-colors">
+                                @{u.username}
+                              </span>
+                              <span className="text-xs opacity-40 mt-1 truncate max-w-[120px]">
+                                {u.main_category || 'General'}
+                              </span>
+                           </div>
+                        </Link>
+                        
                         <button
-                          onClick={() => handleToggleLike(item.collection_id)}
-                          className={`flex items-center gap-2.5 group/btn transition-all ${
-                            item.has_liked ? "text-error" : "text-white/40 hover:text-white"
+                          onClick={() => handleFollowToggle(u.id, isFollowing)}
+                          className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all ${
+                            isFollowing
+                              ? "bg-base-content text-base-100 border-base-content"
+                              : "border-base-content/20 hover:border-primary hover:text-primary"
                           }`}
                         >
-                          <div className={`p-2 rounded-full transition-colors ${item.has_liked ? "bg-error/10" : "group-hover/btn:bg-white/5"}`}>
-                            <Heart
-                              size={20}
-                              fill={item.has_liked ? "currentColor" : "none"}
-                              strokeWidth={item.has_liked ? 0 : 2}
-                            />
-                          </div>
-                          <span className="text-sm font-mono tracking-tighter">{item.likes || 0}</span>
-                        </button>
-                        
-                        <button className="flex items-center gap-2.5 text-white/40 hover:text-white group/btn transition-all">
-                          <div className="p-2 rounded-full group-hover/btn:bg-white/5 transition-colors">
-                            <MessageCircle size={20} />
-                          </div>
-                          <span className="text-sm font-mono tracking-tighter">0</span>
+                          {isFollowing ? (
+                             <span className="text-xs font-bold">✓</span>
+                          ) : (
+                             <Plus size={16} />
+                          )}
                         </button>
                       </div>
-
-                      <Link 
-                        to={`/collection/${item.collection_id}`} 
-                        className="text-[11px] font-black uppercase tracking-widest text-primary hover:translate-x-1 transition-transform inline-flex items-center gap-2"
-                      >
-                        Explorar Colección →
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* COLUMNA DERECHA: SUGERENCIAS */}
-        <aside className="hidden lg:block lg:col-span-4">
-          <div className="sticky top-24 space-y-8">
-            <div className="p-8 rounded-[2.5rem] bg-[#121212] border border-white/5 relative overflow-hidden shadow-xl">
-              <div className="absolute top-0 right-0 p-10 -mr-10 -mt-10 bg-primary/10 blur-[80px] rounded-full" />
-              
-              <h3 className="font-serif italic text-2xl text-white mb-6">
-                Descubre Tribers
-              </h3>
-              
-              <div className="space-y-6">
-                {suggestedUsers.map((u) => {
-                  const targetId = Number(u.id);
-                  const isFollowingThis = followingIds.includes(targetId);
-                  
-                  return (
-                    <div key={targetId} className="flex items-center justify-between group/user">
-                      <Link to={`/profile/${targetId}`} className="flex items-center gap-3 flex-1 min-w-0">
-                        <img 
-                          src={u.avatar_url || `https://ui-avatars.com/api/?name=${u.username}`} 
-                          className="w-10 h-10 rounded-full border border-white/10 group-hover/user:border-primary/50 transition-colors"
-                          alt={u.username} 
-                        />
-                        <div className="truncate">
-                          <p className="text-sm font-bold text-white truncate group-hover/user:text-primary transition-colors">@{u.username}</p>
-                          <p className="text-[10px] opacity-40 uppercase tracking-tight">Curador de {u.main_category || 'Arte'}</p>
-                        </div>
-                      </Link>
-                      
-                      <button
-                        onClick={() => handleFollowToggle(targetId, isFollowingThis)}
-                        className={`btn btn-circle btn-sm transition-all duration-300 ${
-                          isFollowingThis 
-                          ? "bg-white/5 border-white/10 text-white" 
-                          : "btn-primary shadow-lg shadow-primary/20"
-                        }`}
-                      >
-                        {isFollowingThis ? <UserCheck size={14} /> : <UserPlus size={14} />}
-                      </button>
-                    </div>
+                    </li>
                   );
                 })}
-              </div>
-              
-              <button className="w-full mt-8 py-3 rounded-2xl border border-white/5 text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 hover:bg-white/5 transition-all">
-                Ver todos los curadores
-              </button>
-            </div>
+              </ul>
 
-            {/* Footer de enlaces secundarios */}
-            <div className="px-8 flex flex-wrap gap-4 opacity-20 text-[10px] font-bold uppercase tracking-widest">
-              <a href="#" className="hover:text-white">Privacidad</a>
-              <a href="#" className="hover:text-white">Términos</a>
-              <a href="#" className="hover:text-white">Tribu © 2024</a>
+              <div className="mt-12 p-6 bg-base-200/50 text-center">
+                <p className="font-serif italic text-lg mb-2">¿Buscas inspiración?</p>
+                <Link to="/search" className="btn btn-outline btn-sm w-full rounded-none font-bold tracking-widest text-xs">
+                  EXPLORAR TODO
+                </Link>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+          
+        </div>
       </main>
-      
       <NavMobile />
     </div>
   );
