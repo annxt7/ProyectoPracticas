@@ -17,12 +17,12 @@ router.post("/google", userController.googleLogin);
 router.post("/login", userController.login);
 router.post("/forgot-password", userController.requestPasswordReset);
 router.post("/follow/:id", verifyToken, userController.followUser);
-router.post("/change-password", verifyToken, userController.changePassword);
 router.post("/reset-password", userController.resetPassword);
 router.delete("/unfollow/:id", verifyToken, userController.unfollowUser);
 
 // 4. PUTS
 router.put("/complete-profile", verifyToken, userController.completeProfile);
+router.put("/change-password", verifyToken, userController.changePassword);
 router.put("/update-profile", verifyToken, userController.updateProfile);
 
 
