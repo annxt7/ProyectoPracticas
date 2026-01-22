@@ -356,5 +356,65 @@
 }
 
 
+@plugin "daisyui/theme" {
+  name: "gipsy-style";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+
+  /* --- SECCIÓN BASE: Patio Andaluz --- */
+  /* Blanco cal de pared de pueblo */
+  --color-base-100: #FFFFFF; 
+  /* Alvero (amarillo de plaza de toros) para capas */
+  --color-base-200: #F4D03F; 
+  /* Terracota / Barro para bordes */
+  --color-base-300: #D35400; 
+  /* Negro azabache para el texto */
+  --color-base-content: #1C1C1C; 
+
+  /* --- COLORES PRINCIPALES: Oro y Pasión --- */
+  /* Rojo Clavel (Fuerza y pasión) */
+  --color-primary: #C0392B; 
+  --color-primary-content: #FFFFFF;
+  
+  /* Dorado Joya (El oro de la familia) */
+  --color-secondary: #D4AF37; 
+  --color-secondary-content: #1C1C1C;
+  
+  /* Verde Esperanza / Mantón de manila */
+  --color-accent: #1E8449; 
+  --color-accent-content: #FFFFFF;
+  
+  /* Negro Lunares */
+  --color-neutral: #000000; 
+  --color-neutral-content: #D4AF37; 
+
+  /* --- ESTADOS SEMÁNTICOS --- */
+  /* Info: Azul cielo de feria */
+  --color-info: #5DADE2; 
+  --color-info-content: #FFFFFF;
+  
+  /* Success: Verde Oliva */
+  --color-success: #2ECC71; 
+  --color-success-content: #FFFFFF;
+  
+  /* Warning: Naranja Butano */
+  --color-warning: #E67E22; 
+  --color-warning-content: #FFFFFF;
+  
+  /* Error: Rojo Sangre de Toro */
+  --color-error: #922B21; 
+  --color-error-content: #FFFFFF;
+
+  /* --- GEOMETRÍA: Volantes y Curvas --- */
+  /* Botones muy redondos como lunares */
+  --radius-selector: 9999px; 
+  /* Inputs elegantes */
+  --radius-field: 0.5rem;       
+  /* Cajas con curvas suaves */
+  --radius-box: 2rem;        
+  /* Bordes dorados marcados */
+  --border: 3px;             
+}
 
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
