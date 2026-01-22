@@ -110,8 +110,6 @@
 }
 
 @plugin "daisyui/theme" {
-  
-@plugin "daisyui/theme" {
   name: "hawaii";
   default: false;
   prefersdark: false;
@@ -146,5 +144,4 @@
   --noise: 1;
 }
 
-}
 @variant dark (&:where([data-theme="dark"], [data-theme="synthwave"], [data-theme="aqua"]));
