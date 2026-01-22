@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Layers, Star, Users } from "lucide-react";
-import Logo from "../assets/LogoClaro.png";
+import Logo from "../assets/LogoClaro.webp";
 
 const Landing = () => {
   // Imágenes de ejemplo

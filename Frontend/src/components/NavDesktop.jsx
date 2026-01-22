@@ -1,5 +1,5 @@
 import React from "react";
-import Logo from "../assets/LogoClaro.png";
+import Logo from "../assets/LogoClaro.webp";
 import NavLinkDesktop from "./NavLinkDesktop";
 import { useLocation, useNavigate } from "react-router-dom"; // Importamos useNavigate
 import { Home, Search, Heart, User, LogOut } from "lucide-react"; // Añadimos LogOut
