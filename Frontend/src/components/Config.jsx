@@ -82,6 +82,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 }
 ,
    
+   { id: 'gipsy-style', name: 'Gipsy Style', bg: 'bg-[#FFFFFF]', primary: 'bg-[#C0392B]' },
   ];
 
   if (!isOpen) return null;
