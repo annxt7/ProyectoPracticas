@@ -229,7 +229,7 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
                     src={customForm.coverPreview}
                     title={customForm.title || "?"}
                   />
-                  <div className="absolute bottom-1 right-1 bg-black/60 text-white p-1.5 rounded-full">
+                  <div className="absolute bottom-1 right-1 bg-black/60 text-secodary p-1.5 rounded-full">
                     <Camera size={14} />
                   </div>
                   <input
