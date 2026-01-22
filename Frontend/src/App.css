@@ -1,8 +1,13 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  /* Aquí definimos los temas que cargará el proyecto */
+  themes: lofi, black; 
+}
 
-/* Si necesitas el fondo gris, úsalo de forma estándar por ahora */
+/* Forzamos que el fondo y el texto sigan al tema de DaisyUI */
 html, body, #root {
-  background-color: var(--color-base-200);
-  height: 100%;
+  background-color: var(--color-base-100);
+  color: var(--color-base-content);
+  min-height: 100vh;
+  transition: background-color 0.3s ease; /* Para que el cambio no sea brusco */
 }
