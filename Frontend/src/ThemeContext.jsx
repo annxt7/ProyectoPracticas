@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  // 1. Inicializamos el estado buscando en localStorage o usando el esquema del sistema
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme) {
@@ -21,7 +20,7 @@ export const ThemeProvider = ({ children }) => {
     // Aplicamos el atributo que DaisyUI y Tailwind v4 escuchan
     root.setAttribute("data-theme", theme);
     
-    // Guardamos la preferencia
+
     localStorage.setItem("theme", theme);
 
     // Opcional: También podemos añadir/quitar la clase 'dark' para Tailwind estándar
@@ -40,8 +39,6 @@ export const ThemeProvider = ({ children }) => {
     </ThemeContext.Provider>
   );
 };
-
-// Hook personalizado para usar el tema fácilmente
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
