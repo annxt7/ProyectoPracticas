@@ -84,7 +84,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 { id: 'natura-dark', name: 'Natura Dark', bg: 'bg-[#1a241a]', primary: 'bg-[#70c070]' },
    
    { id: 'gipsy-style', name: 'Gipsy Style', bg: 'bg-[#FFFFFF]', primary: 'bg-[#C0392B]' },
-   { id: 'jamaica-style', name: 'Jamaica Style', bg: 'bg-[#0B0B0B]', primary: 'bg-[#009946]' },
+   { id: 'horror-night', name: 'Horror Night', bg: 'bg-[#050505]', primary: 'bg-[#880808]' },
   ];
 
   if (!isOpen) return null;
