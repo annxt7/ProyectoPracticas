@@ -32,20 +32,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
     { id: "light", name: "Claro", bg: "bg-[#ffffff]", primary: "bg-[#3b82f6]" },
     { id: "dark", name: "Oscuro", bg: "bg-[#1d232a]", primary: "bg-[#661ae6]" },
     {
-      id: "cupcake",
-      name: "Cupcake",
-      bg: "bg-[#faf7f5]",
-      primary: "bg-[#65c3c8]",
-    },
-    {
-      id: "synthwave",
-      name: "Synthwave",
-      bg: "bg-[#2d1b69]",
-      primary: "bg-[#e779c1]",
-    },
-    { id: "retro", name: "Retro", bg: "bg-[#ece3ca]", primary: "bg-[#ef9995]" },
-    { id: "aqua", name: "Aqua", bg: "bg-[#0b25b7]", primary: "bg-[#09ecf3]" },
-    {
       id: "hawaii",
       name: "Hawaii",
       bg: "bg-[#f8f9f1]",
@@ -62,12 +48,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
       name: "Rosa Pastel",
       bg: "bg-[#FFF1F7]",
       primary: "bg-[#F4A3C4]",
-    },
-    {
-      id: "rainbow",
-      name: "Rainbow",
-      bg: "bg-[#FFF1F2]",
-      primary: "bg-[#F4A3B2]",
     },
     {
       id: "midnight-rose",
@@ -93,18 +73,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
       bg: "bg-[#FAF6F0]",
       primary: "bg-[#C4A484]",
     },
-    {
-      id: "cyber-y2k",
-      name: "Cyber Y2K",
-      bg: "bg-[#0A0A1F]", // fondo oscuro tech
-      primary: "bg-[#FF2CF7]", // neón fucsia
-    },
-    {
-      id: "hotline-miami",
-      name: "Hotline Miami",
-      bg: "bg-[#12061F]",
-      primary: "bg-[#FF52AF]",
-    }
+   
   ];
 
   if (!isOpen) return null;
