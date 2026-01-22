@@ -59,12 +59,11 @@ const Activity = () => {
   }, [notifications, activeFilter]);
 
   return (
-    // CAMBIO: 'text-base-content' permite que el texto sea negro en light y blanco en dark
-    <div className="min-h-screen pb-28 md:pb-10 bg-base-100 text-base-content font-sans transition-colors duration-300">
+    <div className="min-h-screen pb-28 md:pb-10 bg-base-300 text-base-content font-sans transition-colors duration-300">
       <NavDesktop />
       
       {/* Header con blur adaptativo */}
-      <header className="sticky top-0 z-30 bg-base-100/80 backdrop-blur-md border-b border-base-content/10 py-4">
+      <header className="sticky top-0 z-30 bg-base-200 backdrop-blur-md border-b border-base-content/10 py-4">
         <div className="max-w-2xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">

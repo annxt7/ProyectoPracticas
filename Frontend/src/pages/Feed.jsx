@@ -119,8 +119,7 @@ const Feed = () => {
   }
 
   return (
-    // CAMBIO AQUI: bg-base-200 para crear contraste con el Nav y las Cards
-    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-200">
+    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
       <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
         
@@ -144,7 +143,6 @@ const Feed = () => {
             activities.map((item) => (
               <div
                 key={`${item.collection_id}-${item.created_at}`}
-                // Las cards se mantienen en base-100 para resaltar sobre el fondo base-200
                 className="bg-base-100 border-b border-base-200 md:border md:rounded-2xl overflow-hidden shadow-sm"
               >
                 {/* Header del post */}

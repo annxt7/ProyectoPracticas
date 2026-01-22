@@ -118,7 +118,7 @@ const OnboardingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-base-300 flex flex-col items-center justify-center p-4">
       <div className="max-w-xl w-full space-y-8 bg-base-200 p-10 rounded-3xl shadow-xl">
         
         <ul className="steps w-full mb-8">

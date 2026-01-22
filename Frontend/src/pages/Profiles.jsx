@@ -183,7 +183,6 @@ const Profile = () => {
     });
   };
 
-  // Acción definitiva tras confirmar en el Modal
   const executeDelete = async () => {
     const { id, type } = deleteConfirm;
     setDeleteConfirm({ ...deleteConfirm, isOpen: false });
@@ -241,7 +240,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
+    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
       <Toaster position="bottom-center" />
       <NavDesktop />
 

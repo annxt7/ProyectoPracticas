@@ -187,12 +187,12 @@ const CollectionPage = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-base-100"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
 
   return (
-    <div className="min-h-screen pb-24 bg-base-100 text-base-content">
+    <div className="min-h-screen pb-24 bg-base-300 text-base-content">
       <NavDesktop />
 
-      {/* --- SISTEMA DE TOAST (VISUAL) --- */}
+      
       {toast.show && (
-        <div className="fixed top-4 right-4 z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed top-4 right-4 z-100 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className={`alert ${toast.type === "error" ? "alert-error" : "alert-success"} shadow-lg rounded-2xl py-3 px-6 flex items-center gap-3`}>
             {toast.type === "error" ? <AlertCircle size={20} /> : <Check size={20} />}
             <span className="font-bold text-sm">{toast.message}</span>

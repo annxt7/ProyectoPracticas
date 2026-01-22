@@ -87,11 +87,11 @@ const Explorer = () => {
   };
 
   return (
-    <div className="min-h-screen pb-24 bg-base-100 text-base-content font-sans">
+    <div className="min-h-screen pb-24 bg-base-300 text-base-content font-sans">
       <NavDesktop />
 
       {/* Header buscador */}
-      <div className="sticky top-0 md:top-16 z-40 bg-base-100/90 backdrop-blur-md p-4 border-b border-white/5">
+      <div className="sticky top-0 md:top-16 z-40 bg-base-200 backdrop-blur-md p-4 border-b border-base-100">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
             <Search

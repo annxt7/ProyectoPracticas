@@ -88,7 +88,7 @@ const CreateCollection = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 pb-24 md:pb-10 text-base-content font-sans">
+    <div className="min-h-screen bg-base-300 pb-24 md:pb-10 text-base-content font-sans">
       <NavDesktop />
       <main className="max-w-6xl mx-auto px-6 py-8">
         
