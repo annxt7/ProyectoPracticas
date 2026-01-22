@@ -1,15 +1,16 @@
 import { lazy, Suspense } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Outlet } from "react-router-dom";
 import "./App.css";
 
-// Contexto
+// Contextos
 import { ThemeProvider } from "./context/ThemeContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx"; // Asegúrate de tenerlo
 
-// Componentes Globales (IMPORTANTE: Carga normal, no lazy, para que el context no falle)
+// Componentes y Rutas Protegidas
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
-import NavDesktop from "./components/NavDesktop.jsx"; // Asegúrate de que la ruta sea correcta
+import NavDesktop from "./components/NavDesktop.jsx";
 
-// Páginas (Lazy Loading)
+// Importaciones con Lazy Loading
 const AuthScreen = lazy(() => import("./pages/LoginCard.jsx"));
 const Landing = lazy(() => import("./pages/Landing.jsx"));
 const Feed = lazy(() => import("./pages/Feed.jsx"));
@@ -22,31 +23,52 @@ const OnboardingPage = lazy(() => import("./pages/OnBoarding.jsx"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
 const ResetPasswordScreen = lazy(() => import("./pages/ResetPassword.jsx"));
 
+// Componente Layout para evitar duplicidad del Nav
+const PrivateLayout = () => (
+  <div className="min-h-screen bg-base-100 transition-colors duration-300">
+    <NavDesktop />
+    <main>
+      <Outlet /> {/* Aquí se renderizarán las páginas como Feed, Perfil, etc. */}
+    </main>
+  </div>
+);
+
 function App() {
   return (
-    <ThemeProvider>
-      {/* 1. El NavDesktop DEBE estar dentro del Provider */}
-      {/* Solo se muestra si no estamos en la Landing o Login (opcional) */}
-      <NavDesktop /> 
+    <AuthProvider>
+      <ThemeProvider>
+        <Suspense 
+          fallback={
+            <div className="h-screen w-full flex items-center justify-center bg-base-100">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+          }
+        >
+          <Routes>
+            {/* --- RUTAS PÚBLICAS (Sin Navbar) --- */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<AuthScreen />} />
+            <Route path="/register" element={<AuthScreen type="register" />} />
+            <Route path="/forgot-password" element={<AuthScreen type="forgot" />} />
+            <Route path="/reset-password" element={<ResetPasswordScreen />} />
 
-      <Suspense 
-        fallback={
-          <div className="h-screen w-full flex items-center justify-center bg-base-200">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-          </div>
-        }
-      >
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<AuthScreen />} />
-          {/* ... resto de rutas */}
-          <Route element={<ProtectedRoute />}>
-             <Route path="/feed" element={<Feed />} />
-             {/* etc... */}
-          </Route>
-        </Routes>
-      </Suspense>
-    </ThemeProvider>
+            {/* --- RUTAS PRIVADAS (Con Navbar Único) --- */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<PrivateLayout />}>
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/explorer" element={<Explorer />} />
+                <Route path="/activity" element={<Activity />} />
+                <Route path="/profile/:userId" element={<Profile />} />
+                <Route path="/collection/:id" element={<Collection />} />
+                <Route path="/create-collection" element={<CreateCollection />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Route>
+            </Route>
+          </Routes>
+        </Suspense>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 
