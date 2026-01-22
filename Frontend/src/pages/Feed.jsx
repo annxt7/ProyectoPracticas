@@ -17,7 +17,7 @@ const Feed = () => {
 
   const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
 
-  // --- LÓGICA (Se mantiene igual) ---
+  // --- LÓGICA (Sin cambios) ---
   useEffect(() => {
     if (!myId) return;
     const fetchMyFollowing = async () => {
@@ -114,105 +114,109 @@ const Feed = () => {
 
   // --- RENDERIZADO ---
   return (
-    <div className="min-h-screen pb-24 bg-base-100 text-base-content font-sans selection:bg-primary selection:text-white">
+    // CAMBIO 1: Fondo bg-base-200 para contrastar con el Nav (que suele ser base-100)
+    <div className="min-h-screen pb-24 bg-base-200 text-base-content font-sans selection:bg-primary selection:text-white">
       <NavDesktop />
       
+      {/* CAMBIO 2: pt-6 para separar del nav y max-w ajustado */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        
+        {/* Encabezado Visual Separador */}
+        <div className="flex items-baseline justify-between mb-8 border-b border-base-content/10 pb-6">
+             <h1 className="text-5xl md:text-7xl font-serif font-medium tracking-tighter opacity-90 text-base-content">
+                Feed
+              </h1>
+             <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-40 hidden sm:block">
+                Últimas Actualizaciones
+             </span>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
           {/* COLUMNA PRINCIPAL (FEED) */}
           <div className="lg:col-span-8">
-            <header className="mb-12 border-b border-base-content/10 pb-4">
-              <h1 className="text-6xl md:text-8xl font-serif font-medium tracking-tighter opacity-90">
-                Feed
-              </h1>
-            </header>
 
             {loading ? (
               <div className="flex justify-center py-20">
                 <span className="loading loading-dots loading-lg opacity-20"></span>
               </div>
             ) : activities.length === 0 ? (
-              <div className="py-20 text-center border-y border-base-content/5">
+              <div className="py-20 text-center border border-dashed border-base-content/20 rounded-3xl bg-base-100">
                 <ShieldAlert className="mx-auto mb-4 opacity-20" size={40} />
-                <p className="font-serif text-2xl italic opacity-50">Nada por aquí aún.</p>
+                <p className="font-serif text-2xl italic opacity-50">El feed está tranquilo hoy.</p>
               </div>
             ) : (
-              <div className="flex flex-col gap-16">
+              <div className="flex flex-col gap-10">
                 {activities.map((item) => (
-                  <article key={`${item.collection_id}-${item.created_at}`} className="group relative">
+                  // CAMBIO 3: Cada post ahora tiene fondo blanco (base-100) para resaltar sobre el gris (base-200)
+                  // Añadida sombra suave (shadow-sm) y bordes redondeados
+                  <article 
+                    key={`${item.collection_id}-${item.created_at}`} 
+                    className="group relative bg-base-100 p-6 md:p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow duration-300"
+                  >
                     
-                    {/* 1. Header del Post: Línea superior con datos técnicos */}
-                    <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest opacity-40 mb-3 border-t border-base-content/10 pt-4">
+                    {/* Header del Post */}
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-40 mb-6">
                       <div className="flex items-center gap-2">
-                        <span>01 // {item.collection_type}</span>
+                         <span className="w-2 h-2 rounded-full bg-primary/40"></span>
+                         <span>{item.collection_type}</span>
                       </div>
                       <span>{timeAgo(item.created_at)}</span>
                     </div>
 
-                    {/* 2. Cuerpo: Título e Imagen */}
+                    {/* Contenido */}
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                       
-                      {/* Info Lateral (Solo Desktop) */}
-                      <div className="hidden md:flex md:col-span-1 flex-col items-center gap-4 pt-2">
-                        <Link to={`/profile/${item.user_id}`} className="block w-10 h-10 rounded-full overflow-hidden border border-base-content/10 hover:border-primary transition-colors">
+                      {/* Avatar Flotante */}
+                      <div className="hidden md:block md:col-span-1">
+                        <Link to={`/profile/${item.user_id}`} className="block w-10 h-10 rounded-full overflow-hidden border border-base-200 group-hover:border-primary transition-colors">
                            <img
                             src={item.avatar_url || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
                             alt={item.username}
                             className="w-full h-full object-cover"
                           />
                         </Link>
-                         <div className="w-px h-20 bg-base-content/5"></div>
                       </div>
 
-                      {/* Contenido Principal */}
                       <div className="md:col-span-11">
-                        <div className="mb-4">
-                           <Link to={`/profile/${item.user_id}`} className="md:hidden flex items-center gap-2 mb-2">
-                              <img src={item.avatar_url} className="w-6 h-6 rounded-full"/>
+                        <div className="mb-5">
+                           <Link to={`/profile/${item.user_id}`} className="md:hidden flex items-center gap-2 mb-3">
+                              <img src={item.avatar_url} className="w-8 h-8 rounded-full border border-base-200"/>
                               <span className="text-sm font-bold">@{item.username}</span>
                            </Link>
                            
-                           {/* Título GIGANTE clickeable */}
-                           <Link to={`/collection/${item.collection_id}`} className="block group-hover:opacity-70 transition-opacity">
-                              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-[0.9] md:leading-[0.85] tracking-tight mb-6">
+                           <Link to={`/collection/${item.collection_id}`} className="block hover:text-primary transition-colors">
+                              <h2 className="text-3xl md:text-5xl font-serif font-medium leading-tight tracking-tight">
                                 {item.collection_name}
                               </h2>
                            </Link>
                         </div>
 
-                        {/* Portada */}
-                        <Link to={`/collection/${item.collection_id}`} className="block relative aspect-[16/9] overflow-hidden bg-base-200">
+                        <Link to={`/collection/${item.collection_id}`} className="block relative aspect-video overflow-hidden rounded-xl bg-base-200">
                            <ItemCover
                             src={item.cover_url}
                             title={item.collection_name}
-                            className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
+                            className="w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
                           />
-                          {/* Botón flotante sutil */}
-                          <div className="absolute top-4 right-4 bg-base-100 text-base-content rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl">
-                            <ArrowUpRight size={24} />
+                          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-black rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl translate-y-2 group-hover:translate-y-0">
+                            <ArrowUpRight size={20} />
                           </div>
                         </Link>
 
-                        {/* Footer del post */}
-                        <div className="flex items-center justify-between mt-4">
-                           <div className="flex items-center gap-4">
-                              <button 
-                                onClick={() => handleToggleLike(item.collection_id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 ${
-                                  item.has_liked 
-                                  ? "border-error text-error bg-error/5" 
-                                  : "border-base-content/20 hover:border-base-content hover:bg-base-content hover:text-base-100"
-                                }`}
-                              >
-                                <Heart size={16} fill={item.has_liked ? "currentColor" : "none"} />
-                                <span className="text-xs font-bold">{item.likes || 0}</span>
-                              </button>
-                           </div>
+                        <div className="flex items-center justify-between mt-6 pt-4 border-t border-base-200">
+                           <button 
+                             onClick={() => handleToggleLike(item.collection_id)}
+                             className={`flex items-center gap-2 px-0 transition-all ${
+                               item.has_liked ? "text-error" : "text-base-content/40 hover:text-base-content"
+                             }`}
+                           >
+                             <Heart size={20} fill={item.has_liked ? "currentColor" : "none"} />
+                             <span className="text-sm font-bold">{item.likes || 0}</span>
+                           </button>
                            
                            <div className="flex items-center gap-2 text-xs font-medium opacity-50">
-                              <span className="hidden sm:inline">Curada por</span>
-                              <Link to={`/profile/${item.user_id}`} className="hover:underline text-base-content opacity-100">
+                              <span>by</span>
+                              <Link to={`/profile/${item.user_id}`} className="hover:underline text-base-content opacity-100 font-bold">
                                 @{item.username}
                               </Link>
                            </div>
@@ -225,45 +229,44 @@ const Feed = () => {
             )}
           </div>
 
-          {/* COLUMNA LATERAL (SUGERENCIAS) - Estilo Lista Técnica */}
-          <aside className="hidden lg:block lg:col-span-4 pl-8 border-l border-base-content/10">
-            <div className="sticky top-24">
-              <h3 className="text-sm font-bold uppercase tracking-widest opacity-40 mb-8 flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                Curadores Activos
+          {/* COLUMNA LATERAL (SUGERENCIAS) */}
+          <aside className="hidden lg:block lg:col-span-4 pl-4">
+            <div className="sticky top-24 bg-base-100 p-6 rounded-[2rem] shadow-sm border border-base-content/5">
+              <h3 className="text-xs font-bold uppercase tracking-widest opacity-40 mb-6 flex items-center gap-2">
+                Curadores para ti
               </h3>
 
-              <ul className="space-y-0">
-                {suggestedUsers.map((u, index) => {
+              <ul className="space-y-4">
+                {suggestedUsers.map((u) => {
                   const isFollowing = followingIds.includes(Number(u.id));
                   return (
-                    <li key={u.id} className="group border-b border-base-content/5 last:border-0">
-                      <div className="py-4 flex items-center justify-between transition-all hover:pl-2">
-                        <Link to={`/profile/${u.id}`} className="flex items-center gap-4">
-                           <span className="text-xs font-mono opacity-30">{(index + 1).toString().padStart(2, '0')}</span>
-                           <div className="flex flex-col">
-                              <span className="font-bold text-lg leading-none group-hover:text-primary transition-colors">
+                    <li key={u.id} className="group">
+                      <div className="flex items-center justify-between p-2 rounded-xl hover:bg-base-200/50 transition-colors">
+                        <Link to={`/profile/${u.id}`} className="flex items-center gap-3 overflow-hidden">
+                           <img 
+                              src={u.avatar_url || `https://ui-avatars.com/api/?name=${u.username}`} 
+                              className="w-10 h-10 rounded-full border border-base-200"
+                              alt={u.username}
+                           />
+                           <div className="flex flex-col truncate">
+                              <span className="font-bold text-sm truncate group-hover:text-primary transition-colors">
                                 @{u.username}
                               </span>
-                              <span className="text-xs opacity-40 mt-1 truncate max-w-[120px]">
-                                {u.main_category || 'General'}
+                              <span className="text-[10px] uppercase opacity-40 tracking-wider">
+                                {u.main_category || 'Artist'}
                               </span>
                            </div>
                         </Link>
                         
                         <button
                           onClick={() => handleFollowToggle(u.id, isFollowing)}
-                          className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all ${
+                          className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full border transition-all ${
                             isFollowing
                               ? "bg-base-content text-base-100 border-base-content"
-                              : "border-base-content/20 hover:border-primary hover:text-primary"
+                              : "border-base-content/20 hover:border-primary hover:text-primary bg-transparent"
                           }`}
                         >
-                          {isFollowing ? (
-                             <span className="text-xs font-bold">✓</span>
-                          ) : (
-                             <Plus size={16} />
-                          )}
+                          {isFollowing ? <span className="text-[10px]">✓</span> : <Plus size={14} />}
                         </button>
                       </div>
                     </li>
@@ -271,10 +274,9 @@ const Feed = () => {
                 })}
               </ul>
 
-              <div className="mt-12 p-6 bg-base-200/50 text-center">
-                <p className="font-serif italic text-lg mb-2">¿Buscas inspiración?</p>
-                <Link to="/search" className="btn btn-outline btn-sm w-full rounded-none font-bold tracking-widest text-xs">
-                  EXPLORAR TODO
+              <div className="mt-8 pt-6 border-t border-base-content/5 text-center">
+                <Link to="/search" className="text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">
+                  Ver todos los curadores →
                 </Link>
               </div>
             </div>
