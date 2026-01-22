@@ -82,7 +82,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
   primary: 'bg-[#E6C48A]'  // crema mocha
 },
 { id: 'lavender-dream', name: 'Lavender Dream', bg: 'bg-[#F4F1FA]', primary: 'bg-[#C6B7E2]' }
-, { id: 'sandstone', name: 'Sandstone', bg: 'bg-[#FAF6F0]', primary: 'bg-[#C4A484]' }
+, { id: 'sandstone', name: 'Sandstone', bg: 'bg-[#FAF6F0]', primary: 'bg-[#C4A484]' },
+{ id: 'hotline-miami', name: 'Hotline Miami', bg: 'bg-[#12061F]', primary: 'bg-[#FF52AF]' },
 
 
   ];
