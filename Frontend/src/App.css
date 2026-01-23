@@ -40,24 +40,30 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "locura-total";
+  name: "distopico";
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  /* Fondo negro para que el fucsia brille */
-  --color-base-100: #000000;
-  /* Tarjetas en un morado muy oscuro */
-  --color-base-200: #1a012e;
-  /* Bordes en fucsia neón */
-  --color-base-300: #ff00ff;
+  --color-base-100: #030303;
+  --color-base-200: #0d0d0d;
+  --color-base-300: #fcee0a;
   --color-base-content: #ffffff;
-  /* Botones en amarillo eléctrico para que salten */
-  --color-primary: #ccff00;
+  --color-primary: #fcee0a;
   --color-primary-content: #000000;
-  --color-secondary: #ff00ff;
-  --color-secondary-content: #ffffff;
+  --color-secondary: #00f0ff;
+  --color-secondary-content: #000000;
+  --color-accent: #ff003c;
+  --color-accent-content: #ffffff;
+  --color-neutral: #1a1a1a;
+  --color-neutral-content: #00f0ff;
+  --color-info: #00f0ff;
+  --color-success: #39ff14;
+  --color-warning: #ffbd00;
+  --color-error: #ff003c;
   --border: 2px;
-  --radius-box: 2rem;
+  --radius-selector: 0rem;
+  --radius-field: 0rem;
+  --radius-box: 0rem;
 }
 
 @plugin "daisyui/theme" {
@@ -539,29 +545,30 @@
 
   
 @plugin "daisyui/theme" {
-  name: "inspiration-park";
-  default: true;
-  prefersdark: false;
-  color-scheme: "light";
-  /* Fondo muy claro para que las tarjetas respiren */
-  --color-base-100: #f8fafc;
-  /* Tarjetas en un cian muy muy suave o blanco puro */
-  --color-base-200: #ffffff;
-  /* Un gris azulado suave para bordes */
-  --color-base-300: #e2e8f0;
-  --color-base-content: #1e293b;
-  /* El morado/fucsia solo para botones y detalles */
-  --color-primary: #8b5cf6;
+ name: "bizarre";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+  --color-base-100: #1a012e;
+  --color-base-200: #2d024d;
+  --color-base-300: #ffd700;
+  --color-base-content: #ffffff;
+  --color-primary: #a020f0;
   --color-primary-content: #ffffff;
-  /* El cian como color de acento */
-  --color-secondary: #06b6d4;
-  --color-secondary-content: #ffffff;
-  --color-accent: #fbbf24;
+  --color-secondary: #ffd700;
+  --color-secondary-content: #1a012e;
+  --color-accent: #39ff14;
   --color-accent-content: #000000;
-  --border: 1px;
-  --radius-selector: 1rem;
-  --radius-field: 1rem;
-  --radius-box: 1.5rem;
+  --color-neutral: #000000;
+  --color-neutral-content: #ffd700;
+  --color-info: #00e5ff;
+  --color-success: #ff00ff;
+  --color-warning: #ff8c00;
+  --color-error: #ff0000;
+  --border: 6px;
+  --radius-selector: 0rem;
+  --radius-field: 0rem;
+  --radius-box: 0.5rem;
 }
         
 @variant dark (&:where([data-theme="dark"], [data-theme="chocolatero"], [data-theme="horror-night"], [data-theme="natura-dark"]));

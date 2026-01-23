@@ -37,12 +37,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
       bg: "bg-[#f8f9f1]",
       primary: "bg-[#ffb703]",
     },
-    {
-      id: "locura-total",
-      name: "Locura Total",
-      bg: "bg-[#6A00FF]",
-      primary: "bg-[#FFF000]",
-    },
+    { id: 'distopico', name: 'Distopico', bg: 'bg-[#030303]', primary: 'bg-[#fcee0a]' },
     {
       id: "pinky",
       name: "Rosa Pastel",
@@ -86,7 +81,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
    { id: 'gipsy-style', name: 'Gipsy Style', bg: 'bg-[#FFFFFF]', primary: 'bg-[#C0392B]' },
    { id: 'horror-night', name: 'Horror Night', bg: 'bg-[#050505]', primary: 'bg-[#880808]' },
    { id: 'chocolatero', name: 'Chocolate', bg: 'bg-[#1B100F]', primary: 'bg-[#7B3F00]' },
-   { id: 'inspiration-park', name: 'Inspiration Park', bg: 'bg-[#F2F2F2]', primary: 'bg-[#61007E]' },
+   { id: 'jbizarre', name: 'Bizarro', bg: 'bg-[#1a012e]', primary: 'bg-[#a020f0]' },
   ];
 
   if (!isOpen) return null;
