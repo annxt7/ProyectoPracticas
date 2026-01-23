@@ -380,64 +380,30 @@
 
 
 @plugin "daisyui/theme" {
-  name: "gipsy-style";
+  name: "holanda-88";
   default: false;
   prefersdark: false;
   color-scheme: "light";
-
-  /* --- SECCIÓN BASE: Patio Andaluz --- */
-  /* Blanco cal de pared de pueblo */
-  --color-base-100: #FFFFFF; 
-  /* Alvero (amarillo de plaza de toros) para capas */
-  --color-base-200: #F4D03F; 
-  /* Terracota / Barro para bordes */
-  --color-base-300: #D35400; 
-  /* Negro azabache para el texto */
-  --color-base-content: #1C1C1C; 
-
-  /* --- COLORES PRINCIPALES: Oro y Pasión --- */
-  /* Rojo Clavel (Fuerza y pasión) */
-  --color-primary: #C0392B; 
-  --color-primary-content: #FFFFFF;
-  
-  /* Dorado Joya (El oro de la familia) */
-  --color-secondary: #D4AF37; 
-  --color-secondary-content: #1C1C1C;
-  
-  /* Verde Esperanza / Mantón de manila */
-  --color-accent: #1E8449; 
-  --color-accent-content: #FFFFFF;
-  
-  /* Negro Lunares */
-  --color-neutral: #000000; 
-  --color-neutral-content: #D4AF37; 
-
-  /* --- ESTADOS SEMÁNTICOS --- */
-  /* Info: Azul cielo de feria */
-  --color-info: #5DADE2; 
-  --color-info-content: #FFFFFF;
-  
-  /* Success: Verde Oliva */
-  --color-success: #2ECC71; 
-  --color-success-content: #FFFFFF;
-  
-  /* Warning: Naranja Butano */
-  --color-warning: #E67E22; 
-  --color-warning-content: #FFFFFF;
-  
-  /* Error: Rojo Sangre de Toro */
-  --color-error: #922B21; 
-  --color-error-content: #FFFFFF;
-
-  /* --- GEOMETRÍA: Volantes y Curvas --- */
-  /* Botones muy redondos como lunares */
-  --radius-selector: 9999px; 
-  /* Inputs elegantes */
-  --radius-field: 0.5rem;       
-  /* Cajas con curvas suaves */
-  --radius-box: 2rem;        
-  /* Bordes dorados marcados */
-  --border: 3px;             
+  --color-base-100: #ffffff;
+  --color-base-200: #f2f2f2;
+  --color-base-300: #ff9d4d;
+  --color-base-content: #000000;
+  --color-primary: #ff7b00;
+  --color-primary-content: #ffffff;
+  --color-secondary: #ff9d4d;
+  --color-secondary-content: #000000;
+  --color-accent: #223461;
+  --color-accent-content: #ffffff;
+  --color-neutral: #000000;
+  --color-neutral-content: #ffffff;
+  --color-info: #60a5fa;
+  --color-success: #22c55e;
+  --color-warning: #facc15;
+  --color-error: #ef4444;
+  --border: 2px;
+  --radius-selector: 0.25rem;
+  --radius-field: 0.1rem;
+  --radius-box: 0.5rem;             
 }
 @plugin "daisyui/theme" {
   name: "horror-night";
@@ -549,26 +515,26 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  --color-base-100: #1a012e;
-  --color-base-200: #2d024d;
-  --color-base-300: #ffd700;
+  --color-base-100: #1a0500;
+  --color-base-200: #331100;
+  --color-base-300: #ff8800;
   --color-base-content: #ffffff;
-  --color-primary: #a020f0;
-  --color-primary-content: #ffffff;
-  --color-secondary: #ffd700;
-  --color-secondary-content: #1a012e;
-  --color-accent: #39ff14;
-  --color-accent-content: #000000;
+  --color-primary: #ffcc00;
+  --color-primary-content: #000000;
+  --color-secondary: #00ff88;
+  --color-secondary-content: #000000;
+  --color-accent: #ff00ff;
+  --color-accent-content: #ffffff;
   --color-neutral: #000000;
-  --color-neutral-content: #ffd700;
-  --color-info: #00e5ff;
-  --color-success: #ff00ff;
-  --color-warning: #ff8c00;
+  --color-neutral-content: #ffcc00;
+  --color-info: #00dfff;
+  --color-success: #39ff14;
+  --color-warning: #ff5500;
   --color-error: #ff0000;
-  --border: 6px;
+  --border: 4px;
   --radius-selector: 0rem;
   --radius-field: 0rem;
-  --radius-box: 0.5rem;
+  --radius-box: 0rem;
 }
         
 @variant dark (&:where([data-theme="dark"], [data-theme="chocolatero"], [data-theme="horror-night"], [data-theme="natura-dark"]));
