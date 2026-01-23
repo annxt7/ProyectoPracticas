@@ -81,7 +81,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
    { id: 'orange', name: 'Orange', bg: 'bg-[#ffffff]', primary: 'bg-[#ff7b00]' },
    { id: 'horror-night', name: 'Horror Night', bg: 'bg-[#050505]', primary: 'bg-[#880808]' },
    { id: 'chocolatero', name: 'Chocolate', bg: 'bg-[#1B100F]', primary: 'bg-[#7B3F00]' },
-   { id: 'bizarre', name: 'Bizarro', bg: 'bg-[#1a0500]', primary: 'bg-[#ffcc00]' },
+   { id: 'coral-ocean', name: 'Coral Ocean 🌊', bg: 'bg-[#ffffff]', primary: 'bg-[#ff7f50]' },
   ];
 
   if (!isOpen) return null;

@@ -511,30 +511,30 @@
 
   
 @plugin "daisyui/theme" {
- name: "bizarre";
+  name: "coral-ocean";
   default: false;
-  prefersdark: true;
-  color-scheme: "dark";
-  --color-base-100: #1a0500;
-  --color-base-200: #331100;
-  --color-base-300: #ff8800;
-  --color-base-content: #ffffff;
-  --color-primary: #ffcc00;
-  --color-primary-content: #000000;
-  --color-secondary: #00ff88;
-  --color-secondary-content: #000000;
-  --color-accent: #ff00ff;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: #ffffff;
+  --color-base-200: #f0f7ff;
+  --color-base-300: #e0eeff;
+  --color-base-content: #1e293b;
+  --color-primary: #ff7f50;
+  --color-primary-content: #ffffff;
+  --color-secondary: #0ea5e9;
+  --color-secondary-content: #ffffff;
+  --color-accent: #fb923c;
   --color-accent-content: #ffffff;
-  --color-neutral: #000000;
-  --color-neutral-content: #ffcc00;
-  --color-info: #00dfff;
-  --color-success: #39ff14;
-  --color-warning: #ff5500;
-  --color-error: #ff0000;
-  --border: 4px;
-  --radius-selector: 0rem;
-  --radius-field: 0rem;
-  --radius-box: 0rem;
+  --color-neutral: #0f172a;
+  --color-neutral-content: #ffffff;
+  --color-info: #0284c7;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --border: 1px;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
 }
         
 @variant dark (&:where([data-theme="dark"], [data-theme="chocolatero"], [data-theme="horror-night"], [data-theme="natura-dark"]));
