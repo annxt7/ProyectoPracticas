@@ -11,10 +11,8 @@ const NavDesktop = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { theme, setTheme } = useTheme(); 
+  const { theme} = useTheme(); 
 
-  // Lista de temas que configuramos en el CSS
-  const availableThemes = ["light", "dark", "cupcake", "synthwave", "retro", "aqua"];
 
   const isActive = (path) => location.pathname === path;
 
@@ -22,7 +20,7 @@ const NavDesktop = () => {
     logout();
     navigate("/login");
   };
-  const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep"].includes(theme);
+   const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep","royal-wine"].includes(theme);
 
   return (
     <nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-base-content/10 z-40 px-6 py-3 justify-between items-center transition-colors duration-300">
