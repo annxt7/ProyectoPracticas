@@ -37,7 +37,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
       bg: "bg-[#f8f9f1]",
       primary: "bg-[#ffb703]",
     },
-    { id: 'distopico', name: 'Distopico', bg: 'bg-[#030303]', primary: 'bg-[#fcee0a]' },
+    { id: 'ecléctico-joy', name: 'Joyful Eclectic', bg: 'bg-[#f4f7f2]', primary: 'bg-[#002366]' },
     {
       id: "pinky",
       name: "Rosa Pastel",
@@ -81,7 +81,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
    { id: 'orange', name: 'Orange', bg: 'bg-[#ffffff]', primary: 'bg-[#ff7b00]' },
    { id: 'horror-night', name: 'Horror Night', bg: 'bg-[#050505]', primary: 'bg-[#880808]' },
    { id: 'chocolatero', name: 'Chocolate', bg: 'bg-[#1B100F]', primary: 'bg-[#7B3F00]' },
-   { id: 'coral-sky', name: 'Coral Sky ☁️', bg: 'bg-[#ffffff]', primary: 'bg-[#ff4747]' },
+   { id: 'coral-vibrant-light', name: 'Coral Electric Blue', bg: 'bg-[#ffffff]', primary: 'bg-[#ff5e57]' },
+   
   ];
 
   if (!isOpen) return null;

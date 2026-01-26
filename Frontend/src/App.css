@@ -40,30 +40,32 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "distopico";
+  name: "ecléctico-joy";
   default: false;
-  prefersdark: true;
-  color-scheme: "dark";
-  --color-base-100: #080a0c;
-  --color-base-200: #111418;
-  --color-base-300: #2d333b;
-  --color-base-content: #aab2bb;
-  --color-primary: #e5b80b;
-  --color-primary-content: #000000;
-  --color-secondary: #008b94;
+  prefersdark: false;
+  color-scheme: "light";
+  /* Fondo muy suave (Verde Hueso) */
+  --color-base-100: #f4f7f2;
+  /* Capas en Rosa Empolvado */
+  --color-base-200: #fce4ec;
+  /* Bordes en Dorado */
+  --color-base-300: #d4af37;
+  --color-base-content: #002366;
+  /* Azul Intenso: El color de los botones y textos clave */
+  --color-primary: #002366;
+  --color-primary-content: #ffffff;
+  /* Dorado para resaltar elementos */
+  --color-secondary: #d4af37;
   --color-secondary-content: #ffffff;
-  --color-accent: #8b0000;
-  --color-accent-content: #ffffff;
-  --color-neutral: #050505;
-  --color-neutral-content: #e5b80b;
-  --color-info: #204a87;
-  --color-success: #2e7d32;
-  --color-warning: #af5f00;
-  --color-error: #cc0000;
+  /* Rosa Empolvado para acentos suaves */
+  --color-accent: #f8bbd0;
+  --color-accent-content: #002366;
+  --color-neutral: #3d4451;
+  /* Geometría suave y elegante */
   --border: 1px;
-  --radius-selector: 0rem;
-  --radius-field: 0rem;
-  --radius-box: 0rem;
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1.25rem;
 }
 
 @plugin "daisyui/theme" {
@@ -511,27 +513,27 @@
 
   
 @plugin "daisyui/theme" {
-  name: "coral-sky";
+  name: "coral-vibrant-light";
   default: false;
   prefersdark: false;
   color-scheme: "light";
-  /* Fondo blanco puro para que no sea oscuro */
+  /* Fondo blanco limpio */
   --color-base-100: #ffffff;
-  /* Capas en un azul muy clarito casi blanco */
-  --color-base-200: #f5f9ff;
-  /* Bordes en azul cielo vibrante */
-  --color-base-300: #0070f3;
-  --color-base-content: #001a33;
-  /* Coral Potente: Saturación al máximo */
-  --color-primary: #ff4747;
+  /* Capas en un azul muy suave para dar profundidad */
+  --color-base-200: #f0faff;
+  /* Bordes en el azul protagonista */
+  --color-base-300: #00b4d8;
+  --color-base-content: #002842;
+  /* Coral Potente y "vivo" */
+  --color-primary: #ff5e57;
   --color-primary-content: #ffffff;
-  /* Azul Eléctrico para contrastar */
-  --color-secondary: #0070f3;
+  /* El azul claro pero eléctrico */
+  --color-secondary: #00b4d8;
   --color-secondary-content: #ffffff;
-  /* Naranja vitamina */
-  --color-accent: #ff8200;
+  /* Naranja enérgico */
+  --color-accent: #ff9f43;
   --color-accent-content: #ffffff;
-  --color-neutral: #1e293b;
+  --color-neutral: #1d3557;
   --color-neutral-content: #ffffff;
   --border: 2px;
   --radius-selector: 0.5rem;
