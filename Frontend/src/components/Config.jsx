@@ -37,7 +37,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
       bg: "bg-[#f8f9f1]",
       primary: "bg-[#ffb703]",
     },
-    { id: 'joyful-eclectic', name: 'Joyful', bg: 'bg-[#e8f5e9]', primary: 'bg-[#003399]' },
+    { id: 'royal-wine', name: 'Royal Wine', bg: 'bg-[#1a0a0a]', primary: 'bg-[#00fa9a]' },
     {
       id: "pinky",
       name: "Rosa Pastel",
@@ -80,7 +80,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
    
    { id: 'orange', name: 'Orange', bg: 'bg-[#ffffff]', primary: 'bg-[#ff7b00]' },
    { id: 'horror-night', name: 'Horror Night', bg: 'bg-[#050505]', primary: 'bg-[#880808]' },
-   { id: 'chocolatero', name: 'Chocolate', bg: 'bg-[#1B100F]', primary: 'bg-[#7B3F00]' },
+   { id: 'galactic-purple', name: 'Galactic Deep', bg: 'bg-[#120122]', primary: 'bg-[#00f5ff]' },
    { id: 'coral-vibrant-light', name: 'Coral Electric Blue', bg: 'bg-[#ffffff]', primary: 'bg-[#ff5e57]' },
    
   ];

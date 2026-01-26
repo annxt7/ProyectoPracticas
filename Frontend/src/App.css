@@ -40,29 +40,31 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "joyful-eclectic";
+  name: "royal-wine";
   default: false;
-  prefersdark: false;
-  color-scheme: "light";
-  /* Verde suave orgánico de fondo */
-  --color-base-100: #e8f5e9;
-  /* Rosa empolvado para las tarjetas */
-  --color-base-200: #fce4ec;
-  /* El Dorado Real para bordes y detalles */
-  --color-base-300: #ffc107; 
-  --color-base-content: #001a4d;
-  /* Azul Intenso para botones (el ancla visual) */
-  --color-primary: #003399;
-  --color-primary-content: #ffffff;
-  /* Dorado Vibrante para destacar */
-  --color-secondary: #ffc107;
-  --color-secondary-content: #000000;
-  /* Rosa para acentos */
-  --color-accent: #f06292;
+  prefersdark: true;
+  color-scheme: "dark";
+  /* Fondo Borgona muy oscuro (sustituye al negro) */
+  --color-base-100: #1a0a0a;
+  /* Capas en un tono vino más vibrante */
+  --color-base-200: #2d0f0f;
+  /* Bordes en un cobalto oscuro para contraste */
+  --color-base-300: #4a1a1a;
+  /* Texto en un crema rosado (sustituye al blanco) */
+  --color-base-content: #ffe4e1;
+  /* Verde Esmeralda: Salta sobre el fondo rojo */
+  --color-primary: #00fa9a;
+  --color-primary-content: #000000;
+  /* Oro Viejo */
+  --color-secondary: #c5a059;
+  --color-secondary-content: #ffffff;
+  /* Violeta Profundo */
+  --color-accent: #800080;
   --color-accent-content: #ffffff;
+  --color-neutral: #3b1111;
   --border: 2px;
-  --radius-selector: 1rem;
-  --radius-box: 1.25rem;
+  --radius-selector: 0.25rem;
+  --radius-box: 0.75rem;
 }
 
 @plugin "daisyui/theme" {
@@ -457,55 +459,31 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "chocolatero";
+  name: "galactic-purple";
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-
-  /* --- SECCIÓN BASE: La Tableta --- */
-  /* Chocolate Negro Intenso (Fondo principal) */
-  --color-base-100: #1B100F; 
-  /* Chocolate Amargo para capas */
-  --color-base-200: #2D1B19; 
-  /* Chocolate con Leche para bordes y separadores */
-  --color-base-300: #7B3F00; 
-  /* Chocolate Blanco (Texto crema) */
-  --color-base-content: #F5E6CC; 
-
-  /* --- COLORES PRINCIPALES: Variedades de Cacao --- */
-  /* Chocolate con Leche Cremoso */
-  --color-primary: #7B3F00; 
-  --color-primary-content: #F5E6CC;
-  
-  /* Caramelo Salado / Toffee */
-  --color-secondary: #C68E17; 
-  --color-secondary-content: #1B100F;
-  
-  /* Chocolate Blanco Marfil */
-  --color-accent: #FFF5E1; 
-  --color-accent-content: #3D2314;
-  
-  /* Cacao Puro en Polvo */
-  --color-neutral: #3D2314; 
-  --color-neutral-content: #F5E6CC; 
-
-  /* --- ESTADOS SEMÁNTICOS: Sabores --- */
-  /* Info: Menta y Chocolate */
-  --color-info: #3E8E7E; 
-  /* Success: Pistacho */
-  --color-success: #88B04B; 
-  /* Warning: Piel de Naranja Confitada */
-  --color-warning: #FF8C00; 
-  /* Error: Licor de Cereza */
-  --color-error: #800000; 
-
-  /* --- GEOMETRÍA: Formas de Onza --- */
-  /* Bordes gruesos como una tableta de calidad */
-  --border: 4px;             
-  /* Esquinas suavizadas como chocolate fundido */
-  --radius-selector: 0.5rem; 
-  --radius-field: 0.3rem;       
-  --radius-box: 1rem;        
+  /* Violeta casi negro (sustituye al negro) */
+  --color-base-100: #120122;
+  /* Morado obispo oscuro para capas */
+  --color-base-200: #1f0236;
+  /* Púrpura real para bordes */
+  --color-base-300: #35065a;
+  /* Texto en un lila blanquecino (sustituye al blanco/gris) */
+  --color-base-content: #f3e8ff;
+  /* Turquesa Neón para romper la oscuridad */
+  --color-primary: #00f5ff;
+  --color-primary-content: #000000;
+  /* Amarillo Eléctrico */
+  --color-secondary: #e0f000;
+  --color-secondary-content: #000000;
+  /* Fucsia Stand */
+  --color-accent: #ff00ff;
+  --color-accent-content: #ffffff;
+  --color-neutral: #1a022d;
+  --border: 1px;
+  --radius-selector: 0.5rem;
+  --radius-box: 1rem;
 }
 
   
