@@ -40,31 +40,28 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "ecléctico-joy";
+  name: "joyful-eclectic";
   default: false;
   prefersdark: false;
   color-scheme: "light";
-  /* Fondo muy suave (Verde Hueso) */
-  --color-base-100: #f4f7f2;
-  /* Capas en Rosa Empolvado */
+  /* Verde suave orgánico de fondo */
+  --color-base-100: #e8f5e9;
+  /* Rosa empolvado para las tarjetas */
   --color-base-200: #fce4ec;
-  /* Bordes en Dorado */
-  --color-base-300: #d4af37;
-  --color-base-content: #002366;
-  /* Azul Intenso: El color de los botones y textos clave */
-  --color-primary: #002366;
+  /* El Dorado Real para bordes y detalles */
+  --color-base-300: #ffc107; 
+  --color-base-content: #001a4d;
+  /* Azul Intenso para botones (el ancla visual) */
+  --color-primary: #003399;
   --color-primary-content: #ffffff;
-  /* Dorado para resaltar elementos */
-  --color-secondary: #d4af37;
-  --color-secondary-content: #ffffff;
-  /* Rosa Empolvado para acentos suaves */
-  --color-accent: #f8bbd0;
-  --color-accent-content: #002366;
-  --color-neutral: #3d4451;
-  /* Geometría suave y elegante */
-  --border: 1px;
+  /* Dorado Vibrante para destacar */
+  --color-secondary: #ffc107;
+  --color-secondary-content: #000000;
+  /* Rosa para acentos */
+  --color-accent: #f06292;
+  --color-accent-content: #ffffff;
+  --border: 2px;
   --radius-selector: 1rem;
-  --radius-field: 0.5rem;
   --radius-box: 1.25rem;
 }
 

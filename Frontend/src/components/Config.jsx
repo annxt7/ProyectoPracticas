@@ -37,7 +37,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
       bg: "bg-[#f8f9f1]",
       primary: "bg-[#ffb703]",
     },
-    { id: 'ecléctico-joy', name: 'Joyful Eclectic', bg: 'bg-[#f4f7f2]', primary: 'bg-[#002366]' },
+    { id: 'joyful-eclectic', name: 'Joyful', bg: 'bg-[#e8f5e9]', primary: 'bg-[#003399]' },
     {
       id: "pinky",
       name: "Rosa Pastel",
