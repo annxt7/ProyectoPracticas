@@ -22,7 +22,7 @@ const NavDesktop = () => {
     logout();
     navigate("/login");
   };
-  const isDark = ["dark", "synthwave", "aqua","midnight-rose","mocha-night"].includes(theme);
+  const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep"].includes(theme);
 
   return (
     <nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-base-content/10 z-40 px-6 py-3 justify-between items-center transition-colors duration-300">
