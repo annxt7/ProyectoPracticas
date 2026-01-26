@@ -79,7 +79,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 { id: 'natura-dark', name: 'Natura Dark', bg: 'bg-[#1a241a]', primary: 'bg-[#70c070]' },
    
    { id: 'orange', name: 'Orange', bg: 'bg-[#ffffff]', primary: 'bg-[#ff7b00]' },
-   { id: 'horror-night', name: 'Horror Night', bg: 'bg-[#050505]', primary: 'bg-[#880808]' },
+   { id: 'mundi-deep', name: 'Terra Mundi', bg: 'bg-[#1a1412]', primary: 'bg-[#e2725b]' },
    { id: 'galactic-purple', name: 'Galactic Deep', bg: 'bg-[#120122]', primary: 'bg-[#00f5ff]' },
    { id: 'coral-vibrant-light', name: 'Coral Electric Blue', bg: 'bg-[#ffffff]', primary: 'bg-[#ff5e57]' },
    

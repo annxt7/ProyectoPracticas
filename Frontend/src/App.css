@@ -407,55 +407,31 @@
   --radius-box: 0.5rem;             
 }
 @plugin "daisyui/theme" {
-  name: "horror-night";
+  name: "mundi-deep";
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-
-  /* --- SECCIÓN BASE: La Oscuridad Total --- */
-  /* Negro Abismo (Fondo principal) */
-  --color-base-100: #050505; 
-  /* Gris Tumba para capas y tarjetas */
-  --color-base-200: #1a1a1a; 
-  /* Rojo Sangre Seca para bordes sutiles */
-  --color-base-300: #4a0404; 
-  /* Blanco Hueso para el texto (no cansa la vista en la oscuridad) */
-  --color-base-content: #e0d9c1; 
-
-  /* --- COLORES PRINCIPALES: Sangre y Sombras --- */
-  /* Rojo Arterial (Brillante y alarmante) */
-  --color-primary: #880808; 
+  /* El "falso negro": Marrón tierra extremadamente oscuro */
+  --color-base-100: #1a1412;
+  /* Capas en un tono café tostado */
+  --color-base-200: #261f1d;
+  /* Bordes en arcilla oscura */
+  --color-base-300: #3d322e;
+  /* Texto en un crema de lino (evita el blanco puro) */
+  --color-base-content: #f4ece6;
+  /* Terracota Vibrante: El color de la acción */
+  --color-primary: #e2725b;
   --color-primary-content: #ffffff;
-  
-  /* Violeta Hematoma (Para elementos secundarios) */
-  --color-secondary: #310a31; 
-  --color-secondary-content: #e0d9c1;
-  
-  /* Verde Moho / Putrefacción */
-  --color-accent: #2d3b2d; 
+  /* Ocre Dorado: Para detalles secundarios */
+  --color-secondary: #d4a373;
+  --color-secondary-content: #1a1412;
+  /* Verde Oliva seco para acentos */
+  --color-accent: #a98467;
   --color-accent-content: #ffffff;
-  
-  /* Negro Azabache */
-  --color-neutral: #000000; 
-  --color-neutral-content: #880808; /* Texto rojo sobre fondo negro */
-
-  /* --- ESTADOS SEMÁNTICOS: La Pesadilla --- */
-  /* Info: Azul Fantasmal */
-  --color-info: #2c3e50; 
-  /* Success: Verde Veneno */
-  --color-success: #00ff41; 
-  /* Warning: Naranja Calabaza Siniestra */
-  --color-warning: #d35400; 
-  /* Error: Rojo Hemorragia */
-  --color-error: #ff0000; 
-
-  /* --- GEOMETRÍA: Afilada y Brutalista --- */
-  /* Nada de curvas: todo puntas afiladas */
-  --radius-selector: 0rem; 
-  --radius-field: 0rem;       
-  --radius-box: 0rem;        
-  /* Bordes finos como una cicatriz o muy gruesos */
-  --border: 1px;             
+  --color-neutral: #2c221f;
+  --border: 1px;
+  --radius-selector: 0.5rem;
+  --radius-box: 1.25rem;
 }
 
 @plugin "daisyui/theme" {
