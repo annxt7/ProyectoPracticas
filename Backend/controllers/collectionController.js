@@ -151,23 +151,44 @@ exports.addItemToCollection = async (req, res) => {
   };
 
   try {
-    let sql = "";
-    let params = [];
-
     const typeLower = item_type ? item_type.toLowerCase() : 'custom';
     const colName = columnMap[typeLower];
-
     if (reference_id && colName) {
-        sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
-        params = [collection_id, typeLower, reference_id];
+        const sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
+        const [result] = await db.query(sql, [collection_id, typeLower, reference_id]);
+        return res.status(201).json({ success: true, itemId: result.insertId });
     } 
-    else {
-        sql = `INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description, custom_image) VALUES (?, ?, ?, ?, ?, ?)`;
-        params = [collection_id, 'custom', custom_title, custom_subtitle, custom_description || "", custom_image || null];
-    }
+    const sqlCatalog = `
+        INSERT INTO Catalog_Custom (title, subtitle, category, image_url) 
+        VALUES (?, ?, ?, ?)
+    `;
+    // Usamos el typeLower como categoría (ej: "NBA", "Otros", "Fútbol")
+    const [catalogResult] = await db.query(sqlCatalog, [
+        custom_title, 
+        custom_subtitle, 
+        typeLower.toUpperCase(), 
+        custom_image
+    ]);
 
-    const [result] = await db.query(sql, params);
-    res.status(201).json({ success: true, itemId: result.insertId });
+    const newCustomId = catalogResult.insertId;
+    const sqlItem = `
+        INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description, custom_image) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    const [result] = await db.query(sqlItem, [
+        collection_id, 
+        'custom', 
+        custom_title, 
+        custom_subtitle, 
+        custom_description || "", 
+        custom_image || null
+    ]);
+
+    res.status(201).json({ 
+        success: true, 
+        itemId: result.insertId,
+        catalogId: newCustomId // Por si el front lo necesita
+    });
 
   } catch (error) {
     console.error("Error añadiendo item:", error);
