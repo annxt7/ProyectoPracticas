@@ -490,7 +490,7 @@ const Profile = () => {
                 />
                 
                 <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
-                  <h3 className="text-base font-bold leading-tight">
+                  <h3 className="text-white font-bold leading-tight">
                     {col.collection_name}
                   </h3>
                   <p className="text-white/70 text-xs mt-1 capitalize">
