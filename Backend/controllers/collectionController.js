@@ -117,6 +117,7 @@ exports.getCollectionDetails = async (req, res) => {
             LEFT JOIN Catalog_Movies mov ON i.movie_id = mov.movie_id
             LEFT JOIN Catalog_Shows s ON i.show_id = s.show_id
             LEFT JOIN Catalog_Games g ON i.game_id = g.game_id
+            LEFT JOIN Catalog_Custom cc ON i.custom_id = cc.custom_id
             WHERE i.collection_id = ?
         `;
         
@@ -147,47 +148,47 @@ exports.addItemToCollection = async (req, res) => {
     'books': 'book_id',
     'movies': 'movie_id',
     'shows': 'show_id',
-    'games': 'game_id'
+    'games': 'game_id',
+    'custom': 'custom_id' 
   };
 
   try {
     const typeLower = item_type ? item_type.toLowerCase() : 'custom';
     const colName = columnMap[typeLower];
+
     if (reference_id && colName) {
         const sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
         const [result] = await db.query(sql, [collection_id, typeLower, reference_id]);
         return res.status(201).json({ success: true, itemId: result.insertId });
     } 
     const sqlCatalog = `
-        INSERT INTO Catalog_Custom (title, subtitle, category, image_url) 
-        VALUES (?, ?, ?, ?)
+        INSERT INTO Catalog_Custom (title, subtitle, description, image_url, category) 
+        VALUES (?, ?, ?, ?, ?)
     `;
-    // Usamos el typeLower como categoría (ej: "NBA", "Otros", "Fútbol")
     const [catalogResult] = await db.query(sqlCatalog, [
         custom_title, 
         custom_subtitle, 
-        typeLower.toUpperCase(), 
-        custom_image
+        custom_description || "",
+        custom_image,
+        typeLower.toUpperCase()
     ]);
 
     const newCustomId = catalogResult.insertId;
+
     const sqlItem = `
-        INSERT INTO Items (collection_id, item_type, custom_title, custom_subtitle, custom_description, custom_image) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO Items (collection_id, item_type, custom_id) 
+        VALUES (?, ?, ?)
     `;
     const [result] = await db.query(sqlItem, [
         collection_id, 
         'custom', 
-        custom_title, 
-        custom_subtitle, 
-        custom_description || "", 
-        custom_image || null
+        newCustomId 
     ]);
 
     res.status(201).json({ 
         success: true, 
         itemId: result.insertId,
-        catalogId: newCustomId // Por si el front lo necesita
+        catalogId: newCustomId 
     });
 
   } catch (error) {
