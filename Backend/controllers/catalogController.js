@@ -87,9 +87,14 @@ exports.searchCatalog = async (req, res) => {
        FROM Catalog_Games WHERE title LIKE ? LIMIT 5`, 
       [searchTerm]
     );
+    const searchCustom = db.query(
+      `SELECT custom_id as id, 'Custom' as type, title, subtitle, description as extra_info, image_url as image 
+       FROM Catalog_Custom WHERE title LIKE ? OR subtitle LIKE ? LIMIT 5`,
+      [searchTerm, searchTerm]
+    );
 
-    const [music, books, movies, shows, games] = await Promise.all([
-      searchMusic, searchBooks, searchMovies, searchShows, searchGames
+    const [music, books, movies, shows, games, custom] = await Promise.all([
+      searchMusic, searchBooks, searchMovies, searchShows, searchGames, searchCustom
     ]);
 
     const combinedResults = [
@@ -97,7 +102,8 @@ exports.searchCatalog = async (req, res) => {
       ...books[0],
       ...movies[0],
       ...shows[0],
-      ...games[0]
+      ...games[0],
+      ...custom[0]
     ];
 
     res.json(combinedResults);
