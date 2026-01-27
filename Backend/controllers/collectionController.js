@@ -102,24 +102,24 @@ exports.getCollectionDetails = async (req, res) => {
         collection.is_saved = collection.is_saved > 0;
         collection.has_liked = collection.has_liked > 0; 
 
-        const itemsSql = `
-            SELECT 
-                i.item_id, 
-                i.item_type, 
-                i.custom_description,
-                i.music_id, i.book_id, i.movie_id, i.show_id, i.game_id,
-                COALESCE(i.custom_title, m.title, b.title, mov.title, s.title, g.title) AS display_title,
-                COALESCE(i.custom_subtitle, m.artist, b.author, mov.director, g.developer, 'Varios') AS display_subtitle,
-                COALESCE(i.custom_image, m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image
-            FROM Items i
-            LEFT JOIN Catalog_Music m ON i.music_id = m.music_id
-            LEFT JOIN Catalog_Books b ON i.book_id = b.book_id
-            LEFT JOIN Catalog_Movies mov ON i.movie_id = mov.movie_id
-            LEFT JOIN Catalog_Shows s ON i.show_id = s.show_id
-            LEFT JOIN Catalog_Games g ON i.game_id = g.game_id
-            LEFT JOIN Catalog_Custom cc ON i.custom_id = cc.custom_id
-            WHERE i.collection_id = ?
-        `;
+      const itemsSql = `
+    SELECT 
+        i.item_id, 
+        i.item_type, 
+        i.custom_description,
+        i.music_id, i.book_id, i.movie_id, i.show_id, i.game_id, i.custom_id,
+        COALESCE(cc.title, i.custom_title, m.title, b.title, mov.title, s.title, g.title) AS display_title,
+        COALESCE(cc.subtitle, i.custom_subtitle, m.artist, b.author, mov.director, g.developer, 'Varios') AS display_subtitle,
+        COALESCE(cc.image_url, i.custom_image, m.cover_url, b.cover_url, mov.poster_url, s.poster_url, g.poster_url) AS display_image
+    FROM Items i
+    LEFT JOIN Catalog_Custom cc ON i.custom_id = cc.custom_id -- Unimos con el catálogo custom
+    LEFT JOIN Catalog_Music m ON i.music_id = m.music_id
+    LEFT JOIN Catalog_Books b ON i.book_id = b.book_id
+    LEFT JOIN Catalog_Movies mov ON i.movie_id = mov.movie_id
+    LEFT JOIN Catalog_Shows s ON i.show_id = s.show_id
+    LEFT JOIN Catalog_Games g ON i.game_id = g.game_id
+    WHERE i.collection_id = ?
+`;
         
         const [items] = await db.query(itemsSql, [id]);
         
