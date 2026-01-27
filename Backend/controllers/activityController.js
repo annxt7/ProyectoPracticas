@@ -6,7 +6,7 @@ exports.getNotifications = async (req, res) => {
     // El ID viene del middleware verifyToken (auth)
     const userId = req.user.id; 
 
-    // Consultamos las notificaciones y unimos con la tabla Users para obtener datos del 'actor'
+   
     const sql = `
       SELECT 
         n.id, 
@@ -24,13 +24,11 @@ exports.getNotifications = async (req, res) => {
 
     const [rows] = await db.query(sql, [userId]);
 
-    // MAPEO DE CONCORDANCIA: 
-    // Transformamos los datos para que el Frontend reciba lo que necesita
     const formattedNotifications = rows.map(n => ({
       id: n.id,
       type: n.type,
       content: n.content,
-      read: n.is_read === 1, // Convertimos tinyint(1) a booleano real
+      read: n.is_read === 1, 
       created_at: n.created_at,
       user: {
         name: n.actorName || "Usuario",
@@ -52,7 +50,7 @@ exports.markAsRead = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Aseguramos que solo el dueño de la notificación pueda marcarla como leída
+  
     const [result] = await db.query(
       "UPDATE Notifications SET is_read = 1 WHERE id = ? AND user_id = ?",
       [id, userId]

@@ -79,8 +79,6 @@ exports.approveReset = async (req, res) => {
 // DELETE: Eliminar usuario o colección
 exports.deleteEntity = async (req, res) => {
   const { type, id } = req.params;
-  
-  // Normalizamos a minúsculas y aceptamos singular o plural
   const entity = type.toLowerCase();
   const isUser = entity === 'user' || entity === 'users';
   

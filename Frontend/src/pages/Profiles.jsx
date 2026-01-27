@@ -366,7 +366,7 @@ const Profile = () => {
                   <textarea
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
-                    className="textarea textarea-bordered w-full resize-none bg-base-100 text-white"
+                    className="textarea textarea-bordered w-full resize-none bg-base-100 text-base"
                     rows={3}
                     placeholder="Escribe algo sobre ti..."
                   />
