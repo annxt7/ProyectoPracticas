@@ -480,7 +480,7 @@ const Profile = () => {
           {(activeTab === "collections" ? collections : savedCollections).map((col) => (
             <div
               key={col.collection_id}
-              className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm hover:scale-[1.02] transition-transform group"
+              className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm"
             >
               <Link to={`/collection/${col.collection_id}`} className="w-full h-full block">
                 <ItemCover
@@ -489,8 +489,8 @@ const Profile = () => {
                   className="w-full h-full object-cover"
                 />
                 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
-                  <h3 className="text-white font-bold leading-tight">
+                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
+                  <h3 className="text-base font-bold leading-tight">
                     {col.collection_name}
                   </h3>
                   <p className="text-white/70 text-xs mt-1 capitalize">
@@ -499,11 +499,10 @@ const Profile = () => {
                 </div>
               </Link>
 
-              {/* BOTÓN BORRAR PROPIO (Con nuevo Modal) */}
               {isMe && activeTab === "collections" && (
                 <button
                   onClick={(e) => handleDeleteCollection(e, col.collection_id, col.collection_name)}
-                  className="absolute top-2 right-2 p-2 bg-red-600/80 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 backdrop-blur-sm"
+                  className="absolute top-2 right-2 p-2 text-warning text-base rounded-full shadow-lg z-20 "
                 >
                   <Trash2 size={16} />
                 </button>
@@ -513,7 +512,7 @@ const Profile = () => {
               {isMe && activeTab === "saved" && (
                 <button
                   onClick={(e) => handleDeleteSavedCollection(e, col.collection_id, col.collection_name)}
-                  className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 backdrop-blur-sm"
+                  className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full shadow-lg z-20 "
                 >
                   <X size={16} />
                 </button>

@@ -302,15 +302,15 @@ const CollectionPage = () => {
           {items.map((item) => (
             <div key={item.id} className="group flex flex-col gap-3">
               <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-300 shadow-lg border border-white/5">
-                <ItemCover src={item.cover} title={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                <ItemCover src={item.cover} title={item.title} className="w-full h-full object-cover" />
                 
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="absolute top-2 right-2 ">
                   {isOwner ? (
                     <button onClick={() => setItemToDelete(item.id)} className="btn btn-square btn-xs btn-error shadow-xl"><Trash2 size={14} /></button>
                   ) : (
                     <button 
                       onClick={() => setSelectedItemForSave(item)}
-                      className="btn btn-square btn-xs btn-primary shadow-xl hover:scale-110"
+                      className="btn btn-square btn-xs btn-primary shadow-xl "
                     >
                       <Plus size={14} />
                     </button>
@@ -324,7 +324,7 @@ const CollectionPage = () => {
             </div>
           ))}
           {isOwner && (
-            <button onClick={() => setIsAddItemOpen(true)} className="aspect-[2/3] rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 opacity-30 hover:opacity-100 hover:bg-white/5 transition-all">
+            <button onClick={() => setIsAddItemOpen(true)} className="aspect-2/3 rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 opacity-30 hover:opacity-100 hover:bg-white/5 transition-all">
               <Plus size={32} />
               <span className="text-[10px] font-bold uppercase tracking-widest">Añadir</span>
             </button>
