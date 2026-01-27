@@ -14,13 +14,9 @@ const categories = [
 ];
 
 const OnboardingPage = () => {
-  const { login, user } = useAuth(); // Accedemos al usuario global
+  const { login, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // LOGICA ROBUSTA PARA OBTENER EL ID:
-  // 1. Intentamos leer de location.state (si viene de redirección directa)
-  // 2. Si fallas (F5), intentamos leer del usuario en contexto (si ya se hizo login previo)
   const userId = location.state?.userId || user?.id;
   const username = location.state?.username || user?.username || ''; 
   const googleAvatar = location.state?.googleAvatar || user?.avatar || null; 
@@ -35,7 +31,6 @@ const OnboardingPage = () => {
   // Verificamos si realmente tenemos un usuario
   useEffect(() => {
     if (!userId) {
-      // Si no hay ID ni en state ni en contexto, no deberían estar aquí
       navigate('/login');
     }
   }, [userId, navigate]);
@@ -67,8 +62,6 @@ const OnboardingPage = () => {
 
   const handleFinish = async () => {
     setLoading(true);
-    
-    // 1. OBTENER TOKEN: Usamos 'tribe_token' que es la clave que usas en AuthContext
     const storedToken = localStorage.getItem('tribe_token'); 
     
     if (!storedToken) {
@@ -78,8 +71,6 @@ const OnboardingPage = () => {
     }
 
     try {
-      // 2. ENVIAR DATOS AL BACKEND
-      // IMPORTANTE: Pasamos el token en headers explícitamente para evitar el 401
       await api.put('/users/complete-profile', {
         userId: userId,
         username: username,
@@ -91,17 +82,12 @@ const OnboardingPage = () => {
         }
       });
       
-      // 3. ACTUALIZAR ESTADO GLOBAL (CONTEXTO)
-      // Fusionamos los datos viejos con la nueva foto y el hecho de que completó el perfil
       login({
         ...user, 
         id: userId,
         username: username,
         avatar: imagePreview,
-        // Si tuvieras un campo 'onboardingCompleted', aquí lo pondrías a true
       }, storedToken);
-
-      // 4. AL FIN, AL FEED
       navigate('/profile/me'); 
 
     } catch (error) {

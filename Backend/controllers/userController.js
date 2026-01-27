@@ -8,10 +8,9 @@ const SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const DEFAULT_BANNER =
   "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
 
-// GET: Comprobar disponibilidad (Devuelve userId)
 exports.checkUsername = async (req, res) => {
   try {
-    // Usamos 'AS' en SQL para renombrar directamente
+   
     const [rows] = await db.query(
       "SELECT user_id AS userId, username, email, avatar_url AS avatar FROM Users"
     );
@@ -145,12 +144,11 @@ exports.googleLogin = async (req, res) => {
     let isNewUser = false;
 
     if (existing.length > 0) {
-      user = existing[0]; // Aquí ya obtenemos el user con su ROLE de la DB
+      user = existing[0]; 
     } else {
       const sql = "INSERT INTO Users (username, email, avatar_url, google_id, banner_url, role) VALUES (?, ?, ?, ?, ?, ?)";
       const [result] = await db.query(sql, [name, email, picture, googleId, DEFAULT_BANNER, 'user']);
       
-      // Construimos el objeto para el nuevo usuario
       user = {
         user_id: result.insertId,
         username: name,
@@ -162,15 +160,11 @@ exports.googleLogin = async (req, res) => {
       };
       isNewUser = true;
     }
-
-    // --- CORRECCIÓN 1: INCLUIR EL ROLE EN EL JWT ---
     const appToken = jwt.sign(
-      { id: user.user_id, username: user.username, role: user.role }, // <-- IMPORTANTE
+      { id: user.user_id, username: user.username, role: user.role }, 
       process.env.JWT_SECRET,
       { expiresIn: "5h" }
     );
-
-    // --- CORRECCIÓN 2: INCLUIR EL ROLE EN LA RESPUESTA ---
     res.status(200).json({
       success: true,
       token: appToken,
@@ -182,7 +176,7 @@ exports.googleLogin = async (req, res) => {
         banner: user.banner_url,
         bio: user.bio,
         email: user.email,
-        role: user.role // <-- ESTO ES LO QUE NECESITA EL FRONTEND
+        role: user.role 
       },
     });
   } catch (error) {
@@ -301,7 +295,7 @@ exports.completeProfile = async (req, res) => {
       for (const cat of interests) {
         await db.query(
           "INSERT INTO Collections (user_id, collection_type, collection_name, cover_url) VALUES (?, ?, ?, ?)",
-          [userId, cat, `Mis ${cat}`, null]
+          [userId, cat, `Mi primera colección de ${cat}`, null]
         );
       }
     }
@@ -313,7 +307,6 @@ exports.completeProfile = async (req, res) => {
 //GET: Get User by ID (Genérico)
 exports.getUserById = async (req, res) => {
   const { id } = req.params;
-
   try {
     const sql = `
       SELECT 
@@ -362,12 +355,11 @@ exports.getActivityFeed = async (req, res) => {
                 c.collection_type, 
                 c.cover_url, 
                 c.created_at, 
-                c.likes, -- Usamos tu columna de la tabla Collections
+                c.likes, 
                 u.user_id, 
                 u.username, 
                 u.avatar_url,
                 'created' as action_type,
-                -- Comprobamos si el usuario actual le dio like
                 (SELECT COUNT(*) FROM Collection_Likes WHERE user_id = ? AND collection_id = c.collection_id) AS has_liked
             FROM Collections c
             JOIN Users u ON c.user_id = u.user_id
@@ -377,8 +369,6 @@ exports.getActivityFeed = async (req, res) => {
             LIMIT 20
         `;
     let [rows] = await db.query(sqlFollowing, [userId, userId]);
-
-    // 2. Si no hay seguidos, consulta global
     if (rows.length === 0) {
       const sqlGlobal = `
                 SELECT 
@@ -419,13 +409,8 @@ exports.getActivityFeed = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    // Obtenemos el ID del token (verificando ambos posibles nombres)
     const userId = req.user.id || req.user.user_id;
-
-    // Detectar si db ya es una promesa (común en tu servidor)
     const pool = typeof db.promise === "function" ? db.promise() : db;
-
-    // 1. SELECT usando 'Users' (exacto como en tu DB)
     const [rows] = await pool.execute(
       "SELECT password_hash FROM Users WHERE user_id = ?",
       [userId]
@@ -436,8 +421,6 @@ exports.changePassword = async (req, res) => {
         .status(404)
         .json({ error: "Usuario no encontrado en el servidor" });
     }
-
-    // 2. Verificación de la contraseña actual
     const isMatch = await bcrypt.compare(
       currentPassword,
       rows[0].password_hash
@@ -447,12 +430,8 @@ exports.changePassword = async (req, res) => {
         .status(401)
         .json({ error: "La contraseña actual es incorrecta" });
     }
-
-    // 3. Encriptación de la nueva clave
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-    // 4. UPDATE usando 'Users'
     await pool.execute("UPDATE Users SET password_hash = ? WHERE user_id = ?", [
       hashedPassword,
       userId,
@@ -611,7 +590,6 @@ exports.resetPassword = async (req, res) => {
     console.log("Código recibido:", code);
 
     try {
-        // 1. Verificamos si existe la solicitud aprobada con ese código en Password_Requests
         const [request] = await db.query(
             "SELECT * FROM Password_Requests WHERE email = ? AND code = ? AND status = 'completed'",
             [email, code]

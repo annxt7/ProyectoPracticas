@@ -44,21 +44,14 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  /* Fondo Borgona muy oscuro (sustituye al negro) */
   --color-base-100: #1a0a0a;
-  /* Capas en un tono vino más vibrante */
   --color-base-200: #2d0f0f;
-  /* Bordes en un cobalto oscuro para contraste */
   --color-base-300: #4a1a1a;
-  /* Texto en un crema rosado (sustituye al blanco) */
   --color-base-content: #ffe4e1;
-  /* Verde Esmeralda: Salta sobre el fondo rojo */
   --color-primary: #00fa9a;
   --color-primary-content: #000000;
-  /* Oro Viejo */
   --color-secondary: #c5a059;
   --color-secondary-content: #ffffff;
-  /* Violeta Profundo */
   --color-accent: #800080;
   --color-accent-content: #ffffff;
   --color-neutral: #3b1111;
@@ -72,36 +65,22 @@
   default: false;
   prefersdark: false;
   color-scheme: "light";
-
-  /* Bases: He aumentado el contraste para que las cards (base-200) se noten */
-  --color-base-100: oklch(98% 0.015 340);  /* Fondo principal (casi blanco rosado) */
-  --color-base-200: oklch(94% 0.03 340);   /* Tarjetas y Modales */
-  --color-base-300: oklch(89% 0.05 340);   /* Bordes y hovers */
-  --color-base-content: oklch(30% 0.06 340); /* Texto (Rosa muy oscuro para lectura) */
-
-  /* Principal: Rosa Pastel Vibrante */
+  --color-base-100: oklch(98% 0.015 340);  
+  --color-base-200: oklch(94% 0.03 340);  
+  --color-base-300: oklch(89% 0.05 340);  
+  --color-base-content: oklch(30% 0.06 340); 
   --color-primary: oklch(80% 0.14 340);
-  --color-primary-content: oklch(98% 0.01 340); /* Texto claro sobre botón rosa */
-
-  /* Secundario: Rosa Melocotón (Mantenido pero con mejor contraste) */
+  --color-primary-content: oklch(98% 0.01 340);
   --color-secondary: oklch(86% 0.08 25);
   --color-secondary-content: oklch(40% 0.08 25);
-
-  /* Accent: Rosa-Lila (Más marcado para botones de acción) */
   --color-accent: oklch(75% 0.15 320);
   --color-accent-content: oklch(98% 0.01 320);
-
-  /* Neutral: Gris cálido rosado */
   --color-neutral: oklch(55% 0.03 340);
   --color-neutral-content: oklch(98% 0.01 340);
-
-  /* Estados: Suavizados para que no rompan la estética pastel */
   --color-info: oklch(85% 0.08 240);
   --color-success: oklch(85% 0.1 145);
   --color-warning: oklch(90% 0.1 85);
   --color-error: oklch(80% 0.12 25);
-
-  /* Estilo visual Tribe */
   --radius-selector: 1.5rem;
   --radius-field: 1rem;
   --radius-box: 2rem;
@@ -112,43 +91,26 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-
-  /* Bases oscuras */
   --color-base-100: oklch(18% 0.015 320);
   --color-base-200: oklch(15% 0.015 320);
   --color-base-300: oklch(12% 0.02 320);
   --color-base-content: oklch(92% 0.02 350);
-
-  /* Rosa principal (elegante, no neón) */
   --color-primary: oklch(72% 0.16 350);
   --color-primary-content: oklch(18% 0.05 350);
-
-  /* Secundario rosa empolvado */
   --color-secondary: oklch(65% 0.12 340);
   --color-secondary-content: oklch(92% 0.02 350);
-
-  /* Accent lila-rosa nocturno */
   --color-accent: oklch(68% 0.14 315);
   --color-accent-content: oklch(95% 0.02 315);
-
-  /* Neutrales oscuros */
   --color-neutral: oklch(30% 0.02 320);
   --color-neutral-content: oklch(85% 0.02 350);
-
-  /* Estados */
   --color-info: oklch(70% 0.12 250);
   --color-info-content: oklch(18% 0.04 250);
-
   --color-success: oklch(72% 0.14 155);
   --color-success-content: oklch(18% 0.04 155);
-
   --color-warning: oklch(78% 0.14 85);
   --color-warning-content: oklch(18% 0.04 85);
-
   --color-error: oklch(65% 0.18 15);
   --color-error-content: oklch(95% 0.02 15);
-
-  /* Estilo */
   --radius-selector: 1rem;
   --radius-field: 1.75rem;
   --radius-box: 1.25rem;
@@ -163,43 +125,26 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-
-  /* Bases café oscuro */
   --color-base-100: oklch(17% 0.02 40);
   --color-base-200: oklch(14% 0.02 40);
   --color-base-300: oklch(11% 0.025 40);
   --color-base-content: oklch(92% 0.02 85);
-
-  /* Principal crema-café */
   --color-primary: oklch(75% 0.1 80);
   --color-primary-content: oklch(18% 0.03 80);
-
-  /* Secundario caramelo */
   --color-secondary: oklch(68% 0.12 55);
   --color-secondary-content: oklch(18% 0.03 55);
-
-  /* Accent cacao */
   --color-accent: oklch(62% 0.1 30);
   --color-accent-content: oklch(92% 0.02 85);
-
-  /* Neutrales cálidos */
   --color-neutral: oklch(28% 0.02 40);
   --color-neutral-content: oklch(85% 0.02 85);
-
-  /* Estados */
   --color-info: oklch(70% 0.1 230);
   --color-info-content: oklch(18% 0.04 230);
-
   --color-success: oklch(72% 0.12 150);
   --color-success-content: oklch(18% 0.04 150);
-
   --color-warning: oklch(78% 0.14 80);
   --color-warning-content: oklch(18% 0.04 80);
-
   --color-error: oklch(65% 0.16 20);
   --color-error-content: oklch(92% 0.02 20);
-
-  /* Estilo */
   --radius-selector: 1rem;
   --radius-field: 1.75rem;
   --radius-box: 1.25rem;
@@ -214,14 +159,10 @@
   default: false;
   prefersdark: false;
   color-scheme: "light";
-
-  /* Bases basadas en tu morado #d1a6d1 */
   --color-base-100: oklch(78% 0.1 300);  
   --color-base-200: oklch(74% 0.09 300); 
   --color-base-300: oklch(68% 0.08 300);
   --color-base-content: oklch(20% 0.06 300);
-
-  /* Colores de Marca */
   --color-primary: oklch(60% 0.15 300);
   --color-primary-content: oklch(98% 0.01 300);
   --color-secondary: oklch(82% 0.12 320);
@@ -230,18 +171,14 @@
   --color-accent-content: oklch(98% 0.01 285);
   --color-neutral: oklch(45% 0.06 300);
   --color-neutral-content: oklch(95% 0.02 300);
-
-  /* ESTADOS (Ajustados para resaltar sobre el fondo morado) */
-  --color-info: oklch(75% 0.13 240);      /* Azul profundo */
+  --color-info: oklch(75% 0.13 240);     
   --color-info-content: oklch(98% 0.01 240);
-  --color-success: oklch(78% 0.15 150);   /* Verde menta fuerte */
+  --color-success: oklch(78% 0.15 150);   
   --color-success-content: oklch(20% 0.1 150);
-  --color-warning: oklch(85% 0.16 90);    /* Dorado/Amarillo */
+  --color-warning: oklch(85% 0.16 90);   
   --color-warning-content: oklch(35% 0.12 90);
-  --color-error: oklch(72% 0.18 20);      /* Rojo rosado */
+  --color-error: oklch(72% 0.18 20);   
   --color-error-content: oklch(98% 0.02 20);
-
-  /* Estilo */
   --radius-selector: 1.5rem;
   --radius-field: 1rem;
   --radius-box: 2rem;
@@ -252,14 +189,10 @@
   default: false;
   prefersdark: false;
   color-scheme: "light";
-
-  /* Bases basadas en tu verde #b2faa4 */
   --color-base-100: oklch(93% 0.18 140);  
   --color-base-200: oklch(89% 0.15 140);  
   --color-base-300: oklch(84% 0.12 140);
   --color-base-content: oklch(25% 0.05 140);
-
-  /* Colores de Marca */
   --color-primary: oklch(75% 0.2 140);
   --color-primary-content: oklch(98% 0.02 140);
   --color-secondary: oklch(85% 0.1 160);
@@ -268,18 +201,14 @@
   --color-accent-content: oklch(98% 0.01 130);
   --color-neutral: oklch(40% 0.04 140);
   --color-neutral-content: oklch(95% 0.02 140);
-
-  /* ESTADOS (Ajustados para resaltar sobre el fondo verde) */
-  --color-info: oklch(78% 0.12 210);      /* Azul cielo */
+  --color-info: oklch(78% 0.12 210);     
   --color-info-content: oklch(25% 0.05 210);
-  --color-success: oklch(75% 0.16 155);   /* Verde bosque brillante */
+  --color-success: oklch(75% 0.16 155);  
   --color-success-content: oklch(20% 0.05 155);
-  --color-warning: oklch(85% 0.15 85);    /* Amarillo mostaza suave */
+  --color-warning: oklch(85% 0.15 85);   
   --color-warning-content: oklch(30% 0.1 85);
-  --color-error: oklch(70% 0.18 25);      /* Rojo coral cálido */
+  --color-error: oklch(70% 0.18 25);   
   --color-error-content: oklch(98% 0.02 25);
-
-  /* Estilo */
   --radius-selector: 1.5rem;
   --radius-field: 1rem;
   --radius-box: 2rem;
@@ -290,36 +219,22 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-
-  /* Bases: Un bosque profundo y oscuro */
-  --color-base-100: oklch(18% 0.03 145);  /* Fondo principal (Verde casi negro) */
-  --color-base-200: oklch(22% 0.04 145);  /* Tarjetas/Modales (Verde musgo oscuro) */
-  --color-base-300: oklch(26% 0.05 145);  /* Contrastes y bordes */
-  --color-base-content: oklch(92% 0.03 145); /* Texto (Verde crema muy claro) */
-
-  /* Principal: Verde Hoja Eléctrico (Resalta mucho en la oscuridad) */
+  --color-base-100: oklch(18% 0.03 145);  
+  --color-base-200: oklch(22% 0.04 145); 
+  --color-base-300: oklch(26% 0.05 145);
+  --color-base-content: oklch(92% 0.03 145); 
   --color-primary: oklch(75% 0.15 145);
   --color-primary-content: oklch(20% 0.08 145);
-
-  /* Secundario: Verde Bosque */
   --color-secondary: oklch(45% 0.1 145);
   --color-secondary-content: oklch(98% 0.02 145);
-
-  /* Accent: Menta brillante para detalles */
   --color-accent: oklch(85% 0.12 160);
   --color-accent-content: oklch(25% 0.1 160);
-
-  /* Neutrales: Gris verdoso profundo */
   --color-neutral: oklch(32% 0.04 145);
   --color-neutral-content: oklch(95% 0.02 145);
-
-  /* Estados ajustados para modo oscuro */
   --color-info: oklch(70% 0.1 190); 
   --color-success: oklch(72% 0.15 150);
   --color-warning: oklch(80% 0.15 85);
   --color-error: oklch(65% 0.18 25);
-
-  /* Estilo visual */
   --radius-selector: 1.5rem;
   --radius-field: 1rem;
   --radius-box: 2rem;
@@ -332,43 +247,26 @@
   default: false;
   prefersdark: false;
   color-scheme: "light";
-
-  /* Bases arena más marrón */
   --color-base-100: oklch(95% 0.045 70);
   --color-base-200: oklch(90% 0.05 70);
   --color-base-300: oklch(85% 0.055 70);
   --color-base-content: oklch(22% 0.04 70);
-
-  /* Principal beige-marrón */
   --color-primary: oklch(75% 0.12 65);
   --color-primary-content: oklch(30% 0.08 65);
-
-  /* Secundario arena cálida */
   --color-secondary: oklch(80% 0.1 75);
   --color-secondary-content: oklch(32% 0.08 75);
-
-  /* Accent marrón más profundo */
   --color-accent: oklch(68% 0.12 55);
   --color-accent-content: oklch(96% 0.02 55);
-
-  /* Neutrales cálidos */
   --color-neutral: oklch(68% 0.03 70);
   --color-neutral-content: oklch(20% 0.03 70);
-
-  /* Estados */
   --color-info: oklch(82% 0.08 230);
   --color-info-content: oklch(35% 0.1 230);
-
   --color-success: oklch(78% 0.1 150);
   --color-success-content: oklch(32% 0.1 150);
-
   --color-warning: oklch(84% 0.12 80);
   --color-warning-content: oklch(38% 0.14 80);
-
   --color-error: oklch(73% 0.14 20);
   --color-error-content: oklch(95% 0.02 20);
-
-  /* Estilo */
   --radius-selector: 1rem;
   --radius-field: 1.75rem;
   --radius-box: 1.25rem;
@@ -411,21 +309,14 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  /* El "falso negro": Marrón tierra extremadamente oscuro */
   --color-base-100: #1a1412;
-  /* Capas en un tono café tostado */
   --color-base-200: #261f1d;
-  /* Bordes en arcilla oscura */
   --color-base-300: #3d322e;
-  /* Texto en un crema de lino (evita el blanco puro) */
   --color-base-content: #f4ece6;
-  /* Terracota Vibrante: El color de la acción */
   --color-primary: #e2725b;
   --color-primary-content: #ffffff;
-  /* Ocre Dorado: Para detalles secundarios */
   --color-secondary: #d4a373;
   --color-secondary-content: #1a1412;
-  /* Verde Oliva seco para acentos */
   --color-accent: #a98467;
   --color-accent-content: #ffffff;
   --color-neutral: #2c221f;
@@ -439,21 +330,14 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  /* Violeta casi negro (sustituye al negro) */
   --color-base-100: #120122;
-  /* Morado obispo oscuro para capas */
   --color-base-200: #1f0236;
-  /* Púrpura real para bordes */
   --color-base-300: #35065a;
-  /* Texto en un lila blanquecino (sustituye al blanco/gris) */
   --color-base-content: #f3e8ff;
-  /* Turquesa Neón para romper la oscuridad */
   --color-primary: #00f5ff;
   --color-primary-content: #000000;
-  /* Amarillo Eléctrico */
   --color-secondary: #e0f000;
   --color-secondary-content: #000000;
-  /* Fucsia Stand */
   --color-accent: #ff00ff;
   --color-accent-content: #ffffff;
   --color-neutral: #1a022d;
@@ -468,20 +352,14 @@
   default: false;
   prefersdark: false;
   color-scheme: "light";
-  /* Fondo blanco limpio */
   --color-base-100: #ffffff;
-  /* Capas en un azul muy suave para dar profundidad */
   --color-base-200: #f0faff;
-  /* Bordes en el azul protagonista */
   --color-base-300: #00b4d8;
   --color-base-content: #002842;
-  /* Coral Potente y "vivo" */
   --color-primary: #ff5e57;
   --color-primary-content: #ffffff;
-  /* El azul claro pero eléctrico */
   --color-secondary: #00b4d8;
   --color-secondary-content: #ffffff;
-  /* Naranja enérgico */
   --color-accent: #ff9f43;
   --color-accent-content: #ffffff;
   --color-neutral: #1d3557;
