@@ -245,7 +245,7 @@ const Profile = () => {
       <NavDesktop/>
 
       <main className="mx-auto">
-        {/* HEADER: Banner */}
+        {/* HEADER:Banner */}
         <div className="relative h-40 md:h-80 w-full bg-neutral-900 overflow-hidden group">
           <img
             src={getImg(profileData?.banner, DEFAULT_BANNER)}
