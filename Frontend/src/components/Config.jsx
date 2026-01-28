@@ -269,27 +269,61 @@ const SettingsModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* SECCIÓN: APOYANOS */}
-          <div className="collapse collapse-plus bg-base-200/50 rounded-3xl border border-base-300">
-            <input type="checkbox" />
-            <div className="collapse-title flex items-center gap-4 p-5 font-bold text-sm cursor-pointer">
-              <Heart className="text-error" size={20} /> Apóyanos
-            </div>
-            <div className="collapse-content px-5 pb-5 space-y-3">
-              <button className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 flex-col gap-1 hover:bg-error/10 hover:text-error border-none group transition-all">
-                <div className="flex items-center gap-2 font-bold text-xs">
-                  <Coffee
-                    size={18}
-                    className="text-warning group-hover:animate-bounce"
-                  />{" "}
-                  Invitarnos a un café
-                </div>
-                <span className="text-[9px] opacity-40 font-normal">
-                  Aportación de 3€
-                </span>
-              </button>
-            </div>
-          </div>
+         {/* SECCIÓN: APOYANOS */}
+<div className="collapse collapse-plus bg-base-200/50 rounded-3xl border border-base-300">
+  <input type="checkbox" />
+  <div className="collapse-title flex items-center gap-4 p-5 font-bold text-sm cursor-pointer">
+    <Heart className="text-error" size={20} /> Apóyanos
+  </div>
+  <div className="collapse-content px-5 pb-5 space-y-3">
+    <button 
+      onClick={() => window.open('https://tu-enlace-de-donacion.com', '_blank')}
+      className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 flex-col gap-1 hover:bg-error/10 hover:text-error border-none group transition-all"
+    >
+      <div className="flex items-center gap-2 font-bold text-xs">
+        <Coffee
+          size={18}
+          className="text-warning group-hover:animate-bounce"
+        />{" "}
+        Invitarnos a un café
+      </div>
+      <span className="text-[9px] opacity-40 font-normal">
+        Aportación de 3€
+      </span>
+    </button>
+  </div>
+</div>
+
+          {/* SECCIÓN: LEGAL */}
+<div className="collapse collapse-plus bg-base-200/50 rounded-3xl border border-base-300">
+  <input type="checkbox" />
+  <div className="collapse-title flex items-center gap-4 p-5 font-bold text-sm cursor-pointer">
+    <ShieldCheck className="text-primary" size={20} /> Legal
+  </div>
+  <div className="collapse-content px-5 pb-5 space-y-2">
+    <button 
+      onClick={() => window.open('/terms', '_blank')}
+      className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 justify-start gap-3 hover:bg-primary/10 border-none transition-all"
+    >
+      <FileText size={16} className="opacity-60" />
+      <div className="flex flex-col items-start">
+        <span className="text-xs font-bold">Términos y Condiciones</span>
+        <span className="text-[9px] opacity-40">Contrato de uso de la plataforma</span>
+      </div>
+    </button>
+
+    <button 
+      onClick={() => window.open('/privacy', '_blank')}
+      className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 justify-start gap-3 hover:bg-primary/10 border-none transition-all"
+    >
+      <Lock size={16} className="opacity-60" />
+      <div className="flex flex-col items-start">
+        <span className="text-xs font-bold">Política de Privacidad</span>
+        <span className="text-[9px] opacity-40">Cómo protegemos tus datos</span>
+      </div>
+    </button>
+  </div>
+</div>
 
           {/* BOTÓN CERRAR SESIÓN */}
           <button
