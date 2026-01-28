@@ -6,24 +6,24 @@ import Logo from "../assets/LogoClaro.webp";
 const Landing = () => {
   // Imágenes de ejemplo
   const covers = [
+    "https://m.media-amazon.com/images/M/MV5BMjdkNzJlYzgtY2MwZC00NWFjLTgwMDgtOTJkY2Q3NjA3MjMzXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     "https://store.ubisoft.com/on/demandware.static/-/Sites-masterCatalog/default/dwe540c9e2/images/large/56c4947a88a7e300458b45de.jpg",
     "https://m.media-amazon.com/images/I/81cptXWZlfL.jpg",
-    "https://m.media-amazon.com/images/I/81xOquy2BtL._AC_UF1000,1000_QL80_.jpg",
+    "https://cdn-images.dzcdn.net/images/cover/f6ede1a8e22f17e3af1b6b47caf5d635/0x1900-000000-80-0-0.jpg",
     "https://muralsyourway.vtexassets.com/arquivos/ids/274926/Pacman-Game-Wall-Mural.jpg",
     "https://bp1.blogger.com/_i1Q5vLyDKXc/R1O7a7PdALI/AAAAAAAABmQ/gE9_fm43xBQ/s1600-R/pes_6.jpg",
     "https://m.media-amazon.com/images/I/81bpmchtQ6L.jpg",
     "https://lh3.googleusercontent.com/g9nVBoUu9Q_Yk8z7J9pPWUoiSSmgLVfTlWLAcscsbq_zxho143yW0d4zf9nMB4sYEP0QnRKttBOduyByQWboP2YdLld03ewTzT6wLuUU9pJtAjbx-2sR3r4sXVeypxZM7aH_hUczXS0=w2400",
-    "https://m.media-amazon.com/images/M/MV5BMjdkNzJlYzgtY2MwZC00NWFjLTgwMDgtOTJkY2Q3NjA3MjMzXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     "https://pbs.twimg.com/media/FMnseBnWYAEQ_5A.jpg",
-    "https://i.scdn.co/image/ab67616d00001e029583673af04af6d27def8a9c",
     "https://m.media-amazon.com/images/I/61KHb6E8RXL._AC_UF350,350_QL50_.jpg",
+    "https://i.scdn.co/image/ab67616d00001e029583673af04af6d27def8a9c",
     "https://st1.uvnimg.com/56/e0/2cae4c654837a62c9dd212a8caa3/the-mummy-imhotep.jpg",
     "https://imgs.search.brave.com/sLSi2eZATRjSTEMfpwrKQMTzkLof6aGXCT3RtMJLk6Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzg2L2U2/LzIwLzg2ZTYyMGRl/MGNmYWEyYzU4N2E2/MjNhYTM3ZmM0ZjZj/LmpwZw",
     "https://fotografias-2.larazon.es/clipping/cmsimages01/2019/08/08/E3BD4110-1BCE-44CE-9990-29B0CEAF3773/58.jpg?crop=1693,960,x30,y0&width=1000&height=567&optimize=low&format=webply",
     "https://www.futuro.cl/wp-content/uploads/2024/04/Scary-Movie-jpg.webp",
     "https://www.planetadelibros.com/usuaris/libros/thumbs/148e0b1a-1f4a-49e3-b523-1d14171bae98/d_295_510/portada_don-quijote-de-la-mancha-comic_miguel-de-cervantes_202310231106.webp",
     "https://img2.rtve.es/v/3232354/?w=1600",
-    "https://cdn-images.dzcdn.net/images/cover/f6ede1a8e22f17e3af1b6b47caf5d635/0x1900-000000-80-0-0.jpg",
+    "https://m.media-amazon.com/images/I/81xOquy2BtL._AC_UF1000,1000_QL80_.jpg",
     "https://i.ytimg.com/vi/LYmWO4vvYHg/maxresdefault.jpg",
     "https://external-preview.redd.it/sylvester-stallone-says-his-iconic-rocky-steps-scene-was-v0-J08hAt1HZZ-1GsWLLkEWndXoh8ae_avA_QZBmCm0WfE.jpeg?width=640&crop=smart&auto=webp&s=47b3bf93adf9038b50c190792ece366483e33fb7"
     
