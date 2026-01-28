@@ -40,7 +40,7 @@ const { theme} = useTheme();
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 z-10 relative flex flex-col items-start text-left">
             <img
-                    src={isDark ? LogoOscuro : Logo}
+                    src={isDark ? Logo : LogoOscuro}
                     alt="Tribe Logo"
                     className="h-30 w-auto object-contain transition-all"
                   />

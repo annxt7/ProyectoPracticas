@@ -26,7 +26,7 @@ const NavDesktop = () => {
     <nav className="hidden md:flex sticky top-0 bg-base-100/80 backdrop-blur-md border-b border-base-content/10 z-40 px-6 py-3 justify-between items-center transition-colors duration-300">
       
       <img
-        src={isDark ? LogoOscuro : Logo}
+        src={isDark ? Logo : LogoOscuro }
         alt="Tribe Logo"
         className="h-14 w-auto object-contain transition-all"
       />

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import GoogleSignIn from "../components/GoogleSignIn";
 import fotoLogin from "../assets/foto-login.webp";
-import Logo from "../assets/LogoOscuro.webp"
+import Logo from "../assets/LogoClaro.webp"
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext"; 
 import { normalizeUser } from "../services/normalizers";
