@@ -42,7 +42,7 @@ const { theme} = useTheme();
             <img
                     src={isDark ? LogoOscuro : Logo}
                     alt="Tribe Logo"
-                    className="h-14 w-auto object-contain transition-all"
+                    className="h-80 w-auto object-contain transition-all"
                   />
 
             {/* Badge de Early Access */}
