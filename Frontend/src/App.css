@@ -7,25 +7,34 @@
   default: false;
   prefersdark: false;
   color-scheme: "light";
+
   --color-base-100: #D8C8D1;
-  --color-base-200: #C5B5BE;
-  --color-base-300: #B2A2AB;
+  --color-base-200: #B2A2AB;
+  --color-base-300: #8E7D86;
   --color-base-content: #2D2424;
+
+
   --color-primary: #DE5109;
   --color-primary-content: #FFFFFF;
+
+
   --color-secondary: #4C5A6A;
   --color-secondary-content: #FFFFFF;
+
   --color-accent: #E27733;
   --color-accent-content: #FFFFFF;
+
   --color-neutral: #4D4752;
   --color-neutral-content: #D8C8D1;
+
   --color-info: #5B8FB3;
-  --color-success: #DE5018;
+  --color-success: #DE5017; 
   --color-warning: #E27733;
   --color-error: #DE5109;
   --radius-selector: 1.5rem;
   --radius-field: 1rem;
   --radius-box: 2rem;
+  
   --border: 1px;
   --depth: 1;
 }
