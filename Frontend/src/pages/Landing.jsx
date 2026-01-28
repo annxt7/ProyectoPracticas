@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Layers, Star, Users } from "lucide-react";
-import {Logo, LogoOscuro } from "../assets/LogoOscuro.webp";
+import {Logo, LogoOscuro } from "../assets/LogoClaro.webp";
 import { useTheme } from "../context/ThemeContext";
 
 const Landing = () => {
