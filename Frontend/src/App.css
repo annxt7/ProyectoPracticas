@@ -9,36 +9,36 @@
   default: false;
   prefersdark: false;
   color-scheme: "light";
-  
-  /* CAMBIO CLAVE: Base arena tostada (menos blanco, más carácter) */
-  --color-base-100: #EBE6D9; 
-  --color-base-200: #DDD5C3;
-  --color-base-300: #C9BFA7;
-  --color-base-content: #2A241E; /* Marrón café muy oscuro para el texto */
 
-  /* Atardecer: Coral profundo */
-  --color-primary: #FF6B35;
+  /* Fondo: El tono "Aloha Sunset" de la imagen, cálido y acogedor */
+  --color-base-100: #E27733; 
+  --color-base-200: #D46A2A; /* Un tono más oscuro para contraste */
+  --color-base-300: #C45F22;
+  --color-base-content: #FFFFFF; /* Texto en blanco para máxima legibilidad sobre el naranja */
+
+  /* Salmon Upstream: El color principal para botones y resaltados */
+  --color-primary: #DE5109;
   --color-primary-content: #FFFFFF;
 
-  /* Océano: Azul medianoche (contrasta genial con la arena) */
-  --color-secondary: #1A3644;
-  --color-secondary-content: #F4F1EA;
+  /* Midnight Sun: Un azul grisáceo profundo para elementos secundarios */
+  --color-secondary: #4C5A6A;
+  --color-secondary-content: #FFFFFF;
 
-  /* Acento: Amarillo Mango */
-  --color-accent: #FFB703;
-  --color-accent-content: #2A241E;
+  /* Exotic Lilac: Para acentos suaves y detalles elegantes */
+  --color-accent: #DE5018; /* Ajustado al tono lila/rosado de la paleta */
+  --color-accent-content: #FFFFFF;
 
-  /* Neutral: Gris cálido oscuro */
-  --color-neutral: #3D342B;
-  --color-neutral-content: #EBE6D9;
+  /* Nightshade: El color más oscuro de la paleta para menús o footers */
+  --color-neutral: #4D4752;
+  --color-neutral-content: #E27733;
 
-  /* Colores de estado sin verdes */
-  --color-info: #219EBC;
-  --color-success: #34A0A4; /* Azul océano/Cian oscuro */
-  --color-warning: #FFB703;
-  --color-error: #E63946;
+  /* Colores de estado basados en la paleta */
+  --color-info: #5B8FB3;
+  --color-success: #DE5018; /* Usamos el lila para éxito, rompiendo con el verde */
+  --color-warning: #E27733;
+  --color-error: #DE5109;
 
-  /* Estética redondeada de la imagen */
+  /* Estética redondeada de tu UI */
   --radius-selector: 1.5rem;
   --radius-field: 1rem;
   --radius-box: 2rem;
