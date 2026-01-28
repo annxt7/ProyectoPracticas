@@ -10,36 +10,37 @@
   prefersdark: false;
   color-scheme: "light";
   
-  /* Arena blanca y sombras volcánicas suaves */
-  --color-base-100: #FAF9F6; 
-  --color-base-200: #F2EFE9;
-  --color-base-300: #E5E0D5;
-  --color-base-content: #1D1D1D;
+  /* CAMBIO CLAVE: Base arena tostada (menos blanco, más carácter) */
+  --color-base-100: #EBE6D9; 
+  --color-base-200: #DDD5C3;
+  --color-base-300: #C9BFA7;
+  --color-base-content: #2A241E; /* Marrón café muy oscuro para el texto */
 
-  /* Atardecer Hawaiano: Un naranja coral vibrante */
+  /* Atardecer: Coral profundo */
   --color-primary: #FF6B35;
   --color-primary-content: #FFFFFF;
 
-  /* Océano Pacífico: Un azul profundo y elegante */
-  --color-secondary: #004E64;
-  --color-secondary-content: #FFFFFF;
+  /* Océano: Azul medianoche (contrasta genial con la arena) */
+  --color-secondary: #1A3644;
+  --color-secondary-content: #F4F1EA;
 
-  /* Destello Solar: Un dorado arena para detalles */
-  --color-accent: #E9C46A;
-  --color-accent-content: #1D1D1D;
+  /* Acento: Amarillo Mango */
+  --color-accent: #FFB703;
+  --color-accent-content: #2A241E;
 
-  /* Piedra Volcánica */
-  --color-neutral: #2B2D42;
-  --color-neutral-content: #EDF2F4;
+  /* Neutral: Gris cálido oscuro */
+  --color-neutral: #3D342B;
+  --color-neutral-content: #EBE6D9;
 
-  --color-info: #00B4D8;
-  --color-success: #00A896; /* Es azul turquesa, no verde */
-  --color-warning: #F4A261;
-  --color-error: #D90429;
+  /* Colores de estado sin verdes */
+  --color-info: #219EBC;
+  --color-success: #34A0A4; /* Azul océano/Cian oscuro */
+  --color-warning: #FFB703;
+  --color-error: #E63946;
 
-  /* Bordes suaves y amigables */
+  /* Estética redondeada de la imagen */
   --radius-selector: 1.5rem;
-  --radius-field: 0.75rem;
+  --radius-field: 1rem;
   --radius-box: 2rem;
   
   --border: 1px;
