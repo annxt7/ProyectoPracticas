@@ -10,31 +10,37 @@
   prefersdark: false;
   color-scheme: "light";
   
-  --color-base-100: #F3F7F2; 
-  --color-base-200: #E2E9DF;
-  --color-base-300: #C5D1C1;
-  --color-base-content: #1B2B1F;
+  /* Arena blanca y sombras volcánicas suaves */
+  --color-base-100: #FAF9F6; 
+  --color-base-200: #F2EFE9;
+  --color-base-300: #E5E0D5;
+  --color-base-content: #1D1D1D;
 
-  --color-primary: #EE964B;
+  /* Atardecer Hawaiano: Un naranja coral vibrante */
+  --color-primary: #FF6B35;
   --color-primary-content: #FFFFFF;
 
-  --color-secondary: #006D77;
-  --color-secondary-content: #EDF6F9;
+  /* Océano Pacífico: Un azul profundo y elegante */
+  --color-secondary: #004E64;
+  --color-secondary-content: #FFFFFF;
 
-  --color-accent: #E27396;
-  --color-accent-content: #FFFFFF;
+  /* Destello Solar: Un dorado arena para detalles */
+  --color-accent: #E9C46A;
+  --color-accent-content: #1D1D1D;
 
-  --color-neutral: #264653;
-  --color-neutral-content: #E9C46A;
+  /* Piedra Volcánica */
+  --color-neutral: #2B2D42;
+  --color-neutral-content: #EDF2F4;
 
-  --color-info: #83C5BE;
-  --color-success: #52B788;
-  --color-warning: #FFDDD2;
-  --color-error: #E63946;
+  --color-info: #00B4D8;
+  --color-success: #00A896; /* Es azul turquesa, no verde */
+  --color-warning: #F4A261;
+  --color-error: #D90429;
 
-  --radius-selector: 1rem;
+  /* Bordes suaves y amigables */
+  --radius-selector: 1.5rem;
   --radius-field: 0.75rem;
-  --radius-box: 1.5rem;
+  --radius-box: 2rem;
   
   --border: 1px;
   --depth: 1;
