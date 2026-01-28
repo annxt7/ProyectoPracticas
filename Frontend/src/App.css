@@ -1,44 +1,10 @@
 @import "tailwindcss";
 
-@config "../tailwind.config.js"; 
+@config "../tailwind.config.js" 
 
 
 
-@plugin "daisyui/theme" {
-  name: "hawaii";
-  default: false;
-  prefersdark: false;
-  color-scheme: "light";
 
-  --color-base-100: #E27733; 
-  --color-base-200: #D46A2A;
-  --color-base-300: #C45F22;
-  --color-base-content: #FFFFFF;
-
-  --color-primary: #DE5109;
-  --color-primary-content: #FFFFFF;
-
-  --color-secondary: #4C5A6A;
-  --color-secondary-content: #FFFFFF;
-
-  --color-accent: #DE5018;
-  --color-accent-content: #FFFFFF;
-
-  --color-neutral: #4D4752;
-  --color-neutral-content: #E27733;
-
-  --color-info: #5B8FB3;
-  --color-success: #DE5018;
-  --color-warning: #E27733;
-  --color-error: #DE5109;
-
-  --radius-selector: 1.5rem;
-  --radius-field: 1rem;
-  --radius-box: 2rem;
-  
-  --border: 1px;
-  --depth: 1;
-}
 
 @plugin "daisyui/theme" {
   name: "royal-wine";
@@ -60,7 +26,41 @@
   --radius-selector: 0.25rem;
   --radius-box: 0.75rem;
 }
+@plugin "daisyui/theme" {
+  name: "hawaii";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
 
+  --color-base-100: #D8C8D1;
+  --color-base-200: #C5B5BE;
+  --color-base-300: #B2A2AB;
+  --color-base-content: #2D2424;
+
+  --color-primary: #DE5109;
+  --color-primary-content: #FFFFFF;
+
+  --color-secondary: #4C5A6A;
+  --color-secondary-content: #FFFFFF;
+
+  --color-accent: #E27733;
+  --color-accent-content: #FFFFFF;
+
+  --color-neutral: #4D4752;
+  --color-neutral-content: #D8C8D1;
+
+  --color-info: #5B8FB3;
+  --color-success: #DE5018;
+  --color-warning: #E27733;
+  --color-error: #DE5109;
+
+  --radius-selector: 1.5rem;
+  --radius-field: 1rem;
+  --radius-box: 2rem;
+  
+  --border: 1px;
+  --depth: 1;
+}
 @plugin "daisyui/theme" {
   name: "pinky";
   default: false;
