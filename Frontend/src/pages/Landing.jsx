@@ -1,15 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Layers, Star, Users } from "lucide-react";
-import Logo from "../assets/LogoClaro.webp";
+import {Logo, LogoOscuro } from "../assets/LogoOscuro.webp";
+import { useTheme } from "../context/ThemeContext";
 
 const Landing = () => {
+const { theme} = useTheme(); 
+  const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep","royal-wine"].includes(theme);
   // Imágenes de ejemplo
   const covers = [
     "https://m.media-amazon.com/images/M/MV5BMjdkNzJlYzgtY2MwZC00NWFjLTgwMDgtOTJkY2Q3NjA3MjMzXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     "https://store.ubisoft.com/on/demandware.static/-/Sites-masterCatalog/default/dwe540c9e2/images/large/56c4947a88a7e300458b45de.jpg",
     "https://m.media-amazon.com/images/I/81cptXWZlfL.jpg",
-    "https://cdn-images.dzcdn.net/images/cover/f6ede1a8e22f17e3af1b6b47caf5d635/0x1900-000000-80-0-0.jpg",
     "https://muralsyourway.vtexassets.com/arquivos/ids/274926/Pacman-Game-Wall-Mural.jpg",
     "https://bp1.blogger.com/_i1Q5vLyDKXc/R1O7a7PdALI/AAAAAAAABmQ/gE9_fm43xBQ/s1600-R/pes_6.jpg",
     "https://m.media-amazon.com/images/I/81bpmchtQ6L.jpg",
@@ -24,6 +26,7 @@ const Landing = () => {
     "https://www.futuro.cl/wp-content/uploads/2024/04/Scary-Movie-jpg.webp",
     "https://img2.rtve.es/v/3232354/?w=1600",
     "https://m.media-amazon.com/images/I/81xOquy2BtL._AC_UF1000,1000_QL80_.jpg",
+    "https://cdn-images.dzcdn.net/images/cover/f6ede1a8e22f17e3af1b6b47caf5d635/0x1900-000000-80-0-0.jpg",
     "https://i.ytimg.com/vi/LYmWO4vvYHg/maxresdefault.jpg",
     "https://external-preview.redd.it/sylvester-stallone-says-his-iconic-rocky-steps-scene-was-v0-J08hAt1HZZ-1GsWLLkEWndXoh8ae_avA_QZBmCm0WfE.jpeg?width=640&crop=smart&auto=webp&s=47b3bf93adf9038b50c190792ece366483e33fb7"
     
@@ -36,10 +39,10 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 z-10 relative flex flex-col items-start text-left">
             <img
-              src={Logo}
-              alt="Tribe Logo"
-              className="w-42 md:w-54 h-auto object-contain mb-2"
-            />
+                    src={isDark ? LogoOscuro : Logo}
+                    alt="Tribe Logo"
+                    className="h-14 w-auto object-contain transition-all"
+                  />
 
             {/* Badge de Early Access */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-base-300 bg-base-200/50 text-xs font-bold uppercase tracking-widest text-base-content/60">
