@@ -53,7 +53,7 @@ const { theme} = useTheme();
 
             <h1 className="text-5xl sm:text-7xl font-bold font-serif leading-[0.95] tracking-tight">
               Tribe <br />
-              <span className=" bg-clip-text base-200 font-extrabold">
+              <span className=" bg-clip-text primary font-extrabold">
                 Encuentra
               </span>{" "}
               <br />a tu gente
