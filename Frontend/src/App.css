@@ -5,30 +5,25 @@
 
 
 @plugin "daisyui/theme" {
-  name: "hawaii; /* Le cambiamos el nombre para que pruebes ambos */
+  name: "hawaii";
   default: false;
   prefersdark: false;
   color-scheme: "light";
   
-  /* Un fondo más fresco y orgánico, menos amarillento */
   --color-base-100: #F3F7F2; 
   --color-base-200: #E2E9DF;
   --color-base-300: #C5D1C1;
-  --color-base-content: #1B2B1F; /* Verde bosque casi negro para el texto */
+  --color-base-content: #1B2B1F;
 
-  /* El Sol de Hawaii: Un dorado más cálido y menos "plástico" */
   --color-primary: #EE964B;
   --color-primary-content: #FFFFFF;
 
-  /* Océano Profundo: En lugar del celeste, usamos un azul verdoso elegante */
   --color-secondary: #006D77;
   --color-secondary-content: #EDF6F9;
 
-  /* Hibisco: Un coral rosado para acentos que grita Hawaii sin usar naranja */
   --color-accent: #E27396;
   --color-accent-content: #FFFFFF;
 
-  /* Noche en el Pacífico */
   --color-neutral: #264653;
   --color-neutral-content: #E9C46A;
 
@@ -37,7 +32,6 @@
   --color-warning: #FFDDD2;
   --color-error: #E63946;
 
-  /* Suavizamos los bordes para que la UI se sienta más "amigable" */
   --radius-selector: 1rem;
   --radius-field: 0.75rem;
   --radius-box: 1.5rem;
