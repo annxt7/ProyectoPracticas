@@ -6,14 +6,14 @@ import Logo from "../assets/LogoClaro.webp";
 const Landing = () => {
   // Imágenes de ejemplo
   const covers = [
-    "https://open.spotify.com/track/0uGGdhmr32l8YjD4LKKM7l",
+    "https://store.ubisoft.com/on/demandware.static/-/Sites-masterCatalog/default/dwe540c9e2/images/large/56c4947a88a7e300458b45de.jpg",
     "https://m.media-amazon.com/images/I/81cptXWZlfL.jpg",
     "https://m.media-amazon.com/images/I/81xOquy2BtL._AC_UF1000,1000_QL80_.jpg",
     "https://muralsyourway.vtexassets.com/arquivos/ids/274926/Pacman-Game-Wall-Mural.jpg",
     "https://bp1.blogger.com/_i1Q5vLyDKXc/R1O7a7PdALI/AAAAAAAABmQ/gE9_fm43xBQ/s1600-R/pes_6.jpg",
-    "https://images.unsplash.com/photo-1442115597578-2d0fb2413734?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2hpbGRyZW4lMjBiaWJsZXxlbnwwfHwwfHx8MA%3D%3D",
+    "https://m.media-amazon.com/images/I/81bpmchtQ6L.jpg",
     "https://fotografias.correryfitness.com/clipping/cmsimages02/2015/12/03/05402945-7CAB-43F2-941B-8FD6CFD07C9A/69.jpg",
-    "https://fotografias.larazon.es/clipping/cmsimages01/2019/08/13/DECEBBF0-8C57-4A27-BD24-24EEB578083F/98.jpg?crop=679,382,x145,y0&width=1900&height=1069&optimize=low&format=webply",
+    "https://www.emp-online.es/dw/image/v2/BBQV_PRD/on/demandware.static/-/Sites-master-emp/default/dw2f5f477c/images/4/7/8/2/478201a.jpg?sfrm=png",
     "https://pbs.twimg.com/media/FMnseBnWYAEQ_5A.jpg",
     "https://i.scdn.co/image/ab67616d00001e029583673af04af6d27def8a9c",
     "https://m.media-amazon.com/images/I/61KHb6E8RXL._AC_UF350,350_QL50_.jpg",
