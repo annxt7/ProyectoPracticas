@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link} from "react-router-dom";
 import {
   ArrowLeft,
   Plus,
@@ -24,7 +24,7 @@ import { uploadFileToCloudinary } from "../services/upload.js";
 const CollectionPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const navigate = useNavigate();
+
   const fileInputRef = useRef(null);
 
   // Estados de datos

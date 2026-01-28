@@ -19,7 +19,7 @@ const Landing = () => {
     "https://i.scdn.co/image/ab67616d00001e029583673af04af6d27def8a9c",
     "https://cloudfront-eu-central-1.images.arcpublishing.com/prisa/LTEBA4U3GZDIBMUE2SVAEWK2CE.jpg",
     "https://st1.uvnimg.com/56/e0/2cae4c654837a62c9dd212a8caa3/the-mummy-imhotep.jpg",
-    "https://cdn-images.dzcdn.net/images/cover/6bb67448d53a0b8dafe192ac8316fab8/0x1900-000000-80-0-0.jpg",
+    "https://imgs.search.brave.com/GiHIrwKR4Z4hRB3EibyvxafmcLmptQvxcJVH2cOIpTE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wcmV2/aWV3LnJlZGQuaXQv/bWV1LW5vbWUtJUMz/JUE5LWxvdmluLW1j/bG92aW4tdjAtYTly/dGExMjY5anZkMS5q/cGVnP3dpZHRoPTY0/MCZjcm9wPXNtYXJ0/JmF1dG89d2VicCZz/PWU4ODgyOWJlZjE0/MTdiNzg3ZjI0YWQ5/NzBmODcxM2E3ZGFm/YzcxMTQ",
     "https://fotografias-2.larazon.es/clipping/cmsimages01/2019/08/08/E3BD4110-1BCE-44CE-9990-29B0CEAF3773/58.jpg?crop=1693,960,x30,y0&width=1000&height=567&optimize=low&format=webply",
     "https://www.futuro.cl/wp-content/uploads/2024/04/Scary-Movie-jpg.webp",
     "https://www.planetadelibros.com/usuaris/libros/thumbs/148e0b1a-1f4a-49e3-b523-1d14171bae98/d_295_510/portada_don-quijote-de-la-mancha-comic_miguel-de-cervantes_202310231106.webp",
