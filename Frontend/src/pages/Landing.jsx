@@ -6,8 +6,8 @@ import Logo from "../assets/LogoClaro.webp";
 const Landing = () => {
   // Imágenes de ejemplo
   const covers = [
-    "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?auto=format&fit=crop&q=80&w=400",
-    "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=400",
+    "https://open.spotify.com/track/0uGGdhmr32l8YjD4LKKM7l",
+    "https://m.media-amazon.com/images/I/81cptXWZlfL.jpg",
     "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=400",
     "https://muralsyourway.vtexassets.com/arquivos/ids/274926/Pacman-Game-Wall-Mural.jpg",
     "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=400",
