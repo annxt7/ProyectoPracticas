@@ -277,7 +277,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
   </div>
   <div className="collapse-content px-5 pb-5 space-y-3">
     <button 
-      onClick={() => window.open('https://tu-enlace-de-donacion.com', '_blank')}
+      onClick={() => window.open('https://www.youtube.com/watch?v=qOEqNu4RBaY', '_blank')}
       className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 flex-col gap-1 hover:bg-error/10 hover:text-error border-none group transition-all"
     >
       <div className="flex items-center gap-2 font-bold text-xs">
@@ -302,7 +302,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
   </div>
   <div className="collapse-content px-5 pb-5 space-y-2">
     <button 
-      onClick={() => window.open('/terms', '_blank')}
+      onClick={() => window.open('https://imgs.search.brave.com/xVMHxrTV-2tYNH7jUDpVdKk3OAlnQrguVTDb_soOGmU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zcnYu/bGF0b3N0YWRvcmEu/Y29tL2Rlc2lnbmFs/bC5kbGwvR3JvdWNo/byUyME1hcnglMjAt/JTIwUHJpbmNpcGlv/cy0taToxNDEzODUy/NjgxNTgxNDEzODUw/O2Q6MjY4MTU4O3c6/MzIyO2g6MzIyO2I6/MDAwMDAwO2hhOjY4/MDc4ZjBiYjEzYTZl/MDIzYjIwZjYwN2Fk/NWMxOTYwLmpwZw', '_blank')}
       className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 justify-start gap-3 hover:bg-primary/10 border-none transition-all"
     >
       <FileText size={16} className="opacity-60" />
@@ -313,7 +313,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
     </button>
 
     <button 
-      onClick={() => window.open('/privacy', '_blank')}
+      onClick={() => window.open('https://imgs.search.brave.com/3VlCN-EjLPkHnx_jMxi1l6UHLpogW60SFzCR73F29xE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjFHcFJkc2hLQ0wu/anBn', '_blank')}
       className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 justify-start gap-3 hover:bg-primary/10 border-none transition-all"
     >
       <Lock size={16} className="opacity-60" />
