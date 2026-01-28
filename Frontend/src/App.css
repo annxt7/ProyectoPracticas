@@ -5,38 +5,45 @@
 
 
 @plugin "daisyui/theme" {
-  name: "hawaii";
+  name: "hawaii-premium"; /* Le cambiamos el nombre para que pruebes ambos */
   default: false;
   prefersdark: false;
-  color-scheme: "hawaii";
-  --color-base-100: #F8F9F1;
-  --color-base-200: #E9EDC9;
-  --color-base-300: #CCD5AE;
-  --color-base-content: oklch(20% 0.042 265.755);
-  --color-primary: #FFB703;
-  --color-primary-content: oklch(98% 0.026 102.212);
-  --color-secondary: #219EBC;
-  --color-secondary-content: oklch(100% 0 0);
-  --color-accent: #FB8500;
-  --color-accent-content: oklch(98% 0.016 73.684);
-  --color-neutral: #023047;
-  --color-neutral-content: oklch(98% 0.003 247.858);
-  --color-info: #00B4D8;
-  --color-info-content: oklch(97% 0.013 236.62);
-  --color-success: #2DCC70;
-  --color-success-content: oklch(97% 0.021 166.113);
-  --color-warning: #FF9F1C;
-  --color-warning-content: oklch(98% 0.022 95.277);
-  --color-error: #F25C54;
-  --color-error-content: oklch(97% 0.014 343.198);
-  --radius-selector: 0.5rem;
-  --radius-field: 0rem;
-  --radius-box: 1rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
+  color-scheme: "light";
+  
+  /* Un fondo más fresco y orgánico, menos amarillento */
+  --color-base-100: #F3F7F2; 
+  --color-base-200: #E2E9DF;
+  --color-base-300: #C5D1C1;
+  --color-base-content: #1B2B1F; /* Verde bosque casi negro para el texto */
+
+  /* El Sol de Hawaii: Un dorado más cálido y menos "plástico" */
+  --color-primary: #EE964B;
+  --color-primary-content: #FFFFFF;
+
+  /* Océano Profundo: En lugar del celeste, usamos un azul verdoso elegante */
+  --color-secondary: #006D77;
+  --color-secondary-content: #EDF6F9;
+
+  /* Hibisco: Un coral rosado para acentos que grita Hawaii sin usar naranja */
+  --color-accent: #E27396;
+  --color-accent-content: #FFFFFF;
+
+  /* Noche en el Pacífico */
+  --color-neutral: #264653;
+  --color-neutral-content: #E9C46A;
+
+  --color-info: #83C5BE;
+  --color-success: #52B788;
+  --color-warning: #FFDDD2;
+  --color-error: #E63946;
+
+  /* Suavizamos los bordes para que la UI se sienta más "amigable" */
+  --radius-selector: 1rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1.5rem;
+  
   --border: 1px;
   --depth: 1;
-  --noise: 1;
 }
 
 @plugin "daisyui/theme" {
@@ -369,5 +376,3 @@
   --radius-field: 0.5rem;
   --radius-box: 1rem;
 }
-        
-@variant dark (&:where([data-theme="dark"], [data-theme="chocolatero"], [data-theme="horror-night"], [data-theme="natura-dark"]));
