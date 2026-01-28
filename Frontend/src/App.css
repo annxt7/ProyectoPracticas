@@ -8,32 +8,31 @@
   prefersdark: false;
   color-scheme: "light";
 
-  --color-base-100: #D8C8D1;
-  --color-base-200: #B2A2AB;
-  --color-base-300: #8E7D86;
-  --color-base-content: #2D2424;
+  --color-base-100: #F8F9F1;
+  --color-base-200: #E9EDC9;
+  --color-base-300: #CCD5AE;
+  --color-base-content: #023047;
 
+  --color-primary: #FFB703;
+  --color-primary-content: #023047;
 
-  --color-primary: #DE5109;
-  --color-primary-content: #FFFFFF;
-
-
-  --color-secondary: #4C5A6A;
+  --color-secondary: #219EBC;
   --color-secondary-content: #FFFFFF;
 
-  --color-accent: #E27733;
+  --color-accent: #FB8500;
   --color-accent-content: #FFFFFF;
 
-  --color-neutral: #4D4752;
-  --color-neutral-content: #D8C8D1;
+  --color-neutral: #023047;
+  --color-neutral-content: #F8F9F1;
 
-  --color-info: #5B8FB3;
-  --color-success: #DE5017; 
-  --color-warning: #E27733;
-  --color-error: #DE5109;
-  --radius-selector: 1.5rem;
-  --radius-field: 1rem;
-  --radius-box: 2rem;
+  --color-info: #00B4D8;
+  --color-success: #2DCC70;
+  --color-warning: #FF9F1C;
+  --color-error: #F25C54;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 1rem;
   
   --border: 1px;
   --depth: 1;
