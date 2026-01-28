@@ -5,7 +5,7 @@
 
 
 @plugin "daisyui/theme" {
-  name: "hawaii-premium"; /* Le cambiamos el nombre para que pruebes ambos */
+  name: "hawaii; /* Le cambiamos el nombre para que pruebes ambos */
   default: false;
   prefersdark: false;
   color-scheme: "light";
