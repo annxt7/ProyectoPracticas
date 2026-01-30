@@ -84,8 +84,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
    { 
   id: 'coral-vibrant-light', 
   name: 'Coral Electric Blue', 
-  bg: 'bg-blue-50', // Fondo azul muy claro
-  primary: 'bg-orange-500' // Representación del Coral
+  bg: 'bg-[#00b4d8]', 
+  primary: 'bg-[#ff5e57]' 
 },
    
   ];
