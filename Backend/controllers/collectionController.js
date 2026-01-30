@@ -53,14 +53,27 @@ exports.createCollection = async (req, res) => {
 // Obtener todas las colecciones de un usuario 
 exports.getUserCollections = async (req, res) => {
     const { userId } = req.params;
+    const { sortBy, order } = req.query;
+
+    const allowedSortFields = {
+        recent: 'c.created_at',    
+        oldest: 'c.created_at',     
+        updated: 'c.updated_at',   
+        items: 'c.item_count'    
+    };
+
+    const sortColumn = allowedSortFields[sortBy] || 'c.created_at';
+    const sortOrder = order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
     try {
-        // Hacemos un JOIN para traer el username del autor de la colección
         const sql = `
             SELECT c.*, u.username 
             FROM Collections c
             JOIN Users u ON c.user_id = u.user_id
             WHERE c.user_id = ?
+            ORDER BY ${sortColumn} ${sortOrder}
         `;
+        
         const [rows] = await db.query(sql, [userId]);
         res.json(rows);
     } catch (error) {
@@ -144,51 +157,37 @@ exports.addItemToCollection = async (req, res) => {
   } = req.body;
 
   const columnMap = {
-    'music': 'music_id',
-    'books': 'book_id',
-    'movies': 'movie_id',
-    'shows': 'show_id',
-    'games': 'game_id',
-    'custom': 'custom_id' 
+    'music': 'music_id', 'books': 'book_id', 'movies': 'movie_id',
+    'shows': 'show_id', 'games': 'game_id', 'custom': 'custom_id' 
   };
 
   try {
     const typeLower = item_type ? item_type.toLowerCase() : 'custom';
     const colName = columnMap[typeLower];
+    let finalItemId;
 
     if (reference_id && colName) {
         const sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
         const [result] = await db.query(sql, [collection_id, typeLower, reference_id]);
-        return res.status(201).json({ success: true, itemId: result.insertId });
-    } 
-    const sqlCatalog = `
-        INSERT INTO Catalog_Custom (title, subtitle, description, image_url, category) 
-        VALUES (?, ?, ?, ?, ?)
-    `;
-    const [catalogResult] = await db.query(sqlCatalog, [
-        custom_title, 
-        custom_subtitle, 
-        custom_description || "",
-        custom_image,
-        typeLower.toUpperCase()
-    ]);
+        finalItemId = result.insertId;
+    } else {
+        const sqlCatalog = `
+            INSERT INTO Catalog_Custom (title, subtitle, description, image_url, category) 
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        const [catalogResult] = await db.query(sqlCatalog, [
+            custom_title, custom_subtitle, custom_description || "", custom_image, typeLower.toUpperCase()
+        ]);
 
-    const newCustomId = catalogResult.insertId;
-
-    const sqlItem = `
-        INSERT INTO Items (collection_id, item_type, custom_id) 
-        VALUES (?, ?, ?)
-    `;
-    const [result] = await db.query(sqlItem, [
-        collection_id, 
-        'custom', 
-        newCustomId 
-    ]);
-
+        const newCustomId = catalogResult.insertId;
+        const sqlItem = `INSERT INTO Items (collection_id, item_type, custom_id) VALUES (?, ?, ?)`;
+        const [result] = await db.query(sqlItem, [collection_id, 'custom', newCustomId]);
+        finalItemId = result.insertId;
+    }
+    await db.query("UPDATE Collections SET updated_at = NOW() WHERE collection_id = ?", [collection_id]);
     res.status(201).json({ 
         success: true, 
-        itemId: result.insertId,
-        catalogId: newCustomId 
+        itemId: finalItemId
     });
 
   } catch (error) {
@@ -297,13 +296,25 @@ exports.saveCollection = async (req, res) => {
 //Obtener colecciones guardadas
 exports.getSavedCollections = async (req, res) => {
     const userId = req.params.userId || req.user.id; 
+    const { sortBy, order } = req.query;
+
+    const allowedSortFields = {
+        recent: 'c.created_at',
+        updated: 'c.updated_at',
+        items: 'c.item_count'
+    };
+
+    const sortColumn = allowedSortFields[sortBy] || 'c.created_at';
+    const sortOrder = order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
     try {
         const sql = `
-            SELECT c.*,
-            u.username FROM Collections c
+            SELECT c.*, u.username 
+            FROM Collections c
             JOIN Saved_Collections sc ON c.collection_id = sc.collection_id
             JOIN Users u ON c.user_id = u.user_id
             WHERE sc.user_id = ?
+            ORDER BY ${sortColumn} ${sortOrder}
         `;
         const [result] = await db.query(sql, [userId]);
         res.json(result); 

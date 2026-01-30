@@ -11,6 +11,8 @@ import {
   Camera,
   Plus,
   Trash2,
+  Filter,
+  ArrowDownWideNarrow
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
@@ -23,14 +25,9 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("collections");
   const { user, updateUser } = useAuth();
   const { userId } = useParams();
-
-  // Estado para controlar el modal de ajustes
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  // Perfil propio?? (Normalización de IDs)
   const isMe = userId === "me" || Number(userId) === Number(user?.id);
   const targetId = isMe ? user?.id : userId;
-
   const [profileData, setProfileData] = useState(null);
   const [collections, setCollections] = useState([]);
   const [savedCollections, setSavedCollections] = useState([]);
@@ -51,7 +48,7 @@ const Profile = () => {
     type: null,
     title: "",
   });
-
+  const [filter,setFilter]= useState({ sortBy: "recent", order: "DESC" })
   // Edición
   const avatarInputRef = useRef(null);
   const bannerInputRef = useRef(null);
@@ -75,30 +72,30 @@ const Profile = () => {
     }
   }, [user, isMe]);
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchData = async () => {
       if (!targetId) return;
       setIsLoading(true);
 
       try {
-        const collectionsPromise = api.get(`/collections/user/${targetId}`);
+        const queryParams = `?sortBy=${filter.sortBy}&order=${filter.order}`;
+        const collectionsPromise = api.get(`/collections/user/${targetId}${queryParams}`);
         const statsPromise = api.get(`/users/follow-stats/${targetId}`);
         let userPromise = Promise.resolve({ data: null });
-        let savedPromise = Promise.resolve({ data: [] });
+        let savedPromise = Promise.resolve({ data: [] }); 
 
         if (!isMe) {
           userPromise = api.get(`/users/${targetId}`);
         } else {
-          savedPromise = api.get(`/collections/saved/${targetId}`);
+          savedPromise = api.get(`/collections/saved/${targetId}${queryParams}`);
         }
-
         const [colRes, uRes, sRes, statsRes] = await Promise.all([
           collectionsPromise,
           userPromise,
           savedPromise,
           statsPromise,
         ]);
-        console.log("COLECCIONES : " + sRes.data);
+
         setCollections(colRes.data || []);
         setSavedCollections(isMe ? sRes.data || [] : []);
         setFollowStats({
@@ -112,12 +109,13 @@ const Profile = () => {
         }
       } catch (error) {
         console.error("Error cargando perfil:", error);
+        toast.error("Error al cargar datos");
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
-  }, [targetId, isMe]);
+  }, [targetId, isMe, filter]); 
 
   // --- HANDLERS ---
   const handleSaveBio = async (e) => {
@@ -442,30 +440,87 @@ const Profile = () => {
         </div>
 
         {/* TABS NAVEGACIÓN */}
-        <div className="border-t border-secondary mt-4 sticky top-16 bg-base-100/80 z-30 flex justify-center gap-12 backdrop-blur-md">
-          <button
-            onClick={() => setActiveTab("collections")}
-            className={`py-4 border-b-2 px-4 text-sm font-bold transition-all ${
-              activeTab === "collections"
-                ? "border-primary text-primary"
-                : "border-transparent opacity-50"
-            }`}
-          >
-            COLECCIONES
-          </button>
-          {isMe && (
-            <button
-              onClick={() => setActiveTab("saved")}
-              className={`py-4 border-b-2 px-4 text-sm font-bold transition-all ${
-                activeTab === "saved"
-                  ? "border-primary text-primary"
-                  : "border-transparent opacity-50"
-              }`}
-            >
-              GUARDADO
-            </button>
-          )}
+       <div className="border-t border-secondary mt-4 sticky top-16 bg-base-100/95 z-30 backdrop-blur-md shadow-sm">
+  <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between">
+    
+    {/* TABS (Izquierda/Centro) */}
+    <div className="flex gap-8 md:gap-12 flex-1 justify-center md:justify-start">
+      <button
+        onClick={() => setActiveTab("collections")}
+        className={`py-4 border-b-2 px-2 text-sm font-bold transition-all ${
+          activeTab === "collections"
+            ? "border-primary text-primary"
+            : "border-transparent opacity-50 hover:opacity-80"
+        }`}
+      >
+        COLECCIONES
+      </button>
+      {isMe && (
+        <button
+          onClick={() => setActiveTab("saved")}
+          className={`py-4 border-b-2 px-2 text-sm font-bold transition-all ${
+            activeTab === "saved"
+              ? "border-primary text-primary"
+              : "border-transparent opacity-50 hover:opacity-80"
+          }`}
+        >
+          GUARDADO
+        </button>
+      )}
+    </div>
+
+    {/* FILTRO (Derecha) */}
+    <div className="py-2 md:py-0 flex items-center gap-2">
+      <div className="dropdown dropdown-end">
+        <div tabIndex={0} role="button" className="btn btn-sm btn-ghost gap-2 opacity-80 hover:opacity-100 font-normal">
+          <Filter size={16} />
+          <span className="hidden md:inline">Ordenar por:</span>
+          <span className="font-bold">
+            {filter.sortBy === 'recent' && filter.order === 'DESC' && 'Recientes'}
+            {filter.sortBy === 'recent' && filter.order === 'ASC' && 'Antiguas'}
+            {filter.sortBy === 'updated' && 'Actualizadas'}
+            {filter.sortBy === 'items' && 'Más Items'}
+          </span>
         </div>
+        <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 mt-4 border border-white/10">
+          <li>
+            <button 
+              onClick={() => setFilter({ sortBy: 'recent', order: 'DESC' })}
+              className={filter.sortBy === 'recent' && filter.order === 'DESC' ? 'active' : ''}
+            >
+              Más Recientes (Creación)
+            </button>
+          </li>
+          <li>
+            <button 
+              onClick={() => setFilter({ sortBy: 'recent', order: 'ASC' })}
+              className={filter.sortBy === 'recent' && filter.order === 'ASC' ? 'active' : ''}
+            >
+              Más Antiguas
+            </button>
+          </li>
+          <li>
+            <button 
+              onClick={() => setFilter({ sortBy: 'updated', order: 'DESC' })}
+              className={filter.sortBy === 'updated' ? 'active' : ''}
+            >
+              Recién Actualizadas
+            </button>
+          </li>
+          <li>
+            <button 
+              onClick={() => setFilter({ sortBy: 'items', order: 'DESC' })}
+              className={filter.sortBy === 'items' ? 'active' : ''}
+            >
+              Por Nº de Items
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
 
         {/* GRID DE CONTENIDO */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 min-h-[300px] max-w-6xl mx-auto">
@@ -502,7 +557,7 @@ const Profile = () => {
                     </h3>
                     {activeTab === "saved" && col.username && (
                       <p className="text-primary text-[10px] font-bold uppercase mt-1">
-                        De {col.username}
+                        @ {col.username}
                       </p>
                     )}
                     <p className="text-white/70 text-xs mt-1 capitalize">
