@@ -83,9 +83,9 @@ const SettingsModal = ({ isOpen, onClose }) => {
    { id: 'galactic-purple', name: 'Galactic Deep', bg: 'bg-[#120122]', primary: 'bg-[#00f5ff]' },
    { 
   id: 'coral-vibrant-light', 
-  name: 'Coral Electric Blue ⚡', 
-  bg: 'bg-[#f0faff]', // Fondo claro/celeste para que respire
-  primary: 'bg-[#ff5e57]' // El coral vibrante
+  name: 'Coral Electric Blue', 
+  bg: 'bg-blue-50', // Fondo azul muy claro
+  primary: 'bg-orange-500' // Representación del Coral
 },
    
   ];
