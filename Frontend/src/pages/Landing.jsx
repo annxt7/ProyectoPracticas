@@ -86,7 +86,7 @@ const { theme} = useTheme();
           <div className="relative hidden lg:block h-[600px] w-full overflow-hidden rounded-3xl [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]">
             <div className="absolute top-0 left-0 w-full h-full grid grid-cols-2 gap-4 rotate-12 opacity-80 -translate-y-20 translate-x-10 scale-110">
               {/* Columna 1 */}
-              <div className="flex flex-col gap-4 animate-[scrollY_20s_linear_infinite]">
+              <div className="flex flex-col gap-4 animate-[scrollY_40s_linear_infinite]">
                 {[...covers, ...covers].map((src, i) => (
                   <div
                     key={`c1-${i}`}
@@ -101,7 +101,7 @@ const { theme} = useTheme();
                 ))}
               </div>
               {/* Columna 2 */}
-              <div className="flex flex-col gap-4 -mt-32 animate-[scrollY_25s_linear_infinite_reverse]">
+              <div className="flex flex-col gap-4 -mt-32 animate-[scrollY_40s_linear_infinite_reverse]">
                 {[...covers, ...covers].reverse().map((src, i) => (
                   <div
                     key={`c2-${i}`}
