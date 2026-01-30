@@ -98,7 +98,7 @@ const Profile = () => {
           savedPromise,
           statsPromise,
         ]);
-        console.log('COLECCIONES : ' + colRes.data)
+        console.log('COLECCIONES : ' + sRes.data)
         setCollections(colRes.data || []);
         setSavedCollections(isMe ? sRes.data || [] : []);
         setFollowStats({
