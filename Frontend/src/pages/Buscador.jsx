@@ -211,7 +211,7 @@ const Explorer = () => {
                     <h3 className="font-bold truncate text-[13px] group-hover:text-primary transition-colors">
                       {col.title}
                     </h3>
-                    <p className="text-[10px] text-primary font-bold uppercase">
+                    <p className="text-[10px] text-primary font-extrabold uppercase">
                       @{col.author}
                     </p>
                   </div>
