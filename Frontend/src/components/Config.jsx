@@ -37,7 +37,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
       bg: "bg-[#f8f9f1]",
       primary: "bg-[#ffb703]",
     },
-    { id: 'royal-wine', name: 'Royal Wine', bg: 'bg-[#1a0a0a]', primary: 'bg-[#00fa9a]' },
+    { id: 'royal-wine', name: 'Royal Wine', bg: 'bg-[#1a0a0a]', primary: 'bg-[#c5a059]' },
     {
       id: "pinky",
       name: "Rosa Pastel",
