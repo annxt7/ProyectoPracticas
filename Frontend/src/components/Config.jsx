@@ -81,7 +81,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
    { id: 'orange', name: 'Orange', bg: 'bg-[#ffffff]', primary: 'bg-[#ff7b00]' },
    { id: 'mundi-deep', name: 'Terra Mundi', bg: 'bg-[#1a1412]', primary: 'bg-[#e2725b]' },
    { id: 'galactic-purple', name: 'Galactic Deep', bg: 'bg-[#120122]', primary: 'bg-[#00f5ff]' },
-   { id: 'coral-vibrant-light', name: 'Coral Electric Blue', bg: 'bg-[#002842]', primary: 'bg-[#ff9f43]' },
+   { 
+  id: 'coral-vibrant-light', 
+  name: 'Coral Electric Blue ⚡', 
+  bg: 'bg-[#f0faff]', // Fondo claro/celeste para que respire
+  primary: 'bg-[#ff5e57]' // El coral vibrante
+},
    
   ];
 
