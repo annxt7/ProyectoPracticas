@@ -45,8 +45,6 @@ const Profile = () => {
     type: "followers",
     title: "",
   });
-
-  // ESTADO PARA EL MODAL DE CONFIRMACIÓN (Reemplaza al confirm del navegador)
   const [deleteConfirm, setDeleteConfirm] = useState({ 
     isOpen: false, 
     id: null, 
@@ -83,7 +81,6 @@ const Profile = () => {
       setIsLoading(true);
       
       try {
-        // Ejecutamos promesas en paralelo para velocidad
         const collectionsPromise = api.get(`/collections/user/${targetId}`);
         const statsPromise = api.get(`/users/follow-stats/${targetId}`);
         let userPromise = Promise.resolve({ data: null });
@@ -101,7 +98,7 @@ const Profile = () => {
           savedPromise,
           statsPromise,
         ]);
-
+        console.log('COLECCIONES : ' + colRes.data)
         setCollections(colRes.data || []);
         setSavedCollections(isMe ? sRes.data || [] : []);
         setFollowStats({
@@ -159,8 +156,6 @@ const Profile = () => {
       setIsUploading(false);
     }
   };
-
-  // Función para abrir el modal de confirmación en lugar de usar window.confirm
   const handleDeleteCollection = (e, collection_id, name) => {
     e.preventDefault();
     e.stopPropagation();
@@ -476,7 +471,7 @@ const Profile = () => {
             </Link>
           )}
 
-          {/* RENDERIZADO DE COLECCIONES */}
+          {/*COLECCIONES */}
           {(activeTab === "collections" ? collections : savedCollections).map((col) => (
             <div
               key={col.collection_id}
@@ -508,7 +503,7 @@ const Profile = () => {
                 </button>
               )}
 
-              {/* BOTÓN QUITAR GUARDADO (Con nuevo Modal) */}
+              {/* BOTÓN QUITAR GUARDADO */}
               {isMe && activeTab === "saved" && (
                 <button
                   onClick={(e) => handleDeleteSavedCollection(e, col.collection_id, col.collection_name)}
@@ -520,8 +515,6 @@ const Profile = () => {
             </div>
           ))}
         </div>
-
-        {/* MODAL DE CONFIRMACIÓN INTEGRADO */}
         {deleteConfirm.isOpen && (
           <div className="modal modal-open">
             <div className="modal-box bg-base-200 border border-white/10 rounded-3xl max-w-xs text-center p-8">

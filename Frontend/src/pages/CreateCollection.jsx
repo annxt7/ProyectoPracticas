@@ -113,8 +113,6 @@ const CreateCollection = () => {
             </div>
             
             <div className="mockup-window border border-base-300 bg-base-200/40 p-10 relative overflow-visible">
-              
-              {/* Etiqueta flotante de Preview */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
                 <span className="bg-primary text-primary-content text-[10px] font-black px-4 py-1.5 rounded-full shadow-xl uppercase tracking-widest border-2 border-base-100 animate-bounce-slow">
                   Preview
