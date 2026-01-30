@@ -169,7 +169,7 @@ const Explorer = () => {
                       />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-sm truncate">
+                      <p className="font-extrabold text-sm truncate">
                         @{u.username}
                       </p>
                     </div>
