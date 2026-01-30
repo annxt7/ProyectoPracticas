@@ -299,8 +299,10 @@ exports.getSavedCollections = async (req, res) => {
     const userId = req.params.userId || req.user.id; 
     try {
         const sql = `
-            SELECT c.* FROM Collections c
+            SELECT c.*,
+            u.username FROM Collections c
             JOIN Saved_Collections sc ON c.collection_id = sc.collection_id
+            JOIN Users u ON c.user_id = u.user_id
             WHERE sc.user_id = ?
         `;
         const [result] = await db.query(sql, [userId]);
