@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Layers, Star, Users } from "lucide-react";
-import  Logo from "../assets/LogoClaro.webp";
-import  LogoOscuro from "../assets/LogoOscuro.webp";
+import  Logo from "../assets/LogoClaro.png";
+import  LogoOscuro from "../assets/LogoOscuro.png";
 import { useTheme } from "../context/ThemeContext";
 
 const Landing = () => {
@@ -10,7 +10,7 @@ const { theme} = useTheme();
   const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep","royal-wine"].includes(theme);
   // Imágenes de ejemplo
   const covers = [
-    "https://m.media-amazon.com/images/M/MV5BMjdkNzJlYzgtY2MwZC00NWFjLTgwMDgtOTJkY2Q3NjA3MjMzXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "https://caderadeeva.blob.core.windows.net/images/2025/08/22/las-guerreras-k-pop-57f8c9de.png",
     "https://store.ubisoft.com/on/demandware.static/-/Sites-masterCatalog/default/dwe540c9e2/images/large/56c4947a88a7e300458b45de.jpg",
     "https://m.media-amazon.com/images/I/81cptXWZlfL.jpg",
     "https://muralsyourway.vtexassets.com/arquivos/ids/274926/Pacman-Game-Wall-Mural.jpg",
@@ -20,6 +20,7 @@ const { theme} = useTheme();
     "https://m.media-amazon.com/images/I/61KHb6E8RXL._AC_UF350,350_QL50_.jpg",
     "https://i.scdn.co/image/ab67616d00001e029583673af04af6d27def8a9c",
     "https://st1.uvnimg.com/56/e0/2cae4c654837a62c9dd212a8caa3/the-mummy-imhotep.jpg",
+    "https://image.api.playstation.com/vulcan/ap/rnd/202409/2716/16b33fa9a5c7285ba86a035b4a1c5f8eb430b407eae35ffd.png",
     "https://www.planetadelibros.com/usuaris/libros/thumbs/148e0b1a-1f4a-49e3-b523-1d14171bae98/d_295_510/portada_don-quijote-de-la-mancha-comic_miguel-de-cervantes_202310231106.webp",
     "https://i.ebayimg.com/images/g/62IAAOSwj0xjztEj/s-l1200.jpg",
     "https://fotografias-2.larazon.es/clipping/cmsimages01/2019/08/08/E3BD4110-1BCE-44CE-9990-29B0CEAF3773/58.jpg?crop=1693,960,x30,y0&width=1000&height=567&optimize=low&format=webply",
