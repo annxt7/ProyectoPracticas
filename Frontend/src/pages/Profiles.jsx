@@ -45,13 +45,11 @@ const Profile = () => {
     type: "followers",
     title: "",
   });
-
-  // ESTADO PARA EL MODAL DE CONFIRMACIÓN (Reemplaza al confirm del navegador)
-  const [deleteConfirm, setDeleteConfirm] = useState({ 
-    isOpen: false, 
-    id: null, 
-    type: null, 
-    title: "" 
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    id: null,
+    type: null,
+    title: "",
   });
 
   // Edición
@@ -81,9 +79,8 @@ const Profile = () => {
     const fetchData = async () => {
       if (!targetId) return;
       setIsLoading(true);
-      
+
       try {
-        // Ejecutamos promesas en paralelo para velocidad
         const collectionsPromise = api.get(`/collections/user/${targetId}`);
         const statsPromise = api.get(`/users/follow-stats/${targetId}`);
         let userPromise = Promise.resolve({ data: null });
@@ -101,7 +98,7 @@ const Profile = () => {
           savedPromise,
           statsPromise,
         ]);
-
+        console.log("COLECCIONES : " + sRes.data);
         setCollections(colRes.data || []);
         setSavedCollections(isMe ? sRes.data || [] : []);
         setFollowStats({
@@ -109,7 +106,7 @@ const Profile = () => {
           following: statsRes.data.following || 0,
         });
         setIsFollowing(statsRes.data.amIFollowing || false);
-        
+
         if (!isMe && uRes.data) {
           setProfileData(normalizeUser(uRes.data));
         }
@@ -159,27 +156,25 @@ const Profile = () => {
       setIsUploading(false);
     }
   };
-
-  // Función para abrir el modal de confirmación en lugar de usar window.confirm
   const handleDeleteCollection = (e, collection_id, name) => {
     e.preventDefault();
     e.stopPropagation();
-    setDeleteConfirm({ 
-      isOpen: true, 
-      id: collection_id, 
-      type: "own", 
-      title: name 
+    setDeleteConfirm({
+      isOpen: true,
+      id: collection_id,
+      type: "own",
+      title: name,
     });
   };
 
   const handleDeleteSavedCollection = (e, collection_id, name) => {
     e.preventDefault();
     e.stopPropagation();
-    setDeleteConfirm({ 
-      isOpen: true, 
-      id: collection_id, 
-      type: "saved", 
-      title: name 
+    setDeleteConfirm({
+      isOpen: true,
+      id: collection_id,
+      type: "saved",
+      title: name,
     });
   };
 
@@ -194,7 +189,9 @@ const Profile = () => {
         setCollections((prev) => prev.filter((c) => c.collection_id !== id));
       } else {
         await api.delete(`/collections/saved/${id}`);
-        setSavedCollections((prev) => prev.filter((c) => c.collection_id !== id));
+        setSavedCollections((prev) =>
+          prev.filter((c) => c.collection_id !== id),
+        );
       }
       toast.success("Eliminado", { id: tId });
     } catch (error) {
@@ -242,7 +239,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
       <Toaster position="bottom-center" />
-      <NavDesktop/>
+      <NavDesktop />
 
       <main className="mx-auto">
         {/* HEADER:Banner */}
@@ -280,7 +277,10 @@ const Profile = () => {
             <div className="relative">
               <div
                 onClick={() =>
-                  isMe && isEditing && !isUploading && avatarInputRef.current.click()
+                  isMe &&
+                  isEditing &&
+                  !isUploading &&
+                  avatarInputRef.current.click()
                 }
                 className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${
                   isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""
@@ -359,10 +359,13 @@ const Profile = () => {
             <h1 className="text-2xl md:text-4xl font-bold font-serif">
               {profileData?.username || "Usuario"}
             </h1>
-            
+
             <div className="mt-2 text-sm md:text-base">
               {isEditing ? (
-                <form onSubmit={handleSaveBio} className="flex flex-col gap-2 max-w-xl">
+                <form
+                  onSubmit={handleSaveBio}
+                  className="flex flex-col gap-2 max-w-xl"
+                >
                   <textarea
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
@@ -476,79 +479,105 @@ const Profile = () => {
             </Link>
           )}
 
-          {/* RENDERIZADO DE COLECCIONES */}
-          {(activeTab === "collections" ? collections : savedCollections).map((col) => (
-            <div
-              key={col.collection_id}
-              className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm"
-            >
-              <Link to={`/collection/${col.collection_id}`} className="w-full h-full block">
-                <ItemCover
-                  src={col.cover_url}
-                  title={col.collection_name}
-                  className="w-full h-full object-cover"
-                />
-                
-                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
-                  <h3 className="text-white font-bold leading-tight">
-                    {col.collection_name}
-                  </h3>
-                  <p className="text-white/70 text-xs mt-1 capitalize">
-                    {col.collection_type}
-                  </p>
-                </div>
-              </Link>
-
-              {isMe && activeTab === "collections" && (
-                <button
-                  onClick={(e) => handleDeleteCollection(e, col.collection_id, col.collection_name)}
-                  className="absolute top-2 right-2 p-2 text-warning text-base rounded-full shadow-lg z-20 "
+          {/*COLECCIONES */}
+          {(activeTab === "collections" ? collections : savedCollections).map(
+            (col) => (
+              <div
+                key={col.collection_id}
+                className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm"
+              >
+                <Link
+                  to={`/collection/${col.collection_id}`}
+                  className="w-full h-full block"
                 >
-                  <Trash2 size={16} />
-                </button>
-              )}
+                  <ItemCover
+                    src={col.cover_url}
+                    title={col.collection_name}
+                    className="w-full h-full object-cover"
+                  />
 
-              {/* BOTÓN QUITAR GUARDADO (Con nuevo Modal) */}
-              {isMe && activeTab === "saved" && (
-                <button
-                  onClick={(e) => handleDeleteSavedCollection(e, col.collection_id, col.collection_name)}
-                  className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full shadow-lg z-20 "
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-          ))}
+                  <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
+                    <h3 className="text-white font-bold leading-tight">
+                      {col.collection_name}
+                    </h3>
+                    {activeTab === "saved" && col.username && (
+                      <p className="text-primary text-[10px] font-bold uppercase mt-1">
+                        De {col.username}
+                      </p>
+                    )}
+                    <p className="text-white/70 text-xs mt-1 capitalize">
+                      {col.collection_type}
+                    </p>
+                  </div>
+                </Link>
+
+                {isMe && activeTab === "collections" && (
+                  <button
+                    onClick={(e) =>
+                      handleDeleteCollection(
+                        e,
+                        col.collection_id,
+                        col.collection_name,
+                      )
+                    }
+                    className="absolute top-2 right-2 p-2 text-warning text-base rounded-full shadow-lg z-20 "
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+
+                {/* BOTÓN QUITAR GUARDADO */}
+                {isMe && activeTab === "saved" && (
+                  <button
+                    onClick={(e) =>
+                      handleDeleteSavedCollection(
+                        e,
+                        col.collection_id,
+                        col.collection_name,
+                      )
+                    }
+                    className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full shadow-lg z-20 "
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            ),
+          )}
         </div>
-
-        {/* MODAL DE CONFIRMACIÓN INTEGRADO */}
         {deleteConfirm.isOpen && (
           <div className="modal modal-open">
             <div className="modal-box bg-base-200 border border-white/10 rounded-3xl max-w-xs text-center p-8">
               <h3 className="font-bold text-lg mb-2">
-                {deleteConfirm.type === "own" ? "¿Borrar colección?" : "¿Quitar de guardados?"}
+                {deleteConfirm.type === "own"
+                  ? "¿Borrar colección?"
+                  : "¿Quitar de guardados?"}
               </h3>
               <p className="text-sm opacity-60 mb-6 italic">
                 "{deleteConfirm.title}"
               </p>
               <div className="flex flex-col gap-2">
-                <button 
+                <button
                   onClick={executeDelete}
                   className="btn btn-primary rounded-2xl w-full"
                 >
                   Confirmar
                 </button>
-                <button 
-                  onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+                <button
+                  onClick={() =>
+                    setDeleteConfirm({ ...deleteConfirm, isOpen: false })
+                  }
                   className="btn btn-ghost rounded-2xl w-full"
                 >
                   Cancelar
                 </button>
               </div>
             </div>
-            <div 
-              className="modal-backdrop bg-black/60" 
-              onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+            <div
+              className="modal-backdrop bg-black/60"
+              onClick={() =>
+                setDeleteConfirm({ ...deleteConfirm, isOpen: false })
+              }
             />
           </div>
         )}
@@ -566,7 +595,7 @@ const Profile = () => {
         />
       </main>
 
-      <NavMobile/>
+      <NavMobile />
     </div>
   );
 };
