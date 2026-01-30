@@ -441,7 +441,7 @@ const Profile = () => {
 
         {/* TABS NAVEGACIÓN */}
        <div className="border-t border-secondary mt-4 sticky top-16 bg-base-100/95 z-30 backdrop-blur-md shadow-sm">
-  <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between">
+  <div className="max-w-6xl mx-auto px-2 flex flex-col md:flex-row items-center justify-between">
     
     {/* TABS (Izquierda/Centro) */}
     <div className="flex gap-8 md:gap-12 flex-1 justify-center md:justify-start">
@@ -504,7 +504,7 @@ const Profile = () => {
               onClick={() => setFilter({ sortBy: 'updated', order: 'DESC' })}
               className={filter.sortBy === 'updated' ? 'active' : ''}
             >
-              Recién Actualizadas
+            Actualizadas Recientemente
             </button>
           </li>
           <li>
@@ -512,7 +512,7 @@ const Profile = () => {
               onClick={() => setFilter({ sortBy: 'items', order: 'DESC' })}
               className={filter.sortBy === 'items' ? 'active' : ''}
             >
-              Por Nº de Items
+              Nº de Items
             </button>
           </li>
         </ul>
