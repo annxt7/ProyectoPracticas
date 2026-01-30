@@ -440,87 +440,88 @@ const Profile = () => {
         </div>
 
         {/* TABS NAVEGACIÓN */}
-       <div className="border-t border-secondary mt-4 sticky top-16 bg-base-100/95 z-30 backdrop-blur-md shadow-sm">
-  <div className="max-w-6xl mx-auto px-2 flex flex-col md:flex-row items-center justify-between">
-    
-    {/* TABS (Izquierda/Centro) */}
-    <div className="flex gap-8 md:gap-12 flex-1 justify-center md:justify-start">
-      <button
-        onClick={() => setActiveTab("collections")}
-        className={`py-4 border-b-2 px-2 text-sm font-bold transition-all ${
-          activeTab === "collections"
-            ? "border-primary text-primary"
-            : "border-transparent opacity-50 hover:opacity-80"
-        }`}
-      >
-        COLECCIONES
-      </button>
-      {isMe && (
-        <button
-          onClick={() => setActiveTab("saved")}
-          className={`py-4 border-b-2 px-2 text-sm font-bold transition-all ${
-            activeTab === "saved"
-              ? "border-primary text-primary"
-              : "border-transparent opacity-50 hover:opacity-80"
-          }`}
-        >
-          GUARDADO
-        </button>
-      )}
-    </div>
+        <div className="border-t border-secondary mt-4 sticky top-16 bg-base-100/95 z-30 backdrop-blur-md shadow-sm">
+          {/* Agregamos 'relative' y 'md:justify-center' al padre */}
+          <div className="max-w-6xl mx-auto px-2 relative flex flex-col md:flex-row items-center md:justify-center">
+            
+            {/* COLECCIONES/GUARDADAS */}
+            <div className="flex gap-8 md:gap-12 justify-center">
+              <button
+                onClick={() => setActiveTab("collections")}
+                className={`py-4 border-b-2 px-2 text-sm font-bold transition-all ${
+                  activeTab === "collections"
+                    ? "border-primary text-primary"
+                    : "border-transparent opacity-50 hover:opacity-80"
+                }`}
+              >
+                COLECCIONES
+              </button>
+              {isMe && (
+                <button
+                  onClick={() => setActiveTab("saved")}
+                  className={`py-4 border-b-2 px-2 text-sm font-bold transition-all ${
+                    activeTab === "saved"
+                      ? "border-primary text-primary"
+                      : "border-transparent opacity-50 hover:opacity-80"
+                  }`}
+                >
+                  GUARDADO
+                </button>
+              )}
+            </div>
 
-    {/* FILTRO (Derecha) */}
-    <div className="py-2 md:py-0 flex items-center gap-2">
-      <div className="dropdown dropdown-end">
-        <div tabIndex={0} role="button" className="btn btn-sm btn-ghost gap-2 opacity-80 hover:opacity-100 font-normal">
-          <Filter size={16} />
-          <span className="hidden md:inline">Ordenar por:</span>
-          <span className="font-bold">
-            {filter.sortBy === 'recent' && filter.order === 'DESC' && 'Recientes'}
-            {filter.sortBy === 'recent' && filter.order === 'ASC' && 'Antiguas'}
-            {filter.sortBy === 'updated' && 'Actualizadas'}
-            {filter.sortBy === 'items' && 'Más Items'}
-          </span>
+            {/* FILTRO  */}
+            <div className="py-2 md:py-0 flex items-center gap-2 md:absolute md:right-2">
+              <div className="dropdown dropdown-end">
+                <div tabIndex={0} role="button" className="btn btn-sm btn-ghost gap-2 opacity-80 hover:opacity-100 font-normal">
+                  <Filter size={16} />
+                  <span className="hidden md:inline">Ordenar por:</span>
+                  <span className="font-bold">
+                    {filter.sortBy === 'recent' && filter.order === 'DESC' && 'Recientes'}
+                    {filter.sortBy === 'recent' && filter.order === 'ASC' && 'Antiguas'}
+                    {filter.sortBy === 'updated' && 'Actualizadas'}
+                    {filter.sortBy === 'items' && 'Más Items'}
+                  </span>
+                </div>
+                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 mt-4 border border-white/10">
+                  <li>
+                    <button 
+                      onClick={() => setFilter({ sortBy: 'recent', order: 'DESC' })}
+                      className={filter.sortBy === 'recent' && filter.order === 'DESC' ? 'active' : ''}
+                    >
+                      Más Recientes (Creación)
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setFilter({ sortBy: 'recent', order: 'ASC' })}
+                      className={filter.sortBy === 'recent' && filter.order === 'ASC' ? 'active' : ''}
+                    >
+                      Más Antiguas
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setFilter({ sortBy: 'updated', order: 'DESC' })}
+                      className={filter.sortBy === 'updated' ? 'active' : ''}
+                    >
+                    Actualizadas Recientemente
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setFilter({ sortBy: 'items', order: 'DESC' })}
+                      className={filter.sortBy === 'items' ? 'active' : ''}
+                    >
+                      Nº de Items
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
         </div>
-        <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 mt-4 border border-white/10">
-          <li>
-            <button 
-              onClick={() => setFilter({ sortBy: 'recent', order: 'DESC' })}
-              className={filter.sortBy === 'recent' && filter.order === 'DESC' ? 'active' : ''}
-            >
-              Más Recientes (Creación)
-            </button>
-          </li>
-          <li>
-            <button 
-              onClick={() => setFilter({ sortBy: 'recent', order: 'ASC' })}
-              className={filter.sortBy === 'recent' && filter.order === 'ASC' ? 'active' : ''}
-            >
-              Más Antiguas
-            </button>
-          </li>
-          <li>
-            <button 
-              onClick={() => setFilter({ sortBy: 'updated', order: 'DESC' })}
-              className={filter.sortBy === 'updated' ? 'active' : ''}
-            >
-            Actualizadas Recientemente
-            </button>
-          </li>
-          <li>
-            <button 
-              onClick={() => setFilter({ sortBy: 'items', order: 'DESC' })}
-              className={filter.sortBy === 'items' ? 'active' : ''}
-            >
-              Nº de Items
-            </button>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-  </div>
-</div>
 
         {/* GRID DE CONTENIDO */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 min-h-[300px] max-w-6xl mx-auto">
