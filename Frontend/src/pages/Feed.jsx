@@ -143,7 +143,7 @@ const Feed = () => {
             activities.map((item) => (
               <div
                 key={`${item.collection_id}-${item.created_at}`}
-                className="bg-base-100 border-b border-base-200 md:border md:rounded-2xl overflow-hidden shadow-sm"
+                className="bg-base-100 border-b rounded-[1%] border-base-200 md:border md:rounded-2xl overflow-hidden shadow-sm"
               >
                 {/* Header del post */}
                 <div className="p-4 flex items-center justify-between">
