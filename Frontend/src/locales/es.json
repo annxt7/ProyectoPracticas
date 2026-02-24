@@ -1,0 +1,73 @@
+{
+  "landing": {
+    "early_access": "Early Access",
+    "title_main": "Tribe",
+    "title_find": "Encuentra",
+    "title_people": "a tu gente",
+    "description": "Deja de ser un extraño en internet, encuentra a tu tribu. Organiza tu mundo y descubre el de otros.",
+    "btn_register": "Regístrate Ahora",
+    "btn_login": "Iniciar Sesión"
+  }
+}
+
+{
+  "feed": {
+    "title": "Tu Feed",
+    "empty": "No hay actividad reciente de las personas que sigues.",
+    "empty_sub": "¡Sigue a más Tribers para llenar tu feed!",
+    "suggested": "Tribers Sugeridos",
+    "action_created": "creó una colección",
+    "now": "Ahora",
+    "unit_min": "min",
+    "unit_hour": "h",
+    "unit_day": "d"
+  }
+}
+
+{
+  "settings": {
+    "title": "Ajustes",
+    "version": "Tribe Platform v1.0.2",
+    "language": "Idioma",
+    "appearance": "Personalización",
+    "security": "Seguridad",
+    "current_pass": "Contraseña actual",
+    "new_pass": "Nueva contraseña",
+    "btn_update_pass": "Actualizar clave",
+    "password_success": "Contraseña actualizada correctamente",
+    "password_error": "Error al actualizar contraseña",
+    "about": "Sobre Nosotros",
+    "about_desc": "Tribe nació con una misión clara: organizar el caos digital. Creemos que el valor reside en la selección.",
+    "vision_title": "La Visión",
+    "vision_text": "Tu catálogo de pasiones.",
+    "community_title": "Comunidad",
+    "community_text": "Conexión real sin algoritmos.",
+    "support": "Apóyanos",
+    "coffee": "Invitarnos a un café",
+    "coffee_price": "Aportación de 3€",
+    "legal": "Legal",
+    "terms": "Términos y Condiciones",
+    "terms_desc": "Contrato de uso de la plataforma",
+    "privacy": "Política de Privacidad",
+    "privacy_desc": "Cómo protegemos tus datos",
+    "logout": "Cerrar Sesión",
+    "footer": "Design by Tribe Team • 2026"
+  },
+  "themes": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "hawaii": "Hawaii",
+    "royal-wine": "Royal Wine",
+    "pinky": "Rosa Pastel",
+    "midnight-rose": "Midnight Rose",
+    "mocha-night": "Mocha Night",
+    "lavender-dream": "Sueño de Lavanda",
+    "sandstone": "Piedra Arena",
+    "natura": "Natura",
+    "natura-dark": "Natura Oscuro",
+    "orange": "Naranja",
+    "terra-mundi": "Terra Mundi",
+    "galactic": "Galáctico",
+    "coral": "Coral Eléctrico"
+  }
+}
