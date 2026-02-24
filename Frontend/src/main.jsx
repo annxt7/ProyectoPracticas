@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import App from './App.jsx'; // Asegúrate de que el nombre del archivo sea correcto (App.jsx o App.js)
 import { AuthProvider } from './context/AuthContext.jsx';
+import './i18n';
 
 const GOOGLE_CLIENT_ID = "866935818800-gk66q1lpnvkp1iqg298nmj08opg6q3ak.apps.googleusercontent.com"; 
 

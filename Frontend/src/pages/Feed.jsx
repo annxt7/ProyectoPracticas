@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Heart, ShieldAlert } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
 import api from "../services/api.js";
@@ -10,6 +11,7 @@ import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
 
 const Feed = () => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [activities, setActivities] = useState([]);
@@ -18,7 +20,6 @@ const Feed = () => {
 
   const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
 
-  // 1. Cargar seguidos (Normalizado)
   useEffect(() => {
     if (!myId) return;
     const fetchMyFollowing = async () => {
@@ -32,14 +33,12 @@ const Feed = () => {
     fetchMyFollowing();
   }, [myId]);
 
-  // 2. Cargar actividad y sugerencias
   useEffect(() => {
     if (!myId) return;
     const fetchFeedData = async () => {
       setLoading(true);
       try {
         const activityRes = await api.get("/users/feed/activity");
-        // Saneamiento de datos para evitar errores de toLowerCase
         const filteredActivity = (activityRes.data || [])
           .filter((item) => Number(item.user_id) !== myId)
           .map(item => ({
@@ -105,17 +104,17 @@ const Feed = () => {
   };
 
   function timeAgo(dateString) {
-    if (!dateString) return "Ahora";
+    if (!dateString) return t("feed.now");
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    if (seconds < 60) return "Ahora";
+    if (seconds < 60) return t("feed.now");
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} min`;
+    if (minutes < 60) return `${minutes} ${t("feed.unit_min")}`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} h`;
+    if (hours < 24) return `${hours} ${t("feed.unit_hour")}`;
     const days = Math.floor(hours / 24);
-    return `${days} d`;
+    return `${days} ${t("feed.unit_day")}`;
   }
 
   return (
@@ -123,10 +122,9 @@ const Feed = () => {
       <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
         
-        {/* COLUMNA IZQUIERDA: FEED */}
         <div className="md:col-span-2 space-y-6">
           <div className="md:hidden flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold font-serif">Tu Feed</h1>
+            <h1 className="text-2xl font-bold font-serif">{t("feed.title")}</h1>
           </div>
 
           {loading ? (
@@ -136,8 +134,8 @@ const Feed = () => {
           ) : activities.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 opacity-40 text-center">
               <ShieldAlert size={48} className="mb-4" />
-              <p>No hay actividad reciente de las personas que sigues.</p>
-              <p className="text-xs">¡Sigue a más Tribers para llenar tu feed!</p>
+              <p>{t("feed.empty")}</p>
+              <p className="text-xs">{t("feed.empty_sub")}</p>
             </div>
           ) : (
             activities.map((item) => (
@@ -145,7 +143,6 @@ const Feed = () => {
                 key={`${item.collection_id}-${item.created_at}`}
                 className="bg-base-100 border-b rounded-[1%] border-base-200 md:border md:rounded-2xl overflow-hidden shadow-sm"
               >
-                {/* Header del post */}
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Link to={`/profile/${item.user_id}`} className="w-10 h-10 rounded-full overflow-hidden border border-base-200">
@@ -160,7 +157,7 @@ const Feed = () => {
                         <Link to={`/profile/${item.user_id}`} className="hover:text-primary">
                           @{item.username}
                         </Link>
-                        <span className="font-normal opacity-60 ml-2">creó una colección</span>
+                        <span className="font-normal opacity-60 ml-2">{t("feed.action_created")}</span>
                       </p>
                       <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-0.5">
                         {item.collection_type}
@@ -172,13 +169,11 @@ const Feed = () => {
                   </span>
                 </div>
 
-                {/* Portada de la colección */}
                 <Link to={`/collection/${item.collection_id}`}>
                   <div className="relative aspect-video bg-base-200 w-full overflow-hidden group">
                     <ItemCover
                       src={item.cover_url}
                       title={item.collection_name}
-                      
                     />
                     <div className="absolute bottom-4 left-4 right-4">
                         <div className="inline-block bg-black/70 backdrop-blur-md text-white px-4 py-1.5 rounded-xl text-sm font-bold shadow-xl border border-white/10">
@@ -188,7 +183,6 @@ const Feed = () => {
                   </div>
                 </Link>
 
-                {/* Footer del post: Likes */}
                 <div className="p-4">
                   <button
                     onClick={() => handleToggleLike(item.collection_id)}
@@ -209,13 +203,11 @@ const Feed = () => {
           )}
         </div>
 
-        {/* COLUMNA DERECHA: SUGERENCIAS */}
         <div className="hidden md:block col-span-1">
           <div className="sticky top-24 space-y-6">
-            {/* Fondo base-100 para que resalte sobre el base-200 */}
             <div className="bg-base-100 border border-base-200 rounded-3xl p-6 shadow-sm">
               <h3 className="font-bold text-xs uppercase tracking-[0.2em] mb-6 text-primary">
-                Tribers Sugeridos
+                {t("feed.suggested")}
               </h3>
               <div className="space-y-5">
                 {suggestedUsers.map((u) => {

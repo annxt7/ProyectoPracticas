@@ -1,0 +1,25 @@
+{
+  "landing": {
+    "early_access": "Early Access",
+    "title_main": "Tribe",
+    "title_find": "Find",
+    "title_people": "your people",
+    "description": "Stop being a stranger on the internet, find your tribe. Organize your world and discover others.",
+    "btn_register": "Register Now",
+    "btn_login": "Log In"
+  }
+}
+
+{
+  "feed": {
+    "title": "Your Feed",
+    "empty": "No recent activity from people you follow.",
+    "empty_sub": "Follow more Tribers to fill your feed!",
+    "suggested": "Suggested Tribers",
+    "action_created": "created a collection",
+    "now": "Now",
+    "unit_min": "min",
+    "unit_hour": "h",
+    "unit_day": "d"
+  }
+}
