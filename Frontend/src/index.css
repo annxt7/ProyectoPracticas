@@ -38,7 +38,7 @@
   --depth: 1;
   --noise: 0;
 }
-
+/* a*/
 @plugin "daisyui/theme" {
   name: "cupcake";
   default: false;
