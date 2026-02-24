@@ -79,7 +79,7 @@ const Activity = () => {
               onClick={markAllAsRead}
               className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70 transition-all"
             >
-              Marcar todo como leído
+              Marcar todo 
             </button>
           )}
         </div>
