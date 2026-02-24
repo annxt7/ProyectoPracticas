@@ -47,20 +47,20 @@ const SettingsModal = ({ isOpen, onClose }) => {
     {
       id: "midnight-rose",
       name: "Midnight Rose",
-      bg: "bg-[#1A141C]", // base-100 oscuro
-      primary: "bg-[#E07AAE]", // rosa elegante
+      bg: "bg-[#1A141C]",
+      primary: "bg-[#E07AAE]", 
     },
     {
       id: "mocha-night",
       name: "Mocha Night",
-      bg: "bg-[#1C1612]", // café oscuro
-      primary: "bg-[#E6C48A]", // crema mocha
+      bg: "bg-[#1C1612]",
+      primary: "bg-[#E6C48A]", 
     },
     {
   id: 'lavender-dream',
   name: 'Lavender Dream',
-  bg: 'bg-[#EDE6F8]',       // fondo lavanda más morado visible
-  primary: 'bg-[#C4A1E8]'    // morado pastel más marcado
+  bg: 'bg-[#EDE6F8]',       
+  primary: 'bg-[#C4A1E8]'   
 }
 ,
     {
@@ -72,8 +72,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
     {
   id: 'natura',
   name: 'Natura',
-  bg: 'bg-[#F3FAF3]',       // verde muy suave de fondo
-  primary: 'bg-[#A7D7A7]'    // verde hoja pastel
+  bg: 'bg-[#F3FAF3]',     
+  primary: 'bg-[#A7D7A7]'    
 }
 ,
 { id: 'natura-dark', name: 'Natura Dark', bg: 'bg-[#1a241a]', primary: 'bg-[#70c070]' },

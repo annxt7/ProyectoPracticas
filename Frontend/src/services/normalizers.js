@@ -2,7 +2,7 @@ export const normalizeUser = (u) => {
   if (!u) return null;
   return {
     id: Number(u.user_id || u.id || u.userId),
-    username: (u.username || u.name || "usuario"||u.handle).replace(/^@/, '').toLowerCase(),
+    username: (u.username || u.name || u.handle ).replace(/^@/, '').toLowerCase(),
     avatar: u.avatar_url || u.avatar || u.img || null,
     banner: u.banner_url || u.banner || null,
     bio: u.bio || "",
