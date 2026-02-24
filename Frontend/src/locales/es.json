@@ -7,10 +7,7 @@
     "description": "Deja de ser un extraño en internet, encuentra a tu tribu. Organiza tu mundo y descubre el de otros.",
     "btn_register": "Regístrate Ahora",
     "btn_login": "Iniciar Sesión"
-  }
-}
-
-{
+  },
   "feed": {
     "title": "Tu Feed",
     "empty": "No hay actividad reciente de las personas que sigues.",
@@ -21,10 +18,7 @@
     "unit_min": "min",
     "unit_hour": "h",
     "unit_day": "d"
-  }
-}
-
-{
+  },
   "settings": {
     "title": "Ajustes",
     "version": "Tribe Platform v1.0.2",
@@ -71,3 +65,4 @@
     "coral": "Coral Eléctrico"
   }
 }
+

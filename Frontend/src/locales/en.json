@@ -7,10 +7,7 @@
     "description": "Stop being a stranger on the internet, find your tribe. Organize your world and discover others.",
     "btn_register": "Register Now",
     "btn_login": "Log In"
-  }
-}
-
-{
+  },
   "feed": {
     "title": "Your Feed",
     "empty": "No recent activity from people you follow.",
@@ -21,10 +18,7 @@
     "unit_min": "min",
     "unit_hour": "h",
     "unit_day": "d"
-  }
-}
-
-{
+  },
   "settings": {
     "title": "Settings",
     "version": "Tribe Platform v1.0.2",
@@ -71,3 +65,4 @@
     "coral": "Electric Coral"
   }
 }
+
