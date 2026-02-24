@@ -96,29 +96,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
         <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 bg-linear-to-b from-transparent to-base-200/20">
           
-          {/* 1. IDIOMA (Mantenido arriba y con defaultChecked) */}
-          <div className="collapse collapse-plus bg-base-200/50 rounded-3xl border border-base-300">
-            <input type="checkbox" defaultChecked /> 
-            <div className="collapse-title flex items-center gap-4 p-5 font-bold text-sm cursor-pointer">
-              <Languages className="text-primary" size={20} /> {t("settings.language")}
-            </div>
-            <div className="collapse-content px-5 pb-5">
-              <div className="flex gap-2 pt-2">
-                <button 
-                  onClick={() => i18n.changeLanguage('es')}
-                  className={`flex-1 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border-2 transition-all ${i18n.language.startsWith('es') ? 'border-primary bg-primary/10 text-primary' : 'border-base-300 bg-base-100'}`}
-                >
-                  Español
-                </button>
-                <button 
-                  onClick={() => i18n.changeLanguage('en')}
-                  className={`flex-1 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border-2 transition-all ${i18n.language.startsWith('en') ? 'border-primary bg-primary/10 text-primary' : 'border-base-300 bg-base-100'}`}
-                >
-                  English
-                </button>
-              </div>
-            </div>
-          </div>
 
           {/* 2. PERSONALIZACIÓN */}
           <div className="collapse collapse-plus bg-base-200/50 rounded-3xl border border-base-300">
@@ -240,6 +217,33 @@ const SettingsModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+                {/* SECCIÓN: IDIOMA (AHORA AL FINAL Y SIN COLLAPSE PARA FORZAR VISIBILIDAD) */}
+          <div className="bg-base-200/50 rounded-3xl border border-base-300 p-5 mt-4">
+            <div className="flex items-center gap-4 mb-4 font-bold text-sm">
+              <Languages className="text-primary" size={20} /> {t("settings.language")}
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => i18n.changeLanguage('es')}
+                className={`flex-1 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border-2 transition-all 
+                  ${i18n.language.startsWith('es') 
+                    ? 'border-primary bg-primary/10 text-primary' 
+                    : 'border-base-300 bg-base-100'}`}
+              >
+                Español
+              </button>
+              <button 
+                onClick={() => i18n.changeLanguage('en')}
+                className={`flex-1 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border-2 transition-all 
+                  ${i18n.language.startsWith('en') 
+                    ? 'border-primary bg-primary/10 text-primary' 
+                    : 'border-base-300 bg-base-100'}`}
+              >
+                English
+              </button>
+            </div>
+          </div>
+          
           {/* CERRAR SESIÓN */}
           <button onClick={handleLogout} className="flex items-center gap-4 w-full p-5 rounded-3xl bg-error/10 hover:bg-error/20 text-error transition-all group mt-6">
             <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
