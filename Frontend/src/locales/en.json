@@ -63,6 +63,16 @@
     "terra-mundi": "Terra Mundi",
     "galactic": "Galactic Deep",
     "coral": "Electric Coral"
-  }
+  },
+  "explorer": {
+  "search_placeholder": "Search in Tribe...",
+  "tab_accounts": "Accounts",
+  "tab_collections": "Collections",
+  "no_users": "No users found",
+  "no_collections": "No collections found",
+  "btn_following": "Following",
+  "btn_follow": "Follow",
+  "login_alert": "You must log in"
+}
 }
 

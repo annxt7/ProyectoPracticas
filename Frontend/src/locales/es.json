@@ -63,6 +63,16 @@
     "terra-mundi": "Terra Mundi",
     "galactic": "Galáctico",
     "coral": "Coral Eléctrico"
-  }
+  },
+  "explorer": {
+  "search_placeholder": "Buscar en Tribe...",
+  "tab_accounts": "Cuentas",
+  "tab_collections": "Colecciones",
+  "no_users": "No se encontraron usuarios",
+  "no_collections": "No se encontraron colecciones",
+  "btn_following": "Siguiendo",
+  "btn_follow": "Seguir",
+  "login_alert": "Debes iniciar sesión"
+}
 }
 
