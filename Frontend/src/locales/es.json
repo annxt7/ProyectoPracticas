@@ -134,6 +134,12 @@
     "unfollowed": "Dejaste de seguir",
     "following_success": "Siguiendo"
   }
+},
+"follows": {
+  "empty": "No se encontraron usuarios",
+  "following": "Siguiendo",
+  "follow": "Seguir",
+  "me": "Tú"
 }
 }
 
