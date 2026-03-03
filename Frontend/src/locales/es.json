@@ -73,6 +73,25 @@
   "btn_following": "Siguiendo",
   "btn_follow": "Seguir",
   "login_alert": "Debes iniciar sesión"
+},
+"nav": {
+  "home": "Inicio",
+  "explore": "Explorar",
+  "activity": "Actividad",
+  "profile": "Perfil",
+  "logout": "Salir"
+},
+"addItem": {
+  "search_catalog": "Buscar en todo el catálogo",
+  "search_in": "Buscar en: {{type}}",
+  "add_manual": "Añadir elemento manual",
+  "tab_search": "Buscar en Base de Datos",
+  "tab_custom": "Crear Manualmente",
+  "unknown": "Desconocido",
+  "placeholder_title": "Título",
+  "placeholder_subtitle": "Subtítulo",
+  "placeholder_description": "Descripción opcional",
+  "btn_add": "Añadir a la colección"
 }
 }
 

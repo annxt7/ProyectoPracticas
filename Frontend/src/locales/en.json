@@ -73,6 +73,25 @@
   "btn_following": "Following",
   "btn_follow": "Follow",
   "login_alert": "You must log in"
+},
+"nav": {
+  "home": "Home",
+  "explore": "Explore",
+  "activity": "Activity",
+  "profile": "Profile",
+  "logout": "Log Out"
+},
+"addItem": {
+  "search_catalog": "Search entire catalog",
+  "search_in": "Search in: {{type}}",
+  "add_manual": "Add manual element",
+  "tab_search": "Search Database",
+  "tab_custom": "Create Manually",
+  "unknown": "Unknown",
+  "placeholder_title": "Title",
+  "placeholder_subtitle": "Subtitle",
+  "placeholder_description": "Optional description",
+  "btn_add": "Add to collection"
 }
 }
 

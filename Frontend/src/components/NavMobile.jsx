@@ -1,11 +1,12 @@
 import React from "react";
 import NavLinkMobile from "./NavLinkMobile";
-import { Home, Search, Heart, LogOut, Palette } from "lucide-react"; 
+import { Home, Search, Heart, LogOut } from "lucide-react"; 
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { useTranslation } from "react-i18next"; // 1. Importar hook
 
 const NavMobile = () => {
+  const { t } = useTranslation(); // 2. Inicializar t
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
@@ -40,7 +41,6 @@ const NavMobile = () => {
         />
 
         {/* Avatar de Perfil */}
-      
         <Link 
           to="/profile/me"
           className={`border-2 rounded-full p-0.5 transition-all ${
@@ -55,8 +55,10 @@ const NavMobile = () => {
             />
           </div>
         </Link>
+
         <button 
           onClick={handleLogout}
+          title={t("nav.logout")} // 3. Opcional: añadir un tooltip con la traducción
           className="p-2 text-base-content/40 hover:text-error transition"
         >
           <LogOut size={20} />

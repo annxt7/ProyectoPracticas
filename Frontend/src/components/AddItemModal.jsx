@@ -1,31 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Search,
-  Plus,
-  X,
-  Database,
-  PenTool,
-  Camera,
-  Loader2,
-} from "lucide-react";
+import { Search, Plus, X, Database, PenTool, Camera, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next"; // 1. Importar
 import ItemCover from "./ItemCover";
 import api from "../services/api";
 
-// Estado Inicial Limpio
 const INITIAL_FORM_STATE = {
   title: "",
   subtitle: "",
   description: "",
-  cover: null,          // File real
-  coverPreview: "",     // SOLO para UI
+  cover: null,
+  coverPreview: "",
 };
 
 const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
+  const { t } = useTranslation(); // 2. Inicializar
   const [mode, setMode] = useState("search");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-
   const [customForm, setCustomForm] = useState(INITIAL_FORM_STATE);
   const fileInputRef = useRef(null);
 
@@ -38,25 +30,14 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
     const delayDebounceFn = setTimeout(async () => {
       setLoading(true);
       try {
-        const categoryToSend =
-          collectionType === "Custom" ? "General" : collectionType;
-
+        const categoryToSend = collectionType === "Custom" ? "General" : collectionType;
         const response = await api.get("/catalog/search", {
-          params: {
-            category: categoryToSend,
-            query: searchTerm,
-          },
+          params: { category: categoryToSend, query: searchTerm },
         });
 
         const itemsAdapted = response.data.map((item) => ({
           ...item,
-          subtitle:
-            item.subtitle ||
-            item.artist ||
-            item.author ||
-            item.developer ||
-            item.director ||
-            "Desconocido",
+          subtitle: item.subtitle || item.artist || item.author || item.developer || item.director || t("addItem.unknown"), // 3. Traducir "Desconocido"
           cover: item.image || item.cover_url || item.poster_url,
           year: item.release_year || item.year,
           realType: item.type,
@@ -71,7 +52,7 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, collectionType, mode]);
+  }, [searchTerm, collectionType, mode, t]);
 
   useEffect(() => {
     if (isOpen) {
@@ -83,7 +64,6 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
         setSearchResults([]);
         if (fileInputRef.current) fileInputRef.current.value = "";
       }, 300);
-
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -91,98 +71,63 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
   if (!isOpen) return null;
 
   const handleAddFromDB = (item) => {
-    const itemToSend = {
-      ...item,
-      item_type: collectionType === "Custom" ? item.realType : collectionType,
-      reference_id: item.id,
-    };
-
-    onAddItem(itemToSend);
+    onAddItem({ ...item, item_type: collectionType === "Custom" ? item.realType : collectionType, reference_id: item.id });
     onClose();
   };
+
   const handleAddCustom = (e) => {
     e.preventDefault();
-
-    const newItem = {
-      title: customForm.title,
-      subtitle: customForm.subtitle,
-      description: customForm.description,
-      coverFile: customForm.cover, 
-      item_type: "Custom",
-      isCustom: true,
-    };
-
-    onAddItem(newItem);
+    onAddItem({ ...customForm, coverFile: customForm.cover, item_type: "Custom", isCustom: true });
     onClose();
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    setCustomForm({
-      ...customForm,
-      cover: file,
-      coverPreview: URL.createObjectURL(file),
-    });
+    setCustomForm({ ...customForm, cover: file, coverPreview: URL.createObjectURL(file) });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative bg-base-100 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* HEADER */}
+        {/* HEADER TRADUCIDO */}
         <div className="p-4 border-b border-base-200 flex justify-between items-center">
           <h3 className="font-bold text-lg flex items-center gap-2">
             {mode === "search" ? <Database size={18} /> : <PenTool size={18} />}
             {mode === "search"
               ? collectionType === "Custom"
-                ? "Buscar en todo el catálogo"
-                : `Buscar en: ${collectionType}`
-              : "Añadir elemento manual"}
+                ? t("addItem.search_catalog")
+                : t("addItem.search_in", { type: collectionType })
+              : t("addItem.add_manual")}
           </h3>
           <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
             <X size={20} />
           </button>
         </div>
 
-        {/* TABS */}
+        {/* TABS TRADUCIDAS */}
         <div className="flex border-b border-base-200">
           <button
             onClick={() => setMode("search")}
-            className={`flex-1 py-3 text-sm font-bold ${
-              mode === "search"
-                ? "bg-primary/10 text-primary border-b-2 border-primary"
-                : "opacity-50"
-            }`}
+            className={`flex-1 py-3 text-sm font-bold ${mode === "search" ? "bg-primary/10 text-primary border-b-2 border-primary" : "opacity-50"}`}
           >
-            Buscar en Base de Datos
+            {t("addItem.tab_search")}
           </button>
           <button
             onClick={() => setMode("custom")}
-            className={`flex-1 py-3 text-sm font-bold ${
-              mode === "custom"
-                ? "bg-primary/10 text-primary border-b-2 border-primary"
-                : "opacity-50"
-            }`}
+            className={`flex-1 py-3 text-sm font-bold ${mode === "custom" ? "bg-primary/10 text-primary border-b-2 border-primary" : "opacity-50"}`}
           >
-            Crear Manualmente
+            {t("addItem.tab_custom")}
           </button>
         </div>
 
-        {/* CONTENIDO */}
         <div className="overflow-y-auto p-4 flex-1">
           {mode === "search" && (
             <div className="space-y-4">
               <div className="relative">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40"
-                  size={20}
-                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40" size={20} />
                 <input
                   type="text"
                   className="input input-bordered w-full pl-10"
@@ -198,19 +143,13 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
               </div>
 
               {searchResults.map((item) => (
-                <div
-                  key={`${item.type}-${item.id}`}
-                  className="flex gap-3 p-2 hover:bg-base-200 rounded-xl cursor-pointer"
-                  onClick={() => handleAddFromDB(item)}
-                >
+                <div key={`${item.type}-${item.id}`} className="flex gap-3 p-2 hover:bg-base-200 rounded-xl cursor-pointer" onClick={() => handleAddFromDB(item)}>
                   <div className="w-12 h-16 overflow-hidden rounded-md bg-base-300">
                     <ItemCover src={item.cover} title={item.title} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold truncate">{item.title}</p>
-                    <p className="text-xs opacity-60 truncate">
-                      {item.subtitle}
-                    </p>
+                    <p className="text-xs opacity-60 truncate">{item.subtitle}</p>
                   </div>
                   <Plus size={16} />
                 </div>
@@ -221,65 +160,39 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
           {mode === "custom" && (
             <form onSubmit={handleAddCustom} className="space-y-4">
               <div className="flex gap-4">
-                <div
-                  className="w-24 h-32 bg-base-200 rounded-xl overflow-hidden cursor-pointer relative"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  <ItemCover
-                    src={customForm.coverPreview}
-                    title={customForm.title || "?"}
-                  />
-                  <div className="absolute bottom-1 right-1 bg-black/60 text-secodary p-1.5 rounded-full">
-                    <Camera size={14} />
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageChange}
-                    className="hidden"
-                    accept="image/*"
-                  />
+                <div className="w-24 h-32 bg-base-200 rounded-xl overflow-hidden cursor-pointer relative" onClick={() => fileInputRef.current.click()}>
+                  <ItemCover src={customForm.coverPreview} title={customForm.title || "?"} />
+                  <div className="absolute bottom-1 right-1 bg-black/60 text-secondary p-1.5 rounded-full"><Camera size={14} /></div>
+                  <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
                 </div>
 
                 <div className="flex-1 space-y-3">
                   <input
                     required
-                    placeholder="Título"
+                    placeholder={t("addItem.placeholder_title")}
                     className="input input-bordered input-sm w-full"
                     value={customForm.title}
-                    onChange={(e) =>
-                      setCustomForm({ ...customForm, title: e.target.value })
-                    }
+                    onChange={(e) => setCustomForm({ ...customForm, title: e.target.value })}
                   />
                   <input
                     required
-                    placeholder="Subtítulo"
+                    placeholder={t("addItem.placeholder_subtitle")}
                     className="input input-bordered input-sm w-full"
                     value={customForm.subtitle}
-                    onChange={(e) =>
-                      setCustomForm({
-                        ...customForm,
-                        subtitle: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setCustomForm({ ...customForm, subtitle: e.target.value })}
                   />
                 </div>
               </div>
 
               <textarea
                 className="textarea textarea-bordered w-full"
-                placeholder="Descripción opcional"
+                placeholder={t("addItem.placeholder_description")}
                 value={customForm.description}
-                onChange={(e) =>
-                  setCustomForm({
-                    ...customForm,
-                    description: e.target.value,
-                  })
-                }
+                onChange={(e) => setCustomForm({ ...customForm, description: e.target.value })}
               />
 
               <button type="submit" className="btn btn-primary w-full gap-2">
-                <Plus size={18} /> Añadir a la colección
+                <Plus size={18} /> {t("addItem.btn_add")}
               </button>
             </form>
           )}
