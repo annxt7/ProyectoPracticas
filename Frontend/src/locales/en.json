@@ -92,6 +92,48 @@
   "placeholder_subtitle": "Subtitle",
   "placeholder_description": "Optional description",
   "btn_add": "Add to collection"
+},
+"profile": {
+  "edit_btn": "Edit Profile",
+  "follow_btn": "Follow",
+  "following_btn": "Following",
+  "stats": {
+    "collections": "Collections",
+    "followers": "Followers",
+    "following": "Following"
+  },
+  "bio_placeholder": "Write something about yourself...",
+  "bio_empty": "No bio yet...",
+  "tabs": {
+    "collections": "COLLECTIONS",
+    "saved": "SAVED"
+  },
+  "filter": {
+    "label": "Sort by:",
+    "recent_desc": "Newest",
+    "recent_asc": "Oldest",
+    "updated": "Recently Updated",
+    "items": "Most Items",
+    "option_recent": "Most Recent (Creation)",
+    "option_old": "Oldest",
+    "option_updated": "Recently Updated",
+    "option_items": "No. of Items"
+  },
+  "delete_modal": {
+    "title_own": "Delete collection?",
+    "title_saved": "Remove from saved?",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "messages": {
+    "loading": "Uploading {{type}}...",
+    "bio_updated": "Bio updated",
+    "img_updated": "Image updated",
+    "error_update": "Error updating",
+    "deleted": "Deleted",
+    "unfollowed": "Unfollowed",
+    "following_success": "Following"
+  }
 }
 }
 
