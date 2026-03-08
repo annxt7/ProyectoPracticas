@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next"; // 1. Importar hook
 import ItemCover from "../components/ItemCover";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -9,21 +10,19 @@ import NavDesktop from "../components/NavDesktop";
 import NavMobile from "../components/NavMobile";
 
 const Explorer = () => {
+  const { t } = useTranslation(); // 2. Inicializar t
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("cuentas");
+  const [activeTab, setActiveTab] = useState("accounts"); // Cambiado a clave técnica
   const [users, setUsers] = useState([]);
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [followingIds, setFollowingIds] = useState([]);
 
   const { user: currentUser } = useAuth();
-  const myId = currentUser
-    ? Number(currentUser.id || currentUser.user_id)
-    : null;
+  const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
 
   useEffect(() => {
     if (!myId) return;
-
     const fetchFollowing = async () => {
       try {
         const res = await api.get(`/users/following/${myId}`);
@@ -42,19 +41,12 @@ const Explorer = () => {
       try {
         const res = await api.get(`/search?query=${encodeURIComponent(query)}`);
         const data = res.data;
-        
         const cleanUsers = (data.users || [])
           .map((u) => normalizeUser(u))
-          .filter((u) => {
-            const isNotMe = Number(u.id) !== myId;
-            const isNotAdmin = u.role !== "admin";
-            return isNotMe && isNotAdmin;
-          });
-
+          .filter((u) => Number(u.id) !== myId && u.role !== "admin");
         const cleanCollections = (data.collections || [])
           .map((c) => normalizeCollection(c))
           .filter((c) => Number(c.creatorId) !== myId);
-
         setUsers(cleanUsers);
         setCollections(cleanCollections);
       } catch (err) {
@@ -63,13 +55,12 @@ const Explorer = () => {
         setLoading(false);
       }
     };
-
     const timeoutId = setTimeout(fetchData, 400); 
     return () => clearTimeout(timeoutId);
   }, [query, myId]);
 
   const handleFollowToggle = async (targetId, isFollowing) => {
-    if (!myId) return alert("Debes iniciar sesión");
+    if (!myId) return alert(t("explorer.login_alert")); // 3. Traducción alert
     const id = Number(targetId);
     try {
       if (isFollowing) {
@@ -88,20 +79,15 @@ const Explorer = () => {
     <div className="min-h-screen pb-24 bg-base-300 text-base-content font-sans">
       <NavDesktop />
 
-      {/* Header buscador - Ajustado a base-200 */}
       <div className="sticky top-0 md:top-16 z-40 bg-base-200/80 backdrop-blur-md p-4 border-b border-base-100">
         <div className="max-w-2xl mx-auto px-4">
           <div className="relative mb-6">
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40"
-              size={18}
-            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40" size={18} />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar en Tribe..."
-              // Eliminado bg-white/5 por bg-base-100 para que sea dinámico
+              placeholder={t("explorer.search_placeholder")} // 4. Placeholder
               className="w-full bg-base-100 border border-base-300 rounded-2xl py-3 pl-12 pr-10 outline-none focus:border-primary/50 transition-all text-sm"
             />
             {query && (
@@ -114,17 +100,20 @@ const Explorer = () => {
           </div>
 
           <div className="flex justify-center gap-12">
-            {["cuentas", "colecciones"].map((tab) => (
+            {[
+              { id: "accounts", label: t("explorer.tab_accounts") },
+              { id: "collections", label: t("explorer.tab_collections") }
+            ].map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
                 className={`pb-2 text-xs font-bold uppercase tracking-widest transition-all ${
-                  activeTab === tab
+                  activeTab === tab.id
                     ? "text-primary border-b-2 border-primary"
                     : "opacity-40 hover:opacity-100"
                 }`}
               >
-                {tab}
+                {tab.label} {/* 5. Labels de pestañas */}
               </button>
             ))}
           </div>
@@ -138,40 +127,27 @@ const Explorer = () => {
           </div>
         )}
 
-        {!loading && activeTab === "cuentas" && (
+        {!loading && activeTab === "accounts" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {users.length === 0 && (
               <p className="text-center opacity-40 col-span-full py-10">
-                No se encontraron usuarios
+                {t("explorer.no_users")}
               </p>
             )}
             {users.map((u) => {
               const isFollowing = followingIds.includes(Number(u.id));
-
               return (
-                <div
-                  key={u.id}
-                  // Usamos bg-base-200 para las cards
-                  className="flex items-center justify-between p-4 bg-base-200 rounded-2xl border border-base-100 hover:border-primary/20 transition-all shadow-sm"
-                >
-                  <Link
-                    to={`/profile/${u.id}`}
-                    className="flex items-center gap-4 min-w-0"
-                  >
+                <div key={u.id} className="flex items-center justify-between p-4 bg-base-200 rounded-2xl border border-base-100 hover:border-primary/20 transition-all shadow-sm">
+                  <Link to={`/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-base-300 border border-base-100">
                       <img
-                        src={
-                          u.avatar ||
-                          `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`
-                        }
+                        src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`}
                         className="w-full h-full object-cover"
                         alt={u.username}
                       />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-sm truncate">
-                        @{u.username}
-                      </p>
+                      <p className="font-bold text-sm truncate">@{u.username}</p>
                     </div>
                   </Link>
 
@@ -181,7 +157,7 @@ const Explorer = () => {
                       isFollowing ? "btn-ghost bg-base-300" : "btn-primary"
                     }`}
                   >
-                    {isFollowing ? "Siguiendo" : "Seguir"}
+                    {isFollowing ? t("explorer.btn_following") : t("explorer.btn_follow")}
                   </button>
                 </div>
               );
@@ -189,31 +165,22 @@ const Explorer = () => {
           </div>
         )}
 
-        {!loading && activeTab === "colecciones" && (
+        {!loading && activeTab === "collections" && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {collections.length === 0 && (
               <p className="text-center opacity-40 col-span-full py-10">
-                No se encontraron colecciones
+                {t("explorer.no_collections")}
               </p>
             )}
             {collections.map((col) => (
               <Link key={col.id} to={`/collection/${col.id}`} className="group">
                 <div className="flex flex-col gap-3">
-                  {/* Aspect-video con fondo de base-200 */}
                   <div className="aspect-video rounded-2xl overflow-hidden bg-base-200 border border-base-200 group-hover:border-primary/40 transition-all relative shadow-sm">
-                    <ItemCover
-                      src={col.cover}
-                      title={col.title}
-                      className="group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <ItemCover src={col.cover} title={col.title} className="group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <div className="px-1">
-                    <h3 className="font-bold truncate text-[13px] group-hover:text-primary transition-colors">
-                      {col.title}
-                    </h3>
-                    <p className="text-[10px] text-primary font-extrabold uppercase">
-                      @{col.author}
-                    </p>
+                    <h3 className="font-bold truncate text-[13px] group-hover:text-primary transition-colors">{col.title}</h3>
+                    <p className="text-[10px] text-color-secondary font-extrabold uppercase">@{col.author}</p>
                   </div>
                 </div>
               </Link>

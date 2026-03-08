@@ -1,14 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next"; // 1. Importar hook
 
 const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
+  const { t } = useTranslation(); // 2. Inicializar t
+  
   if (!user) return null;
 
-  // Normalización interna: Extraemos el nombre sea cual sea el campo que venga
-  const displayName = user.username || user.name || "Usuario";
+  // Normalización interna
+  const displayName = user.username || user.name || t("explorer.no_users"); // Uso de fallback traducido
   const displayImg = user.avatar || user.img || user.avatar_url;
   
-  // Generamos el handle de forma segura sin romper si displayName es undefined
   const safeHandle = user.handle || `@${String(displayName).toLowerCase().replace(/\s/g, "")}`;
 
   const handleBtnClick = (e) => {
@@ -53,7 +55,8 @@ const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
               : "btn-primary font-bold"
           }`}
         >
-          {isFollowing ? "Siguiendo" : "Seguir"}
+          {/* 3. Traducción de los estados del botón */}
+          {isFollowing ? t("explorer.btn_following") : t("explorer.btn_follow")}
         </button>
       </div>
     </Link>

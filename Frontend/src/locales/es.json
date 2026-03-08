@@ -1,0 +1,145 @@
+{
+  "landing": {
+    "early_access": "Early Access",
+    "title_main": "Tribe",
+    "title_find": "Encuentra",
+    "title_people": "a tu gente",
+    "description": "Deja de ser un extraño en internet, encuentra a tu tribu. Organiza tu mundo y descubre el de otros.",
+    "btn_register": "Regístrate Ahora",
+    "btn_login": "Iniciar Sesión"
+  },
+  "feed": {
+    "title": "Tu Feed",
+    "empty": "No hay actividad reciente de las personas que sigues.",
+    "empty_sub": "¡Sigue a más Tribers para llenar tu feed!",
+    "suggested": "Tribers Sugeridos",
+    "action_created": "creó una colección",
+    "now": "Ahora",
+    "unit_min": "min",
+    "unit_hour": "h",
+    "unit_day": "d"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "version": "Tribe Platform v1.0.2",
+    "language": "Idioma",
+    "appearance": "Personalización",
+    "security": "Seguridad",
+    "current_pass": "Contraseña actual",
+    "new_pass": "Nueva contraseña",
+    "btn_update_pass": "Actualizar clave",
+    "password_success": "Contraseña actualizada correctamente",
+    "password_error": "Error al actualizar contraseña",
+    "about": "Sobre Nosotros",
+    "about_desc": "Tribe nació con una misión clara: organizar el caos digital. Creemos que el valor reside en la selección.",
+    "vision_title": "La Visión",
+    "vision_text": "Tu catálogo de pasiones.",
+    "community_title": "Comunidad",
+    "community_text": "Conexión real sin algoritmos.",
+    "support": "Apóyanos",
+    "coffee": "Invitarnos a un café",
+    "coffee_price": "Aportación de 3€",
+    "legal": "Legal",
+    "terms": "Términos y Condiciones",
+    "terms_desc": "Contrato de uso de la plataforma",
+    "privacy": "Política de Privacidad",
+    "privacy_desc": "Cómo protegemos tus datos",
+    "logout": "Cerrar Sesión",
+    "footer": "Design by Tribe Team • 2026"
+  },
+  "themes": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "hawaii": "Hawaii",
+    "royal-wine": "Royal Wine",
+    "pinky": "Rosa Pastel",
+    "midnight-rose": "Midnight Rose",
+    "mocha-night": "Noche de Moca",
+    "lavender-dream": "Sueño de Lavanda",
+    "sandstone": "Piedra Arena",
+    "natura": "Natura",
+    "natura-dark": "Natura Oscuro",
+    "orange": "Naranja",
+    "terra-mundi": "Terra Mundi",
+    "galactic": "Galáctico",
+    "coral": "Coral Eléctrico"
+  },
+  "explorer": {
+  "search_placeholder": "Buscar en Tribe...",
+  "tab_accounts": "Cuentas",
+  "tab_collections": "Colecciones",
+  "no_users": "No se encontraron usuarios",
+  "no_collections": "No se encontraron colecciones",
+  "btn_following": "Siguiendo",
+  "btn_follow": "Seguir",
+  "login_alert": "Debes iniciar sesión"
+},
+"nav": {
+  "home": "Inicio",
+  "explore": "Explorar",
+  "activity": "Actividad",
+  "profile": "Perfil",
+  "logout": "Salir"
+},
+"addItem": {
+  "search_catalog": "Buscar en todo el catálogo",
+  "search_in": "Buscar en: {{type}}",
+  "add_manual": "Añadir elemento manual",
+  "tab_search": "Buscar en Base de Datos",
+  "tab_custom": "Crear Manualmente",
+  "unknown": "Desconocido",
+  "placeholder_title": "Título",
+  "placeholder_subtitle": "Subtítulo",
+  "placeholder_description": "Descripción opcional",
+  "btn_add": "Añadir a la colección"
+},
+"profile": {
+  "edit_btn": "Editar Perfil",
+  "follow_btn": "Seguir",
+  "following_btn": "Siguiendo",
+  "stats": {
+    "collections": "Colecciones",
+    "followers": "Seguidores",
+    "following": "Siguiendo"
+  },
+  "bio_placeholder": "Escribe algo sobre ti...",
+  "bio_empty": "Sin bio aún...",
+  "tabs": {
+    "collections": "COLECCIONES",
+    "saved": "GUARDADO"
+  },
+  "filter": {
+    "label": "Ordenar por:",
+    "recent_desc": "Recientes",
+    "recent_asc": "Antiguas",
+    "updated": "Actualizadas",
+    "items": "Más Items",
+    "option_recent": "Más Recientes (Creación)",
+    "option_old": "Más Antiguas",
+    "option_updated": "Actualizadas Recientemente",
+    "option_items": "Nº de Items"
+  },
+  "delete_modal": {
+    "title_own": "¿Borrar colección?",
+    "title_saved": "¿Quitar de guardados?",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
+  },
+  "messages": {
+    "loading": "Subiendo {{type}}...",
+    "bio_updated": "Bio actualizada",
+    "img_updated": "Imagen actualizada",
+    "error_update": "Error al actualizar",
+    "deleted": "Eliminado",
+    "unfollowed": "Dejaste de seguir",
+    "following_success": "Siguiendo"
+  }
+},
+"follows": {
+  "empty": "No se encontraron usuarios",
+  "following": "Siguiendo",
+  "follow": "Seguir",
+  "me": "Tú"
+}
+}
+

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast"; // Añadido
+import toast, { Toaster } from "react-hot-toast";
 import SettingsModal from "../components/Config";
 import FollowsModal from "../components/FollowsModal";
+import { useTranslation } from "react-i18next"; // Añadido
 import {
   Settings,
   UserPlus,
@@ -22,6 +23,7 @@ import NavDesktop from "../components/NavDesktop";
 import NavMobile from "../components/NavMobile";
 
 const Profile = () => {
+  const { t } = useTranslation(); // Inicializado
   const [activeTab, setActiveTab] = useState("collections");
   const { user, updateUser } = useAuth();
   const { userId } = useParams();
@@ -48,22 +50,19 @@ const Profile = () => {
     type: null,
     title: "",
   });
-  const [filter,setFilter]= useState({ sortBy: "recent", order: "DESC" })
-  // Edición
+  const [filter, setFilter] = useState({ sortBy: "recent", order: "DESC" });
+  
   const avatarInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState("");
 
-  const DEFAULT_AVATAR =
-    "https://ui-avatars.com/api/?background=random&color=fff&name=User";
-  const DEFAULT_BANNER =
-    "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
+  const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&color=fff&name=User";
+  const DEFAULT_BANNER = "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
 
   const getImg = (url, fallback) => (url ? url : fallback);
 
-  // Sincronización inicial del usuario
   useEffect(() => {
     if (isMe && user) {
       const normalized = normalizeUser(user);
@@ -72,7 +71,7 @@ const Profile = () => {
     }
   }, [user, isMe]);
 
- useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       if (!targetId) return;
       setIsLoading(true);
@@ -82,7 +81,7 @@ const Profile = () => {
         const collectionsPromise = api.get(`/collections/user/${targetId}${queryParams}`);
         const statsPromise = api.get(`/users/follow-stats/${targetId}`);
         let userPromise = Promise.resolve({ data: null });
-        let savedPromise = Promise.resolve({ data: [] }); 
+        let savedPromise = Promise.resolve({ data: [] });
 
         if (!isMe) {
           userPromise = api.get(`/users/${targetId}`);
@@ -109,15 +108,14 @@ const Profile = () => {
         }
       } catch (error) {
         console.error("Error cargando perfil:", error);
-        toast.error("Error al cargar datos");
+        toast.error(t("profile.messages.error_update"));
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
-  }, [targetId, isMe, filter]); 
+  }, [targetId, isMe, filter, t]);
 
-  // --- HANDLERS ---
   const handleSaveBio = async (e) => {
     e.preventDefault();
     try {
@@ -126,9 +124,9 @@ const Profile = () => {
       });
       updateUser(res.data.user);
       setIsEditing(false);
-      toast.success("Bio actualizada"); // Reemplaza alert
+      toast.success(t("profile.messages.bio_updated"));
     } catch (error) {
-      toast.error("Error al actualizar");
+      toast.error(t("profile.messages.error_update"));
     }
   };
 
@@ -136,24 +134,22 @@ const Profile = () => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
-    const loadingToast = toast.loading(`Subiendo ${type}...`);
+    const loadingToast = toast.loading(t("profile.messages.loading", { type }));
     try {
       const fd = new FormData();
       fd.append("imagen", file);
       const uploadRes = await api.post("/files/upload", fd);
-      const payload =
-        type === "avatar"
-          ? { avatarUrl: uploadRes.data.url }
-          : { bannerUrl: uploadRes.data.url };
+      const payload = type === "avatar" ? { avatarUrl: uploadRes.data.url } : { bannerUrl: uploadRes.data.url };
       const updateRes = await api.put("/users/update-profile", payload);
       updateUser(updateRes.data.user);
-      toast.success("Imagen actualizada", { id: loadingToast });
+      toast.success(t("profile.messages.img_updated"), { id: loadingToast });
     } catch (error) {
-      toast.error("Error al subir", { id: loadingToast });
+      toast.error(t("profile.messages.error_update"), { id: loadingToast });
     } finally {
       setIsUploading(false);
     }
   };
+
   const handleDeleteCollection = (e, collection_id, name) => {
     e.preventDefault();
     e.stopPropagation();
@@ -179,7 +175,7 @@ const Profile = () => {
   const executeDelete = async () => {
     const { id, type } = deleteConfirm;
     setDeleteConfirm({ ...deleteConfirm, isOpen: false });
-    const tId = toast.loading("Eliminando...");
+    const tId = toast.loading(t("common.loading") || "...");
 
     try {
       if (type === "own") {
@@ -187,13 +183,11 @@ const Profile = () => {
         setCollections((prev) => prev.filter((c) => c.collection_id !== id));
       } else {
         await api.delete(`/collections/saved/${id}`);
-        setSavedCollections((prev) =>
-          prev.filter((c) => c.collection_id !== id),
-        );
+        setSavedCollections((prev) => prev.filter((c) => c.collection_id !== id));
       }
-      toast.success("Eliminado", { id: tId });
+      toast.success(t("profile.messages.deleted"), { id: tId });
     } catch (error) {
-      toast.error("No se pudo eliminar", { id: tId });
+      toast.error(t("profile.messages.error_update"), { id: tId });
     }
   };
 
@@ -210,19 +204,14 @@ const Profile = () => {
     try {
       if (prevFollowingState) {
         await api.delete(`/users/unfollow/${targetId}`);
-        toast.success("Dejaste de seguir");
+        toast.success(t("profile.messages.unfollowed"));
       } else {
         await api.post(`/users/follow/${targetId}`);
-        toast.success("Siguiendo");
+        toast.success(t("profile.messages.following_success"));
       }
     } catch (error) {
-      console.error("Error al cambiar estado de seguimiento:", error);
       setIsFollowing(prevFollowingState);
-      setFollowStats((prev) => ({
-        ...prev,
-        followers: prevFollowingState ? prev.followers : prev.followers,
-      }));
-      toast.error("Error de conexión");
+      toast.error(t("profile.messages.error_update"));
     }
   };
 
@@ -240,113 +229,48 @@ const Profile = () => {
       <NavDesktop />
 
       <main className="mx-auto">
-        {/* HEADER:Banner */}
         <div className="relative h-40 md:h-80 w-full bg-neutral-900 overflow-hidden group">
-          <img
-            src={getImg(profileData?.banner, DEFAULT_BANNER)}
-            className="w-full h-full object-cover"
-            alt="banner"
-          />
+          <img src={getImg(profileData?.banner, DEFAULT_BANNER)} className="w-full h-full object-cover" alt="banner" />
           <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
           {isMe && isEditing && (
-            <button
-              onClick={() => !isUploading && bannerInputRef.current.click()}
-              className="absolute bottom-4 right-4 bg-base-100 p-2 rounded-full shadow-md z-20 hover:bg-base-200 transition-all"
-            >
-              {isUploading ? (
-                <span className="loading loading-spinner loading-xs" />
-              ) : (
-                <Camera size={20} />
-              )}
+            <button onClick={() => !isUploading && bannerInputRef.current.click()} className="absolute bottom-4 right-4 bg-base-100 p-2 rounded-full shadow-md z-20 hover:bg-base-200 transition-all">
+              {isUploading ? <span className="loading loading-spinner loading-xs" /> : <Camera size={20} />}
             </button>
           )}
-          <input
-            type="file"
-            ref={bannerInputRef}
-            onChange={(e) => handleFileUpload(e, "banner")}
-            className="hidden"
-            accept="image/*"
-          />
+          <input type="file" ref={bannerInputRef} onChange={(e) => handleFileUpload(e, "banner")} className="hidden" accept="image/*" />
         </div>
 
         <div className="px-6 relative">
           <div className="flex justify-between items-end -mt-12 mb-4">
-            {/* AVATAR */}
             <div className="relative">
-              <div
-                onClick={() =>
-                  isMe &&
-                  isEditing &&
-                  !isUploading &&
-                  avatarInputRef.current.click()
-                }
-                className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${
-                  isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""
-                }`}
-              >
+              <div onClick={() => isMe && isEditing && !isUploading && avatarInputRef.current.click()} className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""}`}>
                 <div className="w-24 md:w-32 rounded-full overflow-hidden bg-base-200">
-                  <img
-                    src={getImg(profileData?.avatar, DEFAULT_AVATAR)}
-                    alt="avatar"
-                  />
+                  <img src={getImg(profileData?.avatar, DEFAULT_AVATAR)} alt="avatar" />
                 </div>
               </div>
               {isMe && isEditing && !isUploading && (
-                <div className="absolute bottom-1 right-1 bg-base-100 p-1.5 rounded-full shadow-md pointer-events-none">
-                  <Camera size={16} />
-                </div>
+                <div className="absolute bottom-1 right-1 bg-base-100 p-1.5 rounded-full shadow-md pointer-events-none"><Camera size={16} /></div>
               )}
-              <input
-                type="file"
-                ref={avatarInputRef}
-                onChange={(e) => handleFileUpload(e, "avatar")}
-                className="hidden"
-                accept="image/*"
-              />
+              <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, "avatar")} className="hidden" accept="image/*" />
             </div>
 
-            {/* BOTONES DE ACCIÓN */}
             <div className="flex gap-2 mb-2">
               {isMe ? (
                 <>
                   {!isEditing ? (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="btn btn-sm md:btn-md btn-ghost border border-white/40 rounded-full"
-                    >
-                      Editar Perfil
+                    <button onClick={() => setIsEditing(true)} className="btn btn-sm md:btn-md btn-ghost border border-white/40 rounded-full">
+                      {t("profile.edit_btn")}
                     </button>
                   ) : (
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40"
-                    >
+                    <button onClick={() => setIsEditing(false)} className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40">
                       <X size={18} />
                     </button>
                   )}
-                  <button
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40"
-                  >
-                    <Settings size={18} />
-                  </button>
+                  <button onClick={() => setIsSettingsOpen(true)} className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40"><Settings size={18} /></button>
                 </>
               ) : (
-                <button
-                  onClick={handleFollowToggle}
-                  className={`btn btn-sm md:btn-md rounded-full px-6 gap-2 ${
-                    isFollowing ? "btn-neutral" : "btn-primary"
-                  }`}
-                >
-                  {isFollowing ? (
-                    <>
-                      <Check size={16} /> Siguiendo
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus size={16} /> Seguir
-                    </>
-                  )}
+                <button onClick={handleFollowToggle} className={`btn btn-sm md:btn-md rounded-full px-6 gap-2 ${isFollowing ? "btn-neutral" : "btn-primary"}`}>
+                  {isFollowing ? <><Check size={16} /> {t("profile.following_btn")}</> : <><UserPlus size={16} /> {t("profile.follow_btn")}</>}
                 </button>
               )}
             </div>
@@ -355,7 +279,7 @@ const Profile = () => {
           {/* INFORMACIÓN DEL PERFIL */}
           <div className="space-y-3 mb-6">
             <h1 className="text-2xl md:text-4xl font-bold font-serif">
-              {profileData?.username || "Usuario"}
+              {profileData?.username || t("profile.default_username")}
             </h1>
 
             <div className="mt-2 text-sm md:text-base">
@@ -369,7 +293,7 @@ const Profile = () => {
                     onChange={(e) => setNewDescription(e.target.value)}
                     className="textarea textarea-bordered w-full resize-none bg-base-100 text-base"
                     rows={3}
-                    placeholder="Escribe algo sobre ti..."
+                    placeholder={t("profile.bio_placeholder")}
                   />
                   <div className="flex gap-2 justify-end">
                     <button
@@ -377,16 +301,16 @@ const Profile = () => {
                       onClick={() => setIsEditing(false)}
                       className="btn btn-sm btn-ghost"
                     >
-                      Cancelar
+                      {t("profile.delete_modal.cancel")}
                     </button>
                     <button type="submit" className="btn btn-sm btn-primary">
-                      Guardar
+                      {t("common.save") || "Guardar"}
                     </button>
                   </div>
                 </form>
               ) : (
                 <p className="opacity-80">
-                  {profileData?.bio || "Sin bio aún..."}
+                  {profileData?.bio || t("profile.bio_empty")}
                 </p>
               )}
             </div>
@@ -396,7 +320,7 @@ const Profile = () => {
               <div className="flex gap-1 items-baseline">
                 <span className="font-bold text-lg">{collections.length}</span>
                 <span className="text-xs uppercase opacity-60 font-bold">
-                  Colecciones
+                  {t("profile.stats.collections")}
                 </span>
               </div>
 
@@ -406,7 +330,7 @@ const Profile = () => {
                   setFollowModal({
                     open: true,
                     type: "followers",
-                    title: "Seguidores",
+                    title: t("profile.stats.followers"),
                   })
                 }
               >
@@ -414,7 +338,7 @@ const Profile = () => {
                   {followStats.followers}
                 </span>
                 <span className="text-xs uppercase opacity-60 font-bold">
-                  Seguidores
+                  {t("profile.stats.followers")}
                 </span>
               </div>
 
@@ -424,7 +348,7 @@ const Profile = () => {
                   setFollowModal({
                     open: true,
                     type: "following",
-                    title: "Siguiendo",
+                    title: t("profile.stats.following"),
                   })
                 }
               >
@@ -432,7 +356,7 @@ const Profile = () => {
                   {followStats.following}
                 </span>
                 <span className="text-xs uppercase opacity-60 font-bold">
-                  Siguiendo
+                  {t("profile.stats.following")}
                 </span>
               </div>
             </div>
@@ -441,7 +365,6 @@ const Profile = () => {
 
         {/* TABS NAVEGACIÓN */}
         <div className="border-t border-secondary mt-4 sticky top-16 bg-base-100/95 z-30 backdrop-blur-md shadow-sm">
-          {/* Agregamos 'relative' y 'md:justify-center' al padre */}
           <div className="max-w-6xl mx-auto px-2 relative flex flex-col md:flex-row items-center md:justify-center">
             
             {/* COLECCIONES/GUARDADAS */}
@@ -454,7 +377,7 @@ const Profile = () => {
                     : "border-transparent opacity-50 hover:opacity-80"
                 }`}
               >
-                COLECCIONES
+                {t("profile.tabs.collections")}
               </button>
               {isMe && (
                 <button
@@ -465,22 +388,22 @@ const Profile = () => {
                       : "border-transparent opacity-50 hover:opacity-80"
                   }`}
                 >
-                  GUARDADO
+                  {t("profile.tabs.saved")}
                 </button>
               )}
             </div>
 
-            {/* FILTRO  */}
+            {/* FILTRO */}
             <div className="py-2 md:py-0 flex items-center gap-2 md:absolute md:right-2">
               <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-sm btn-ghost gap-2 opacity-80 hover:opacity-100 font-normal">
                   <Filter size={16} />
-                  <span className="hidden md:inline">Ordenar por:</span>
+                  <span className="hidden md:inline">{t("profile.filter.label")}</span>
                   <span className="font-bold">
-                    {filter.sortBy === 'recent' && filter.order === 'DESC' && 'Recientes'}
-                    {filter.sortBy === 'recent' && filter.order === 'ASC' && 'Antiguas'}
-                    {filter.sortBy === 'updated' && 'Actualizadas'}
-                    {filter.sortBy === 'items' && 'Más Items'}
+                    {filter.sortBy === 'recent' && filter.order === 'DESC' && t("profile.filter.recent_desc")}
+                    {filter.sortBy === 'recent' && filter.order === 'ASC' && t("profile.filter.recent_asc")}
+                    {filter.sortBy === 'updated' && t("profile.filter.updated")}
+                    {filter.sortBy === 'items' && t("profile.filter.items")}
                   </span>
                 </div>
                 <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 mt-4 border border-white/10">
@@ -489,7 +412,7 @@ const Profile = () => {
                       onClick={() => setFilter({ sortBy: 'recent', order: 'DESC' })}
                       className={filter.sortBy === 'recent' && filter.order === 'DESC' ? 'active' : ''}
                     >
-                      Más Recientes (Creación)
+                      {t("profile.filter.option_recent")}
                     </button>
                   </li>
                   <li>
@@ -497,7 +420,7 @@ const Profile = () => {
                       onClick={() => setFilter({ sortBy: 'recent', order: 'ASC' })}
                       className={filter.sortBy === 'recent' && filter.order === 'ASC' ? 'active' : ''}
                     >
-                      Más Antiguas
+                      {t("profile.filter.option_old")}
                     </button>
                   </li>
                   <li>
@@ -505,7 +428,7 @@ const Profile = () => {
                       onClick={() => setFilter({ sortBy: 'updated', order: 'DESC' })}
                       className={filter.sortBy === 'updated' ? 'active' : ''}
                     >
-                    Actualizadas Recientemente
+                      {t("profile.filter.option_updated")}
                     </button>
                   </li>
                   <li>
@@ -513,7 +436,7 @@ const Profile = () => {
                       onClick={() => setFilter({ sortBy: 'items', order: 'DESC' })}
                       className={filter.sortBy === 'items' ? 'active' : ''}
                     >
-                      Nº de Items
+                      {t("profile.filter.option_items")}
                     </button>
                   </li>
                 </ul>
@@ -531,11 +454,10 @@ const Profile = () => {
               className="aspect-4/5 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-primary/50 hover:bg-white/5 transition-all opacity-60 hover:opacity-100"
             >
               <Plus size={32} />
-              <span className="text-xs font-bold mt-2 uppercase">Nueva</span>
+              <span className="text-xs font-bold mt-2 uppercase">{t("common.new") || "Nueva"}</span>
             </Link>
           )}
 
-          {/*COLECCIONES */}
           {(activeTab === "collections" ? collections : savedCollections).map(
             (col) => (
               <div
@@ -582,7 +504,6 @@ const Profile = () => {
                   </button>
                 )}
 
-                {/* BOTÓN QUITAR GUARDADO */}
                 {isMe && activeTab === "saved" && (
                   <button
                     onClick={(e) =>
@@ -601,13 +522,15 @@ const Profile = () => {
             ),
           )}
         </div>
+
+        {/* MODAL DE ELIMINACIÓN */}
         {deleteConfirm.isOpen && (
           <div className="modal modal-open">
             <div className="modal-box bg-base-200 border border-white/10 rounded-3xl max-w-xs text-center p-8">
               <h3 className="font-bold text-lg mb-2">
                 {deleteConfirm.type === "own"
-                  ? "¿Borrar colección?"
-                  : "¿Quitar de guardados?"}
+                  ? t("profile.delete_modal.title_own")
+                  : t("profile.delete_modal.title_saved")}
               </h3>
               <p className="text-sm opacity-60 mb-6 italic">
                 "{deleteConfirm.title}"
@@ -617,7 +540,7 @@ const Profile = () => {
                   onClick={executeDelete}
                   className="btn btn-primary rounded-2xl w-full"
                 >
-                  Confirmar
+                  {t("profile.delete_modal.confirm")}
                 </button>
                 <button
                   onClick={() =>
@@ -625,7 +548,7 @@ const Profile = () => {
                   }
                   className="btn btn-ghost rounded-2xl w-full"
                 >
-                  Cancelar
+                  {t("profile.delete_modal.cancel")}
                 </button>
               </div>
             </div>

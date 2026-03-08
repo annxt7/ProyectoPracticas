@@ -1,14 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Layers, Star, Users } from "lucide-react";
-import  Logo from "../assets/LogoClaro.png";
-import  LogoOscuro from "../assets/LogoOscuro.png";
+import { useTranslation } from "react-i18next";
+import { ArrowRight } from "lucide-react";
+import Logo from "../assets/LogoClaro.png";
+import LogoOscuro from "../assets/LogoOscuro.png";
 import { useTheme } from "../context/ThemeContext";
 
 const Landing = () => {
-const { theme} = useTheme(); 
-  const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep","royal-wine"].includes(theme);
-  // Imágenes de ejemplo
+  const { t } = useTranslation();
+  const { theme } = useTheme();
+  
+  const isDark = [
+    "dark", "natura-dark", "midnight-rose", "mocha-night", 
+    "galactic-purple", "mundi-deep", "royal-wine"
+  ].includes(theme);
+
   const covers = [
     "https://caderadeeva.blob.core.windows.net/images/2025/08/22/las-guerreras-k-pop-57f8c9de.png",
     "https://store.ubisoft.com/on/demandware.static/-/Sites-masterCatalog/default/dwe540c9e2/images/large/56c4947a88a7e300458b45de.jpg",
@@ -31,38 +37,35 @@ const { theme} = useTheme();
     "https://cdn-images.dzcdn.net/images/cover/f6ede1a8e22f17e3af1b6b47caf5d635/0x1900-000000-80-0-0.jpg",
     "https://i.ytimg.com/vi/LYmWO4vvYHg/maxresdefault.jpg",
     "https://external-preview.redd.it/sylvester-stallone-says-his-iconic-rocky-steps-scene-was-v0-J08hAt1HZZ-1GsWLLkEWndXoh8ae_avA_QZBmCm0WfE.jpeg?width=640&crop=smart&auto=webp&s=47b3bf93adf9038b50c190792ece366483e33fb7"
-    
   ];
 
   return (
     <div className="h-screen bg-base-100 flex flex-col justify-center overflow-hidden font-sans">
-      {/* HERO SECTION */}
       <div className="relative pt-6 pb-20 lg:pt-12 lg:pb-32 px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 z-10 relative flex flex-col items-start text-left">
             <img
-                    src={isDark ? Logo : LogoOscuro}
-                    alt="Tribe Logo"
-                    className="h-30 w-auto object-contain transition-all"
-                  />
+              src={isDark ? Logo : LogoOscuro}
+              alt="Tribe Logo"
+              className="h-30 w-auto object-contain transition-all"
+            />
 
-            {/* Badge de Early Access */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-base-300 bg-base-200/50 text-xs font-bold uppercase tracking-widest text-base-content/60">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              Early Access
+              {t("landing.early_access")}
             </div>
 
             <h1 className="text-5xl sm:text-7xl font-bold font-serif leading-[0.95] tracking-tight">
-              Tribe <br />
+              {t("landing.title_main")} <br />
               <span className="text-primary font-extrabold">
-                Encuentra
+                {t("landing.title_find")}
               </span>{" "}
-              <br />a tu gente
+              <br />
+              {t("landing.title_people")}
             </h1>
 
             <p className="text-xl text-base-content/70 max-w-md leading-relaxed">
-              Deja de ser un extraño en internet, encuentra a tu tribu. Organiza
-              tu mundo y descubre el de otros.
+              {t("landing.description")}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-2">
@@ -70,22 +73,20 @@ const { theme} = useTheme();
                 to="/register"
                 className="btn btn-primary btn-lg rounded-full px-8 gap-3 group shadow-lg shadow-primary/20"
               >
-                Regístrate Ahora
+                {t("landing.btn_register")}
                 <ArrowRight className="group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 to="/login"
                 className="btn btn-outline btn-lg rounded-full px-8"
               >
-                Iniciar Sesión
+                {t("landing.btn_login")}
               </Link>
             </div>
           </div>
 
-          {/* Visual Derecha (Grid Inclinado - Mantenemos el fix del scroll) */}
           <div className="relative hidden lg:block h-[600px] w-full overflow-hidden rounded-3xl [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]">
             <div className="absolute top-0 left-0 w-full h-full grid grid-cols-2 gap-4 rotate-12 opacity-80 -translate-y-20 translate-x-10 scale-110">
-              {/* Columna 1 */}
               <div className="flex flex-col gap-4 animate-[scrollY_35s_linear_infinite]">
                 {[...covers, ...covers].map((src, i) => (
                   <div
@@ -100,7 +101,6 @@ const { theme} = useTheme();
                   </div>
                 ))}
               </div>
-              {/* Columna 2 */}
               <div className="flex flex-col gap-4 -mt-32 animate-[scrollY_40s_linear_infinite_reverse]">
                 {[...covers, ...covers].reverse().map((src, i) => (
                   <div

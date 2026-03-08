@@ -1,0 +1,145 @@
+{
+  "landing": {
+    "early_access": "Early Access",
+    "title_main": "Tribe",
+    "title_find": "Find",
+    "title_people": "your people",
+    "description": "Stop being a stranger on the internet, find your tribe. Organize your world and discover others.",
+    "btn_register": "Register Now",
+    "btn_login": "Log In"
+  },
+  "feed": {
+    "title": "Your Feed",
+    "empty": "No recent activity from people you follow.",
+    "empty_sub": "Follow more Tribers to fill your feed!",
+    "suggested": "Suggested Tribers",
+    "action_created": "created a collection",
+    "now": "Now",
+    "unit_min": "min",
+    "unit_hour": "h",
+    "unit_day": "d"
+  },
+  "settings": {
+    "title": "Settings",
+    "version": "Tribe Platform v1.0.2",
+    "language": "Language",
+    "appearance": "Appearance",
+    "security": "Security",
+    "current_pass": "Current password",
+    "new_pass": "New password",
+    "btn_update_pass": "Update password",
+    "password_success": "Password updated successfully",
+    "password_error": "Error updating password",
+    "about": "About Us",
+    "about_desc": "Tribe was born with a clear mission: to organize digital chaos. We believe value lies in curation.",
+    "vision_title": "The Vision",
+    "vision_text": "Your catalog of passions.",
+    "community_title": "Community",
+    "community_text": "Real connection without algorithms.",
+    "support": "Support Us",
+    "coffee": "Buy us a coffee",
+    "coffee_price": "3€ Contribution",
+    "legal": "Legal",
+    "terms": "Terms and Conditions",
+    "terms_desc": "Platform usage agreement",
+    "privacy": "Privacy Policy",
+    "privacy_desc": "How we protect your data",
+    "logout": "Log Out",
+    "footer": "Design by Tribe Team • 2026"
+  },
+  "themes": {
+    "light": "Light",
+    "dark": "Dark",
+    "hawaii": "Hawaii",
+    "royal-wine": "Royal Wine",
+    "pinky": "Pastel Pink",
+    "midnight-rose": "Midnight Rose",
+    "mocha-night": "Mocha Night",
+    "lavender-dream": "Lavender Dream",
+    "sandstone": "Sandstone",
+    "natura": "Natura",
+    "natura-dark": "Natura Dark",
+    "orange": "Orange",
+    "terra-mundi": "Terra Mundi",
+    "galactic": "Galactic Deep",
+    "coral": "Electric Coral"
+  },
+  "explorer": {
+  "search_placeholder": "Search in Tribe...",
+  "tab_accounts": "Accounts",
+  "tab_collections": "Collections",
+  "no_users": "No users found",
+  "no_collections": "No collections found",
+  "btn_following": "Following",
+  "btn_follow": "Follow",
+  "login_alert": "You must log in"
+},
+"nav": {
+  "home": "Home",
+  "explore": "Explore",
+  "activity": "Activity",
+  "profile": "Profile",
+  "logout": "Log Out"
+},
+"addItem": {
+  "search_catalog": "Search entire catalog",
+  "search_in": "Search in: {{type}}",
+  "add_manual": "Add manual element",
+  "tab_search": "Search Database",
+  "tab_custom": "Create Manually",
+  "unknown": "Unknown",
+  "placeholder_title": "Title",
+  "placeholder_subtitle": "Subtitle",
+  "placeholder_description": "Optional description",
+  "btn_add": "Add to collection"
+},
+"profile": {
+  "edit_btn": "Edit Profile",
+  "follow_btn": "Follow",
+  "following_btn": "Following",
+  "stats": {
+    "collections": "Collections",
+    "followers": "Followers",
+    "following": "Following"
+  },
+  "bio_placeholder": "Write something about yourself...",
+  "bio_empty": "No bio yet...",
+  "tabs": {
+    "collections": "COLLECTIONS",
+    "saved": "SAVED"
+  },
+  "filter": {
+    "label": "Sort by:",
+    "recent_desc": "Newest",
+    "recent_asc": "Oldest",
+    "updated": "Recently Updated",
+    "items": "Most Items",
+    "option_recent": "Most Recent (Creation)",
+    "option_old": "Oldest",
+    "option_updated": "Recently Updated",
+    "option_items": "No. of Items"
+  },
+  "delete_modal": {
+    "title_own": "Delete collection?",
+    "title_saved": "Remove from saved?",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "messages": {
+    "loading": "Uploading {{type}}...",
+    "bio_updated": "Bio updated",
+    "img_updated": "Image updated",
+    "error_update": "Error updating",
+    "deleted": "Deleted",
+    "unfollowed": "Unfollowed",
+    "following_success": "Following"
+  }
+},
+"follows": {
+  "empty": "No users found",
+  "following": "Following",
+  "follow": "Follow",
+  "me": "You"
+}
+}
+
