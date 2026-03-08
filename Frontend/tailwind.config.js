@@ -1,4 +1,4 @@
-import daisyui from "daisyui" // Asegúrate de importar el plugin
+import daisyui from "daisyui" 
 
 /** @type {import('tailwindcss').Config} */
 export default {
