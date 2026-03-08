@@ -212,8 +212,6 @@ const CollectionPage = () => {
           </div>
         </div>
       )}
-
-      {/* --- HERO SECTION CON BLUR --- */}
       <div className="relative">
         <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-25">
           <img src={isEditing ? editForm.cover : collectionInfo.cover} className="w-full h-full object-cover blur-3xl" alt="" />
