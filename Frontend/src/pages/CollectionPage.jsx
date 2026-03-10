@@ -9,8 +9,7 @@ import {
   Trash2,
   Camera,
   Check,
-  AlertCircle, // Nuevo icono para errores
-  X
+  AlertCircle,
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
@@ -58,6 +57,7 @@ const CollectionPage = () => {
       try {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
+        console.log("Datos de la colección:", data);
         setIsSaved(!!data.is_saved);
 
         setCollectionInfo({
