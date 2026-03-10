@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Music, Book, Film, Gamepad2, Tv, Camera, Check, ArrowRight, Plus } from 'lucide-react';
 import api from "../services/api"; 
 import { uploadFileToCloudinary } from '../services/upload'; 
-import { useAuth } from '../context/AuthContext'; // Importamos el contexto
+import { useAuth } from '../context/AuthContext'; 
 
 const categories = [
   { id: 'Music', label: 'Música', icon: <Music size={32} /> },
@@ -28,7 +28,6 @@ const OnboardingPage = () => {
   const [loading, setLoading] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false); 
 
-  // Verificamos si realmente tenemos un usuario
   useEffect(() => {
     if (!userId) {
       navigate('/login');
@@ -46,11 +45,11 @@ const OnboardingPage = () => {
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImagePreview(URL.createObjectURL(file)); // Preview local rápido
+      setImagePreview(URL.createObjectURL(file)); 
       setUploadingFile(true);
       try {
         const urlCloudinary = await uploadFileToCloudinary(file);
-        setImagePreview(urlCloudinary); // URL Real
+        setImagePreview(urlCloudinary); 
       } catch (error) {
         console.error("Error subiendo imagen:", error);
         alert("Error al subir la imagen");
@@ -112,7 +111,7 @@ const OnboardingPage = () => {
           <li className={`step ${step >= 2 ? 'step-primary' : ''}`}>Tus Gustos</li>
         </ul>
 
-        {/* PASO 1: FOTO */}
+        {/* FOTO */}
         {step === 1 && (
           <div className="text-center space-y-6 animate-in fade-in duration-500">
             <h2 className="text-3xl font-bold font-serif">¡Bienvenido, {username}!</h2>
@@ -152,7 +151,7 @@ const OnboardingPage = () => {
           </div>
         )}
 
-        {/* PASO 2: INTERESES */}
+        {/* INTERESES */}
         {step === 2 && (
           <div className="text-center space-y-6 animate-in slide-in-from-right duration-500">
             <h2 className="text-3xl font-bold font-serif">¿Qué te apasiona?</h2>

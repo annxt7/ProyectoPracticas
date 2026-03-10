@@ -282,10 +282,10 @@ exports.completeProfile = async (req, res) => {
       ]);
 
     if (interests?.length > 0) {
-      for (const cat of interests) {
+      for (const category of interests) {
         await db.query(
           "INSERT INTO Collections (user_id, collection_type, collection_name, cover_url) VALUES (?, ?, ?, ?)",
-          [userId, cat, `Mi primera colección de ${cat}`, null]
+          [userId, category, `Mi primera colección`, null]
         );
       }
     }

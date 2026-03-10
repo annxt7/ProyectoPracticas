@@ -17,6 +17,7 @@ const CreateCollection = lazy(() => import("./pages/CreateCollection.jsx"));
 const OnboardingPage = lazy(() => import("./pages/OnBoarding.jsx"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
 const ResetPasswordScreen = lazy(() => import("./pages/ResetPassword.jsx"));
+const PrivacyPolicy = lazy(() => import("./pages/Privacy.jsx"));
 
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
             <Route path="/register" element={<AuthScreen type="register" />} />
             <Route path="/forgot-password" element={<AuthScreen type="forgot" />} />
             <Route path="/reset-password" element={<ResetPasswordScreen />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
 
             {/* --- RUTAS PRIVADAS  --- */}
             <Route element={<ProtectedRoute />}>
