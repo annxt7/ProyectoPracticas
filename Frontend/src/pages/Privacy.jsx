@@ -25,8 +25,8 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-xl font-bold text-base-content mb-3">1. Introducción</h2>
             <p>
-              Bienvenido a <strong>Tribe</strong>. El responsable del tratamiento de tus datos es <strong>[Nombre de tu Empresa o Entidad Legal]</strong>. 
-              Nuestra plataforma está diseñada para ayudarte a organizar, buscar y compartir tus intereses en diversas categorías, como Música, Libros, Películas, Series, Juegos y contenido personalizado.
+              Bienvenido a <strong>Tribe</strong>. El responsable del tratamiento de tus datos es <strong>Tribe</strong>. 
+              Nuestra plataforma está diseñada para ayudarte a organizar, buscar y compartir tus intereses.
             </p>
           </section>
 
@@ -44,7 +44,7 @@ const PrivacyPolicy = () => {
             <p>Los datos que recopilamos se utilizan exclusivamente para:</p>
             <ul className="list-disc pl-5 space-y-2 mt-2">
               <li>Gestionar tu acceso a la plataforma y mantener tu sesión activa de forma segura.</li>
-              <li>Personalizar tu feed y sugerirte contenido del catálogo basado en tus intereses.</li>
+              <li>Personalizar tu feed y sugerirte contenido basado en tus intereses.</li>
               <li>Proteger la plataforma contra el spam y el abuso mediante <strong>Google reCAPTCHA v3</strong>. El uso de este servicio está sujeto a la <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="text-primary hover:underline">Política de privacidad</a> y los <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="text-primary hover:underline">Términos de servicio</a> de Google.</li>
             </ul>
           </section>
@@ -59,7 +59,7 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-xl font-bold text-base-content mb-3">5. Tus Derechos</h2>
             <p>
-              Tienes derecho a acceder a tus datos, solicitar su rectificación o exigir su eliminación completa de nuestros servidores. Puedes gestionar estos derechos directamente desde la configuración de tu cuenta o contactando a nuestro soporte en <strong>[Tu Correo de Contacto]</strong>.
+              Tienes derecho a acceder a tus datos, solicitar su rectificación o exigir su eliminación completa de nuestros servidores. Puedes gestionar estos derechos directamente desde la configuración de tu cuenta o contactando a nuestro soporte en <strong>soportetribe@tribe.com</strong>.
             </p>
           </section>
 
