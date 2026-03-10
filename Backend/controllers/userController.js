@@ -74,14 +74,14 @@ exports.createUser = async (req, res) => {
 
 // POST: Login
 exports.login = async (req, res) => {
-  const { userORemail, password } = req.body;
-  if (!userORemail || !password)
+  const { identifier, password } = req.body;
+  if (!identifier || !password)
     return res.status(400).json({ error: "Faltan datos" });
 
   try {
     const [users] = await db.query(
       "SELECT * FROM Users WHERE email=? OR username=?",
-      [userORemail, userORemail]
+      [identifier, identifier]
     );
     if (users.length === 0)
       return res.status(401).json({ error: "Credenciales inválidas" });
