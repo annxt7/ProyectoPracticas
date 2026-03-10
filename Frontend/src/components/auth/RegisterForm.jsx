@@ -197,7 +197,7 @@ const RegisterForm = () => {
           <label className="label cursor-pointer justify-start gap-3 items-start">
             <input type="checkbox" {...register("acceptTerms")} className="checkbox checkbox-primary checkbox-sm mt-1" />
             <span className="label-text text-sm">
-              He leído y acepto la <Link to="/privacy" className="text-primary font-bold hover:underline" target="_blank">política de privacidad</Link> de Tribe.
+              He leído y acepto la <Link to="/privacy" className="text-primary font-bold hover:underline">política de privacidad</Link> de Tribe.
             </span>
           </label>
           {errors.acceptTerms && <span className="text-error text-xs mt-1 block ml-8">{errors.acceptTerms.message}</span>}

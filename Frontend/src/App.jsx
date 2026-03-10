@@ -4,7 +4,7 @@ import "./App.css";
 
 // Contextos
 import { ThemeProvider } from "./context/ThemeContext.jsx";
-import { AuthProvider } from "./context/AuthContext.jsx"; // Asegúrate de tenerlo
+import { AuthProvider } from "./context/AuthContext.jsx"; 
 import ProtectedRoute from "./components/ProtectedRoutes.jsx";
 const AuthScreen = lazy(() => import("./pages/AuthScreen.jsx"));
 const Landing = lazy(() => import("./pages/Landing.jsx"));
