@@ -103,7 +103,7 @@ const CreateCollection = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           
-          {/* VISTA PREVIA (IZQUIERDA) - MEJORADA PARA EVITAR CONFUSIÓN */}
+          {/* VISTA PREVIA */}
           <div className="hidden lg:block sticky top-24">
             <div className="flex items-center justify-center gap-2 mb-4 opacity-40">
                 <Info size={14} />
@@ -120,7 +120,6 @@ const CreateCollection = () => {
               </div>
 
               <div className="flex justify-center">
-                {/* pointer-events-none evita que el usuario intente clickear la card */}
                 <div className="w-64 aspect-4/5 rounded-2xl overflow-hidden relative shadow-2xl bg-base-100 ring-1 ring-base-200 pointer-events-none transition-all duration-500 hover:scale-[1.02] group">
                   
                   {formData.coverPreview ? (
@@ -132,7 +131,6 @@ const CreateCollection = () => {
                     </div>
                   )}
 
-                  {/* Overlay con degradado */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-5">
                     <div className="mb-2">
                         <span className="bg-white/20 backdrop-blur-md text-white text-[9px] px-2 py-0.5 rounded-md uppercase font-bold tracking-tighter">
@@ -150,7 +148,6 @@ const CreateCollection = () => {
                     </div>
                   </div>
 
-                  {/* Marca de agua sutil para reforzar que no es editable */}
                   <div className="absolute inset-0 flex items-center justify-center rotate-12 pointer-events-none opacity-[0.03]">
                       <span className="text-6xl font-black uppercase">Tribe</span>
                   </div>
@@ -164,7 +161,7 @@ const CreateCollection = () => {
             </div>
           </div>
 
-          {/* FORMULARIO (DERECHA) */}
+          {/* FORMULARIO  */}
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-3">
               <label className="text-sm font-bold opacity-70 uppercase tracking-wider">Portada de la colección</label>

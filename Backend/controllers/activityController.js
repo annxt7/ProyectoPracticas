@@ -33,7 +33,7 @@ exports.getNotifications = async (req, res) => {
       }
     }));
 
-    console.log(`✅ Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
+    console.log(`Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
     res.json(formattedNotifications);
   } catch (error) {
     console.error("Error en getNotifications:", error);

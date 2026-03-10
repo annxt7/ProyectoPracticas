@@ -18,7 +18,7 @@ const Activity = () => {
       const res = await api.get("/activity");
       setNotifications(res.data);
     } catch (err) {
-      console.error("❌ Error de sincronización:", err.response?.data || err.message);
+      console.error("Error de sincronización:", err.response?.data || err.message);
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ const Activity = () => {
     <div className="min-h-screen pb-28 md:pb-10 bg-base-300 text-base-content font-sans transition-colors duration-300">
       <NavDesktop />
       
-      {/* Header con blur adaptativo */}
+      {/* Header */}
       <header className="sticky top-0 z-30 bg-base-200 backdrop-blur-md border-b border-base-content/10 py-4">
         <div className="max-w-2xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ const Activity = () => {
 
       <div className="max-w-[1200px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] gap-8">
         
-        {/* Filtros Lateral (Adaptativos) */}
+        {/* Filtros Lateral */}
         <aside className="hidden lg:block space-y-6">
           <section>
             <h4 className="text-[10px] uppercase tracking-widest text-primary font-bold mb-4 flex items-center gap-2">
@@ -139,7 +139,6 @@ const Activity = () => {
           )}
         </main>
 
-        {/* Resumen Lateral */}
         <aside className="hidden lg:block">
           <div className="p-6 rounded-4x1 bg-base-200 border border-base-content/5 text-center shadow-sm">
             <h4 className="text-[10px] uppercase tracking-widest opacity-40 font-bold mb-6">Estado</h4>
@@ -163,7 +162,7 @@ const Activity = () => {
   );
 };
 
-// Componente Item de Notificación Adaptado
+
 const NotificationItem = ({ data, onMarkRead }) => {
   const getIcon = () => {
     switch (data.type) {

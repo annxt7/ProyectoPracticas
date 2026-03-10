@@ -58,7 +58,7 @@ const NavMobile = () => {
 
         <button 
           onClick={handleLogout}
-          title={t("nav.logout")} // 3. Opcional: añadir un tooltip con la traducción
+          title={t("nav.logout")}
           className="p-2 text-base-content/40 hover:text-error transition"
         >
           <LogOut size={20} />

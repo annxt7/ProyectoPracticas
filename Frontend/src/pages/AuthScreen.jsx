@@ -2,8 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import fotoLogin from "../assets/foto-login.webp";
 import Logo from "../assets/LogoClaro.webp";
-
-// Importamos los nuevos submódulos
 import LoginForm from "../components/auth/LoginForm";
 import RegisterForm from "../components/auth/RegisterForm";
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";

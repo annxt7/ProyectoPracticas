@@ -12,7 +12,7 @@ import {
   ChevronUp,
   Package,
   AlertCircle,
-  Library, // Icono para el catálogo custom
+  Library, 
 } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -48,12 +48,10 @@ const AdminDashboard = () => {
     return result;
   };
 
-  // --- LÓGICA DE FILTRADO CORREGIDA ---
   const filteredData = Array.isArray(data)
     ? data.filter((item) => {
         const term = searchTerm.toLowerCase();
         
-        // Evitar mostrar administradores en la pestaña de usuarios
         if (activeTab === "users" && (item.role === "admin" || item.owner?.role === "admin")) return false;
 
         if (activeTab === "users") {
@@ -76,7 +74,6 @@ const AdminDashboard = () => {
     if (!user || user.role !== "admin") navigate("/feed");
   }, [user, navigate]);
 
-  // --- FETCH DATA CON PAGINACIÓN ---
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -84,7 +81,7 @@ const AdminDashboard = () => {
         params: {
           page: currentPage,
           limit: itemsPerPage,
-          tab: activeTab // Enviamos la pestaña por si el backend quiere optimizar
+          tab: activeTab 
         }
       });
 
@@ -105,12 +102,12 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-    // Al cambiar de pestaña, reiniciamos a la página 1
+
   }, [activeTab, currentPage]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setCurrentPage(1); // Reset de página al cambiar de sección
+    setCurrentPage(1); 
   };
 
   const toggleCollectionDetails = async (colId) => {
@@ -304,7 +301,7 @@ const AdminDashboard = () => {
                       )}
                     </tr>
 
-                    {/* SUB-FILA DE ITEMS (Collections) */}
+                    
                     {activeTab === "collections" && expandedCollection === item.id && (
                       <tr>
                         <td colSpan="4" className="bg-base-200/50 p-0">
@@ -335,7 +332,7 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        {/* --- CONTROLES DE PAGINACIÓN (Solo para Catálogo) --- */}
+     
         {activeTab === "custom" && totalPages > 1 && (
           <div className="p-4 border-t border-base-200 flex justify-center items-center gap-4 bg-base-100">
             <button 
@@ -359,7 +356,7 @@ const AdminDashboard = () => {
         )}
       </div>
 
-      {/* MODAL USER COLLECTIONS (Sin cambios) */}
+      {/* MODAL USER COLLECTIONS  */}
       <dialog id="modal_user_collections" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box max-w-2xl bg-base-100">
           <div className="flex items-center justify-between mb-6">
