@@ -64,6 +64,16 @@ const Activity = () => {
     { id: 'interactions', label: t("activity.filters.interactions") },
     { id: 'follows', label: t("activity.filters.follows") }
   ];
+  const NotificationItem = ({ data, onMarkRead, locale }) => {
+  const { t } = useTranslation(); // <--- AÑADE ESTA LÍNEA AQUÍ
+  
+  const getIcon = () => {
+    switch (data.type) {
+      case 'follow': return { icon: UserPlus, color: 'text-info' };
+      case 'like_collection': return { icon: Heart, color: 'text-error' };
+      default: return { icon: MessageSquare, color: 'text-primary' };
+    }
+  };
 
   return (
     <div className="min-h-screen pb-28 md:pb-10 bg-base-300 text-base-content font-sans transition-colors duration-300">
@@ -159,15 +169,6 @@ const Activity = () => {
     </div>
   );
 };
-
-const NotificationItem = ({ data, onMarkRead, locale }) => {
-  const getIcon = () => {
-    switch (data.type) {
-      case 'follow': return { icon: UserPlus, color: 'text-info' };
-      case 'like_collection': return { icon: Heart, color: 'text-error' };
-      default: return { icon: MessageSquare, color: 'text-primary' };
-    }
-  };
 
   const { icon: Icon, color } = getIcon();
 
