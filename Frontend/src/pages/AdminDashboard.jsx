@@ -52,24 +52,24 @@ const AdminDashboard = () => {
 
   const filteredData = Array.isArray(data)
     ? data.filter((item) => {
-      const term = searchTerm.toLowerCase();
+        const term = searchTerm.toLowerCase();
 
-      if (activeTab === "users" && (item.role === "admin" || item.owner?.role === "admin")) return false;
+        if (activeTab === "users" && (item.role === "admin" || item.owner?.role === "admin")) return false;
 
-      if (activeTab === "users") {
-        return item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term);
-      }
-      if (activeTab === "requests") {
-        return item.email?.toLowerCase().includes(term);
-      }
-      if (activeTab === "collections") {
-        return item.name?.toLowerCase().includes(term);
-      }
-      if (activeTab === "custom") {
-        return item.title?.toLowerCase().includes(term) || item.category?.toLowerCase().includes(term);
-      }
-      return true;
-    })
+        if (activeTab === "users") {
+          return item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term);
+        }
+        if (activeTab === "requests") {
+          return item.email?.toLowerCase().includes(term);
+        }
+        if (activeTab === "collections") {
+          return item.name?.toLowerCase().includes(term);
+        }
+        if (activeTab === "custom") {
+          return item.title?.toLowerCase().includes(term) || item.category?.toLowerCase().includes(term);
+        }
+        return true;
+      })
     : [];
 
   useEffect(() => {
@@ -190,7 +190,7 @@ const AdminDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto bg-base-100 rounded-2xl shadow-xl overflow-hidden min-h-[600px] flex flex-col">
-        {/* TABS (Actualizado a 4 columnas) */}
+        {/* TABS */}
         <div className="grid grid-cols-2 md:grid-cols-4 border-b border-base-300">
           <TabButton active={activeTab === "requests"} onClick={() => handleTabChange("requests")} icon={<Key size={18} />} label={t("admin.tabs.requests")} />
           <TabButton active={activeTab === "users"} onClick={() => handleTabChange("users")} icon={<Users size={18} />} label={t("admin.tabs.users")} />
@@ -302,7 +302,6 @@ const AdminDashboard = () => {
                       )}
                     </tr>
 
-
                     {activeTab === "collections" && expandedCollection === item.id && (
                       <tr>
                         <td colSpan="4" className="bg-base-200/50 p-0">
@@ -333,7 +332,6 @@ const AdminDashboard = () => {
           )}
         </div>
 
-
         {activeTab === "custom" && totalPages > 1 && (
           <div className="p-4 border-t border-base-200 flex justify-center items-center gap-4 bg-base-100">
             <button
@@ -357,7 +355,7 @@ const AdminDashboard = () => {
         )}
       </div>
 
-      {/* MODAL USER COLLECTIONS  */}
+      {/* MODAL USER COLLECTIONS */}
       <dialog id="modal_user_collections" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box max-w-2xl bg-base-100">
           <div className="flex items-center justify-between mb-6">
@@ -390,4 +388,19 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
+// COMPONENTE TABBUTTON
+const TabButton = ({ active, onClick, icon, label }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center justify-center gap-2 py-4 px-2 transition-all duration-300 border-b-2 font-bold text-xs uppercase tracking-wider
+      ${active 
+        ? "border-primary text-primary bg-primary/5" 
+        : "border-transparent opacity-50 hover:opacity-100 hover:bg-base-200"
+      }`}
+  >
+    {icon}
+    <span className="hidden md:inline">{label}</span>
+  </button>
+);
 export default AdminDashboard;
