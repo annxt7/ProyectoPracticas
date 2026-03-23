@@ -1,0 +1,411 @@
+{
+    "landing": {
+        "early_access": "早期アクセス",
+        "title_main": "Tribe",
+        "title_find": "見つける",
+        "title_people": "あなたの仲間",
+        "description": "インターネットで他人でいるのはもうやめましょう。あなたのトライブを見つけ、世界を整理し、新しい発見をしましょう。",
+        "btn_register": "今すぐ登録",
+        "btn_login": "ログイン"
+    },
+    "feed": {
+        "title": "フィード",
+        "empty": "フォロー中のユーザーに最近の活動はありません。",
+        "empty_sub": "もっとトライバーをフォローしてフィードを充実させましょう！",
+        "suggested": "おすすめのトライバー",
+        "action_created": "がコレクションを作成しました",
+        "now": "今",
+        "unit_min": "分",
+        "unit_hour": "時間",
+        "unit_day": "日"
+    },
+    "settings": {
+        "title": "設定",
+        "version": "Tribe Platform v1.0.2",
+        "language": "言語",
+        "appearance": "外観",
+        "security": "セキュリティ",
+        "current_pass": "現在のパスワード",
+        "new_pass": "新しいパスワード",
+        "btn_update_pass": "パスワードを更新",
+        "password_success": "パスワードが更新されました",
+        "password_error": "パスワードの更新中にエラーが発生しました",
+        "about": "私たちについて",
+        "about_desc": "Tribeはデジタルカオスを整理するという明確な使命のもとに誕生しました。私たちはキュレーションに価値があると信じています。",
+        "vision_title": "ビジョン",
+        "vision_text": "あなたの情熱のカタログ。",
+        "community_title": "コミュニティ",
+        "community_text": "アルゴリズムに頼らない、リアルな繋がり。",
+        "support": "サポート",
+        "coffee": "コーヒーを一杯おごる",
+        "coffee_price": "3€ の寄付",
+        "legal": "法的情報",
+        "terms": "利用規約",
+        "terms_desc": "プラットフォーム利用合意事項",
+        "privacy": "プライバシーポリシー",
+        "privacy_desc": "データ保護について",
+        "logout": "ログアウト",
+        "footer": "© {{year}} Tribe. All rights reserved."
+    },
+    "themes": {
+        "light": "ライト",
+        "dark": "ダーク",
+        "hawaii": "ハワイ",
+        "royal-wine": "ロイヤルワイン",
+        "pinky": "パステルピンク",
+        "midnight-rose": "ミッドナイトローズ",
+        "mocha-night": "モカナイト",
+        "lavender-dream": "ラベンダードリーム",
+        "sandstone": "サンドストーン",
+        "natura": "ナチュラ",
+        "natura-dark": "ナチュラダーク",
+        "orange": "オレンジ",
+        "terra-mundi": "テラムンディ",
+        "galactic": "ギャラクティックディープ",
+        "coral": "エレクトリックコーラル"
+    },
+    "explorer": {
+        "search_placeholder": "Tribeで検索...",
+        "tab_accounts": "アカウント",
+        "tab_collections": "コレクション",
+        "no_users": "ユーザーが見つかりません",
+        "no_collections": "コレクションが見つかりません",
+        "btn_following": "フォロー中",
+        "btn_follow": "フォローする",
+        "login_alert": "ログインが必要です"
+    },
+    "nav": {
+        "home": "ホーム",
+        "explore": "探索",
+        "activity": "アクティビティ",
+        "profile": "プロフィール",
+        "logout": "ログアウト"
+    },
+    "addItem": {
+        "search_catalog": "カタログ全体を検索",
+        "search_in": "{{type}} 内で検索",
+        "add_manual": "手動でアイテムを追加",
+        "tab_search": "データベース検索",
+        "tab_custom": "手動作成",
+        "unknown": "不明",
+        "placeholder_title": "タイトル",
+        "placeholder_subtitle": "サブタイトル",
+        "placeholder_description": "説明（任意）",
+        "btn_add": "コレクションに追加"
+    },
+    "profile": {
+        "edit_btn": "プロフィール編集",
+        "follow_btn": "フォローする",
+        "following_btn": "フォロー中",
+        "stats": {
+            "collections": "コレクション",
+            "followers": "フォロワー",
+            "following": "フォロー中",
+            "common_save": "保存"
+        },
+        "bio_placeholder": "自己紹介を記入してください...",
+        "bio_empty": "自己紹介がまだありません...",
+        "tabs": {
+            "collections": "コレクション",
+            "saved": "保存済み",
+            "common_new": "新規"
+        },
+        "filter": {
+            "label": "並び替え:",
+            "recent_desc": "新しい順",
+            "recent_asc": "古い順",
+            "updated": "最近更新された",
+            "items": "アイテム数順",
+            "option_recent": "作成日が新しい順",
+            "option_old": "作成日が古い順",
+            "option_updated": "最近更新",
+            "option_items": "アイテム数"
+        },
+        "delete_modal": {
+            "title_own": "コレクションを削除しますか？",
+            "title_saved": "保存済みから削除しますか？",
+            "confirm": "確認",
+            "cancel": "キャンセル"
+        },
+        "messages": {
+            "loading": "{{type}} をアップロード中...",
+            "bio_updated": "自己紹介を更新しました",
+            "img_updated": "画像を更新しました",
+            "error_update": "更新エラー",
+            "deleted": "削除しました",
+            "unfollowed": "フォロー解除しました",
+            "following_success": "フォローしました"
+        }
+    },
+    "follows": {
+        "empty": "ユーザーが見つかりません",
+        "following": "フォロー中",
+        "follow": "フォローする",
+        "me": "あなた"
+    },
+    "activity": {
+        "title": "アクティビティ",
+        "mark_all_read": "すべて既読にする",
+        "filter_by": "フィルター:",
+        "filters": {
+            "all": "すべて",
+            "interactions": "「いいね」と反応",
+            "follows": "新しいフォロワー"
+        },
+        "status": "ステータス",
+        "pending": "保留中",
+        "empty": "アクティビティはありません",
+        "footer_info": "あなたのコレクションに反応したユーザーの最新情報をチェックしましょう。",
+        "created_collection": "が新しいコレクションを作成しました",
+        "added_item": "が新しいアイテムを追加しました",
+        "liked_collection": "がコレクションに「いいね」しました",
+        "started_following": "があなたをフォローしました",
+        "unknown": "があなたに反応しました"
+    },
+    "privacy": {
+        "title": "プライバシーポリシー",
+        "last_update": "最終更新日: 2026年3月",
+        "intro_title": "1. はじめに",
+        "intro_text": "Tribeへようこそ。データ管理者はTribeです。当プラットフォームは、あなたの興味を整理、検索、共有することを目的として設計されています。",
+        "collect_title": "2. 収集する情報",
+        "collect_acc": "<0>アカウントデータ:</0> 登録時にユーザー名、メールアドレス、パスワード（安全に暗号化されて保存されます）を収集します。",
+        "collect_google": "<0>Googleログイン:</0> Google経由で認証する場合、メールアドレスなどの基本的な公開プロフィール情報を受け取ります。",
+        "collect_content": "<0>コンテンツと設定:</0> カタログ検索に関連する情報、コレクションに追加されたアイテム、登録時に設定されたプロフィール設定を保存します。",
+        "usage_title": "3. 情報の利用目的",
+        "usage_intro": "収集したデータは、以下の目的でのみ使用されます：",
+        "usage_item1": "プラットフォームへのアクセス管理および安全なセッション維持。",
+        "usage_item2": "フィードのパーソナライズおよび興味に基づいたコンテンツの提案。",
+        "usage_item3": " <0>Google reCAPTCHA v3</0> によるスパムや不正利用からの保護。このサービスの使用は、Googleの<1>プライバシーポリシー</1>および<2>利用規約</2>に準拠します。",
+        "protection_title": "4. データの保護と保持",
+        "protection_text": "当社は個人情報を第三者に販売することはありません。データはTribeアカウントが有効である限り保持されます。",
+        "rights_title": "5. あなたの権利",
+        "rights_text": "ユーザーは自身のデータにアクセスし、修正を依頼し、またはサーバーからの完全な削除を要求する権利を有します。これらの権利はアカウント設定から直接、またはサポート <0>soportetribe@tribe.com</0> への連絡により管理できます。",
+        "footer": "© {{year}} Tribe. All rights reserved.",
+        "reservation_title": "権利の留保と変更",
+        "reservation_text": "<0>Tribe</0> は、いつでも通知の有無にかかわらず、サービス（またはその一部）を変更、中断、または終了する権利を留保します。また、慣行の変化や法的理由を反映するために、本ポリシーを更新する権利を留保します。"
+    },
+    "create_col": {
+        "title": "新規コレクション",
+        "preview_label": "リアルタイムプレビュー",
+        "preview_waiting": "カバー画像を待機中",
+        "preview_items": "0 アイテム",
+        "preview_footer": "カードの表示イメージです。<0>右側のフィールドを編集</0>して変更を確認してください。",
+        "label_cover": "コレクションカバー",
+        "upload_click": "クリックして画像をアップロード",
+        "upload_hint": "推奨: 4:5 または 16:9",
+        "label_name": "コレクション名",
+        "placeholder_name": "例: お気に入りのホラー映画",
+        "label_desc": "説明",
+        "placeholder_desc": "このスペースについてトライブに伝えましょう...",
+        "label_category": "カテゴリ",
+        "btn_discard": "破棄",
+        "btn_publish": "コレクションを公開",
+        "error_create": "エラー: 作成できませんでした",
+        "types": {
+            "movies": "映画",
+            "books": "本",
+            "music": "音楽",
+            "shows": "シリーズ",
+            "games": "ゲーム",
+            "custom": "その他"
+        }
+    },
+    "collection": {
+        "loading": "コレクションを読み込み中...",
+        "back_my_profile": "マイプロフィール",
+        "back_user_profile": "{{name}} のプロフィール",
+        "no_description": "説明はありません。",
+        "stats": {
+            "items": "アイテム",
+            "likes": "いいね"
+        },
+        "actions": {
+            "edit": "編集",
+            "add": "追加",
+            "save": "コレクションを保存",
+            "saved": "保存済み",
+            "cancel": "キャンセル",
+            "save_changes": "保存",
+            "changing_cover": "変更"
+        },
+        "content_title": "コンテンツ",
+        "delete_modal": {
+            "title": "アイテムを削除しますか？",
+            "text": "この操作により、コレクションからアイテムが完全に削除されます。",
+            "confirm": "削除"
+        },
+        "notifications": {
+            "load_error": "コレクションを読み込めませんでした",
+            "add_success": "アイテムを追加しました",
+            "db_error": "データベースへの保存エラー",
+            "save_col_success": "ライブラリに保存しました",
+            "save_col_error": "保存中にエラーが発生しました",
+            "update_success": "変更を保存しました",
+            "update_error": "更新中にエラーが発生しました",
+            "delete_success": "アイテムを削除しました",
+            "delete_error": "アイテムを削除できませんでした"
+        }
+    },
+    "auth": {
+        "hero_subtitle": "インスピレーションを整理し、繋がろう。",
+        "back_home": "ホーム",
+        "forgot_title": "パスワードを忘れた場合",
+        "login_title": "おかえりなさい",
+        "register_title": "Tribeに参加する",
+        "back_to_login": "ログインに戻る",
+        "no_account": "アカウントをお持ちでないですか？",
+        "register_now": "新規登録",
+        "already_member": "すでにアカウントをお持ちですか？",
+        "login_now": "ログイン"
+    },
+    "login": {
+        "identifier_label": "ユーザー名またはメールアドレス",
+        "identifier_placeholder": "ユーザー名 / メールアドレス",
+        "password_label": "パスワード",
+        "password_placeholder": "••••••••",
+        "forgot_password": "パスワードを忘れましたか？",
+        "submit_button": "ログイン",
+        "divider": "または以下で継続",
+        "errors": {
+            "identifier_min": "3文字以上必要です",
+            "password_required": "パスワードは必須です",
+            "connection": "接続エラー",
+            "google_error": "Google接続エラー"
+        }
+    },
+    "register": {
+        "username_label": "ユーザー名",
+        "username_placeholder": "例: pixel_collector",
+        "email_label": "メールアドレス",
+        "email_placeholder": "hello@example.com",
+        "password_label": "パスワード",
+        "password_placeholder": "••••••••",
+        "confirm_password_label": "パスワード（再入力）",
+        "terms_prefix": "Tribeの",
+        "terms_link": "プライバシーポリシー",
+        "terms_suffix": "を読み、同意します。",
+        "submit_button": "アカウント作成",
+        "divider": "または以下で継続",
+        "requirements": {
+            "length": "8文字以上",
+            "upper": "大文字",
+            "number": "数字",
+            "special": "記号"
+        },
+        "errors": {
+            "user_min": "4文字以上必要です",
+            "user_regex": "英数字とアンダースコアのみ使用可能です",
+            "email_invalid": "無効なメールアドレスです",
+            "pass_min": "8文字以上必要です",
+            "pass_upper": "大文字を1文字含めてください",
+            "pass_lower": "小文字を1文字含めてください",
+            "pass_number": "数字を1文字含めてください",
+            "pass_special": "記号を1文字含めてください",
+            "pass_match": "パスワードが一致しません",
+            "terms_required": "プライバシーポリシーへの同意が必要です",
+            "captcha_required": "reCAPTCHAを完了してください。",
+            "google_error": "Google接続エラー",
+            "connection": "接続エラー"
+        }
+    },
+    "forgot": {
+        "email_label": "メールアドレス",
+        "email_placeholder": "your@email.com",
+        "submit_button": "リクエスト送信",
+        "success_msg": "リクエストを送信しました。メールを確認するか管理者に連絡してください。",
+        "reset_link": "リセット画面へ →",
+        "errors": {
+            "email_invalid": "無効なメールアドレスです",
+            "connection": "接続エラー"
+        }
+    },
+    "add_modal": {
+        "success_title": "追加完了！",
+        "success_subtitle": "コレクションに保存されました",
+        "header_title": "保存先...",
+        "no_collections": "まだコレクションがありません。",
+        "create_new": "新しいコレクションを作成",
+        "input_placeholder": "コレクション名...",
+        "error_save": "保存中にエラーが発生しました",
+        "error_create": "作成中に問題が発生しました"
+    },
+    "onboarding": {
+        "steps": {
+            "photo": "写真",
+            "interests": "興味のあること"
+        },
+        "step1": {
+            "welcome": "ようこそ、{{username}}さん！",
+            "subtitle": "開始する前にプロフィールを完成させましょう。",
+            "next": "次へ",
+            "uploading": "アップロード中..."
+        },
+        "step2": {
+            "title": "何に興味がありますか？",
+            "back": "戻る",
+            "finish": "始める！"
+        },
+        "categories": {
+            "Music": "音楽",
+            "Books": "本",
+            "Movies": "映画",
+            "Games": "ゲーム",
+            "Shows": "シリーズ"
+        },
+        "alerts": {
+            "upload_error": "画像のアップロードエラー",
+            "session_error": "セッションエラー。再度ログインしてください。",
+            "expired": "セッションの期限が切れました。再度ログインしてください。",
+            "save_error": "設定を保存できませんでした。もう一度お試しください。"
+        }
+    },
+    "admin": {
+        "title": "管理パネル",
+        "logout": "ログアウト",
+        "search_placeholder": "このページ内を検索...",
+        "loading_data": "データを読み込み中...",
+        "no_results": "結果が見つかりません",
+        "tabs": {
+            "requests": "リクエスト",
+            "users": "ユーザー",
+            "collections": "コレクション",
+            "catalog": "カタログ"
+        },
+        "table": {
+            "date": "日付",
+            "user": "ユーザー",
+            "status": "状態",
+            "actions": "操作",
+            "role": "役割",
+            "id": "ID",
+            "title": "タイトル",
+            "owner": "所有者",
+            "items": "数",
+            "item": "アイテム",
+            "details": "詳細",
+            "category": "カテゴリ",
+            "generate_code": "コード生成",
+            "content": "内容",
+            "empty_collection": "このコレクションは空です。",
+            "no_description": "説明なし"
+        },
+        "pagination": {
+            "previous": "前へ",
+            "next": "次へ",
+            "info": "{{total}} ページ中 {{current}} ページ目"
+        },
+        "modals": {
+            "user_collections_title": "コレクション一覧",
+            "managing_user": "{{username}} のコンテンツ管理",
+            "no_collections": "コレクションなし",
+            "close": "閉じる",
+            "confirm": "確認"
+        },
+        "alerts": {
+            "confirm_delete": "本当に削除しますか？この操作は取り消せません。",
+            "delete_error": "削除中にエラーが発生しました",
+            "confirm_code": "ユーザーにコード \"{{code}}\" を生成しますか？",
+            "code_error": "コード生成エラー"
+        }
+    }
+}

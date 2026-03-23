@@ -242,6 +242,15 @@ const SettingsModal = ({ isOpen, onClose }) => {
               >
                 English
               </button>
+              <button 
+                onClick={() => i18n.changeLanguage('jp')}
+                className={`flex-1 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border-2 transition-all 
+                  ${i18n.language.startsWith('jp') 
+                    ? 'border-primary bg-primary/10 text-primary' 
+                    : 'border-base-300 bg-base-100'}`}
+              >
+                日本語
+              </button>
             </div>
           </div>
           
