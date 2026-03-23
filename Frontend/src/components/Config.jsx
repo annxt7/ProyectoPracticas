@@ -220,39 +220,29 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
                 {/* SECCIÓN: IDIOMA (AHORA AL FINAL Y SIN COLLAPSE PARA FORZAR VISIBILIDAD) */}
           <div className="bg-base-200/50 rounded-3xl border border-base-300 p-5 mt-4">
-            <div className="flex items-center gap-4 mb-4 font-bold text-sm">
-              <Languages className="text-primary" size={20} /> {t("settings.language")}
-            </div>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => i18n.changeLanguage('es')}
-                className={`flex-1 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border-2 transition-all 
-                  ${i18n.language.startsWith('es') 
-                    ? 'border-primary bg-primary/10 text-primary' 
-                    : 'border-base-300 bg-base-100'}`}
-              >
-                Español
-              </button>
-              <button 
-                onClick={() => i18n.changeLanguage('en')}
-                className={`flex-1 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border-2 transition-all 
-                  ${i18n.language.startsWith('en') 
-                    ? 'border-primary bg-primary/10 text-primary' 
-                    : 'border-base-300 bg-base-100'}`}
-              >
-                English
-              </button>
-              <button 
-                onClick={() => i18n.changeLanguage('jp')}
-                className={`flex-1 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border-2 transition-all 
-                  ${i18n.language.startsWith('jp') 
-                    ? 'border-primary bg-primary/10 text-primary' 
-                    : 'border-base-300 bg-base-100'}`}
-              >
-                日本語
-              </button>
-            </div>
-          </div>
+  <div className="flex items-center gap-4 mb-4 font-bold text-sm">
+    <Languages className="text-primary" size={20} /> {t("settings.language")}
+  </div>
+  
+  <div className="flex flex-wrap gap-2">
+    {[
+      { code: 'es', label: 'Español' },
+      { code: 'en', label: 'English' },
+      { code: 'ja', label: '日本語' }
+    ].map((lang) => (
+      <button
+        key={lang.code}
+        onClick={() => i18n.changeLanguage(lang.code)}
+        className={`flex-1 min-w-[80px] py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest border-2 transition-all 
+          ${i18n.language.startsWith(lang.code)
+            ? 'border-primary bg-primary/10 text-primary'
+            : 'border-base-300 bg-base-100 hover:border-primary/50'}`}
+      >
+        {lang.label}
+      </button>
+    ))}
+  </div>
+</div>
           
           {/* CERRAR SESIÓN */}
           <button onClick={handleLogout} className="flex items-center gap-4 w-full p-5 rounded-3xl bg-error/10 hover:bg-error/20 text-error transition-all group mt-6">
