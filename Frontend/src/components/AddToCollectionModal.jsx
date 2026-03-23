@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, FolderOpen, Check, Loader2 } from 'lucide-react';
+import { useTranslation } from "react-i18next"; // 1. Importar
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const AddToCollectionModal = ({ item, isOpen, onClose }) => {
+  const { t } = useTranslation(); // 2. Hook
   const { user } = useAuth();
   const [collections, setCollections] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
@@ -11,7 +13,6 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Cargar colecciones del usuario al abrir el modal
   useEffect(() => {
     const fetchMyCollections = async () => {
       if (isOpen && user) {
@@ -46,28 +47,25 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
     }, 1500);
   };
 
-// Guardar en colección existente
   const handleSaveToExisting = async (collection_id) => {
     setLoading(true);
     try {
       await api.post(`/collections/${collection_id}/items`, {
         reference_id: item.id,      
-        item_type: item.type,       // Ej: 'books'
-        custom_title: item.title,   // Por si acaso el backend necesita fallback
+        item_type: item.type,
+        custom_title: item.title,
         custom_subtitle: item.author,
         custom_image: item.cover
       });
       triggerSuccess();
     } catch (err) {
-      console.error("Error al guardar item:", err);
-      alert("Error al guardar en la colección");
+      alert(t("add_modal.error_save"));
     } finally {
       setLoading(false);
     }
   };
 
-  // Crear nueva colección y luego guardar el item
- const handleCreateAndSave = async (e) => {
+  const handleCreateAndSave = async (e) => {
     e.preventDefault();
     const cleanName = newCollectionName.trim();
     if (!cleanName) return;
@@ -81,7 +79,6 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
 
       const newColId = resCol.data.collection_id;
 
-      // 2. Guardar el item en la nueva colección
       await api.post(`/collections/${newColId}/items`, {
         reference_id: item.id,
         item_type: item.type,
@@ -92,43 +89,35 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
 
       triggerSuccess();
     } catch (err) {
-      console.error("Error en creación/guardado:", err);
-      alert("Hubo un problema al crear la colección");
+      alert(t("add_modal.error_create"));
     } finally {
       setLoading(false);
     }
-};
+  };
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      ></div>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
 
-      {/* Caja del Modal */}
       <div className="relative bg-base-100 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 min-h-[350px] flex flex-col">
         
         {isSuccess ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-base-100 z-10 ">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-base-100 z-10">
              <div className="w-20 h-20 bg-primary/20 text-primary rounded-full flex items-center justify-center mb-4 animate-bounce">
                 <Check size={40} strokeWidth={4} />
              </div>
-             <h3 className="text-xl font-bold">¡Añadido!</h3>
-             <p className="text-sm opacity-60 mt-1">Se ha guardado en tu colección</p>
+             <h3 className="text-xl font-bold">{t("add_modal.success_title")}</h3>
+             <p className="text-sm opacity-60 mt-1">{t("add_modal.success_subtitle")}</p>
           </div>
         ) : (
           <>
-            {/* Header */}
             <div className="p-4 border-b border-base-200 flex justify-between items-center">
-              <h3 className="font-bold text-lg">Guardar en...</h3>
+              <h3 className="font-bold text-lg">{t("add_modal.header_title")}</h3>
               <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
                 <X size={20} />
               </button>
             </div>
 
-            {/* Item Preview */}
             <div className="p-4 bg-base-200/50 flex items-center gap-3">
                 <div className="w-12 h-16 rounded shadow-sm overflow-hidden flex-none bg-base-300">
                     <img src={item.cover} alt="" className="w-full h-full object-cover" />
@@ -139,7 +128,6 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
                 </div>
             </div>
 
-            {/* Lista de Colecciones */}
             <div className="p-2 flex-1 overflow-y-auto max-h-64">
                 {loading && !isCreating && (
                   <div className="flex justify-center p-4">
@@ -148,7 +136,7 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
                 )}
                 
                 {!loading && collections.length === 0 && !isCreating && (
-                  <p className="text-center text-xs opacity-50 py-10">No tienes colecciones aún.</p>
+                  <p className="text-center text-xs opacity-50 py-10">{t("add_modal.no_collections")}</p>
                 )}
 
                 {collections.map((col) => (
@@ -171,21 +159,20 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
                 ))}
             </div>
 
-            {/* Footer */}
             <div className="p-3 border-t border-base-200 bg-base-100">
                 {!isCreating ? (
                     <button 
                         onClick={() => setIsCreating(true)}
                         className="btn btn-outline btn-block btn-sm border-dashed border-base-300 gap-2 normal-case text-base-content/70 hover:bg-base-200 hover:border-primary"
                     >
-                        <Plus size={16} /> Crear nueva colección
+                        <Plus size={16} /> {t("add_modal.create_new")}
                     </button>
                 ) : (
                     <form onSubmit={handleCreateAndSave} className="flex gap-2 items-center animate-in slide-in-from-bottom-2">
                         <input 
                             type="text" 
                             autoFocus
-                            placeholder="Nombre de la colección..." 
+                            placeholder={t("add_modal.input_placeholder")} 
                             className="input input-bordered input-sm w-full focus:outline-none focus:border-primary"
                             value={newCollectionName}
                             onChange={(e) => setNewCollectionName(e.target.value)}

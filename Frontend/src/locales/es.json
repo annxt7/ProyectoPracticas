@@ -318,5 +318,15 @@
     "email_invalid": "Correo electrónico inválido",
     "connection": "Error de conexión."
   }
+},
+"add_modal": {
+  "success_title": "¡Añadido!",
+  "success_subtitle": "Se ha guardado en tu colección",
+  "header_title": "Guardar en...",
+  "no_collections": "No tienes colecciones aún.",
+  "create_new": "Crear nueva colección",
+  "input_placeholder": "Nombre de la colección...",
+  "error_save": "Error al guardar en la colección",
+  "error_create": "Hubo un problema al crear la colección"
 }
 }
