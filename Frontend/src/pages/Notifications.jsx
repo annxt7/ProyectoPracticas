@@ -199,7 +199,7 @@ const NotificationItem = ({ data, onMarkRead, locale }) => {
             <span className="text-base-content/70">
               {t(`notifications.${data.content_key}`)}
             </span>
-          </div>}
+          </div>
         </p>
         <span className="text-[10px] opacity-50 font-medium">
           {new Date(data.created_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
