@@ -1,24 +1,23 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Heart, UserPlus, MessageSquare, Bell, Info, Filter as FilterIcon, CheckCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import api from "../services/api.js";
 import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
 
-
-
 const Activity = () => {
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
 
-  // Carga inicial de datos
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get("/activity");
       setNotifications(res.data);
     } catch (err) {
-      console.error("Error de sincronización:", err.response?.data || err.message);
+      console.error("Sync error:", err.response?.data || err.message);
     } finally {
       setLoading(false);
     }
@@ -35,7 +34,7 @@ const Activity = () => {
         prev.map(n => n.id === id ? { ...n, read: true } : n)
       );
     } catch (err) {
-      console.error("Error al actualizar notificación:", err);
+      console.error("Error updating notification:", err);
     }
   };
 
@@ -44,7 +43,7 @@ const Activity = () => {
       await api.put("/activity/read-all");
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (err) {
-      console.error("Error al marcar todas como leídas:", err);
+      console.error("Error marking all as read:", err);
     }
   };
 
@@ -60,18 +59,23 @@ const Activity = () => {
     });
   }, [notifications, activeFilter]);
 
+  const filters = [
+    { id: 'all', label: t("activity.filters.all") },
+    { id: 'interactions', label: t("activity.filters.interactions") },
+    { id: 'follows', label: t("activity.filters.follows") }
+  ];
+
   return (
     <div className="min-h-screen pb-28 md:pb-10 bg-base-300 text-base-content font-sans transition-colors duration-300">
       <NavDesktop />
       
-      {/* Header */}
       <header className="sticky top-0 z-30 bg-base-200 backdrop-blur-md border-b border-base-content/10 py-4">
         <div className="max-w-2xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
               <Bell size={20} />
             </div>
-            <h2 className="text-xl font-bold tracking-tight">Actividad</h2>
+            <h2 className="text-xl font-bold tracking-tight">{t("activity.title")}</h2>
           </div>
 
           {notifications.some(n => !n.read) && (
@@ -79,7 +83,7 @@ const Activity = () => {
               onClick={markAllAsRead}
               className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70 transition-all"
             >
-              Marcar todo como leído 
+              {t("activity.mark_all_read")}
             </button>
           )}
         </div>
@@ -87,18 +91,13 @@ const Activity = () => {
 
       <div className="max-w-[1200px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] gap-8">
         
-        {/* Filtros Lateral */}
         <aside className="hidden lg:block space-y-6">
           <section>
             <h4 className="text-[10px] uppercase tracking-widest text-primary font-bold mb-4 flex items-center gap-2">
-              <FilterIcon size={12} /> Filtrar por
+              <FilterIcon size={12} /> {t("activity.filter_by")}
             </h4>
             <div className="flex flex-col gap-1">
-              {[
-                { id: 'all', label: 'Todo' },
-                { id: 'interactions', label: 'Likes & Feedback' },
-                { id: 'follows', label: 'Nuevos Seguidores' }
-              ].map(f => (
+              {filters.map(f => (
                 <button 
                   key={f.id} 
                   onClick={() => setActiveFilter(f.id)}
@@ -115,7 +114,6 @@ const Activity = () => {
           </section>
         </aside>
 
-        {/* Feed Principal */}
         <main className="max-w-2xl w-full mx-auto">
           {loading ? (
             <div className="flex justify-center py-20">
@@ -127,6 +125,7 @@ const Activity = () => {
                 <NotificationItem 
                   key={n.id} 
                   data={n} 
+                  locale={i18n.language}
                   onMarkRead={() => !n.read && markAsRead(n.id)} 
                 />
               ))}
@@ -134,24 +133,24 @@ const Activity = () => {
           ) : (
             <div className="text-center py-24 bg-base-200/50 rounded-[3rem] border border-dashed border-base-content/10">
               <Info className="mx-auto mb-4 opacity-20" size={40} />
-              <p className="opacity-40 text-sm">No hay actividad por aquí</p>
+              <p className="opacity-40 text-sm">{t("activity.empty")}</p>
             </div>
           )}
         </main>
 
         <aside className="hidden lg:block">
-          <div className="p-6 rounded-4x1 bg-base-200 border border-base-content/5 text-center shadow-sm">
-            <h4 className="text-[10px] uppercase tracking-widest opacity-40 font-bold mb-6">Estado</h4>
+          <div className="p-6 rounded-4xl bg-base-200 border border-base-content/5 text-center shadow-sm">
+            <h4 className="text-[10px] uppercase tracking-widest opacity-40 font-bold mb-6">{t("activity.status")}</h4>
             <div className="space-y-4">
               <div className="flex flex-col">
                 <span className="text-4xl font-black text-primary">
                   {notifications.filter(n => !n.read).length}
                 </span>
-                <span className="text-[9px] opacity-60 uppercase font-black tracking-tighter">Pendientes</span>
+                <span className="text-[9px] opacity-60 uppercase font-black tracking-tighter">{t("activity.pending")}</span>
               </div>
               <div className="h-px bg-base-content/10 w-8 mx-auto"></div>
               <p className="text-[11px] opacity-50 leading-relaxed px-2">
-                Mantente al día con quienes interactúan con tus colecciones.
+                {t("activity.footer_info")}
               </p>
             </div>
           </div>
@@ -162,8 +161,7 @@ const Activity = () => {
   );
 };
 
-
-const NotificationItem = ({ data, onMarkRead }) => {
+const NotificationItem = ({ data, onMarkRead, locale }) => {
   const getIcon = () => {
     switch (data.type) {
       case 'follow': return { icon: UserPlus, color: 'text-info' };
@@ -199,7 +197,7 @@ const NotificationItem = ({ data, onMarkRead }) => {
           <span className="font-bold">@{data.user?.name?.toLowerCase().replace(/\s+/g, '')}</span> {data.content}
         </p>
         <span className="text-[10px] opacity-50 font-medium">
-          {new Date(data.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+          {new Date(data.created_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
         </span>
       </div>
 

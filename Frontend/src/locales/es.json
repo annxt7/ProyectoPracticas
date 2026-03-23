@@ -143,6 +143,20 @@
   "following": "Siguiendo",
   "follow": "Seguir",
   "me": "Tú"
+},
+"activity": {
+  "title": "Actividad",
+  "mark_all_read": "Marcar todo como leído",
+  "filter_by": "Filtrar por",
+  "filters": {
+    "all": "Todo",
+    "interactions": "Likes & Feedback",
+    "follows": "Nuevos Seguidores"
+  },
+  "status": "Estado",
+  "pending": "Pendientes",
+  "empty": "No hay actividad por aquí",
+  "footer_info": "Mantente al día con quienes interactúan con tus colecciones."
 }
 }
 
