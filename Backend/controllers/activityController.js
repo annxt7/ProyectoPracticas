@@ -21,21 +21,34 @@ exports.getNotifications = async (req, res) => {
 
     const [rows] = await db.query(sql, [userId]);
 
-    const formattedNotifications = rows.map(n => {
-  let contentKey = "unknown";
-  const original = n.content.toLowerCase();
+  const formattedNotifications = rows.map(n => {
+  // 1. Limpiamos el texto: minúsculas y sin tildes básicas
+  const rawContent = (n.content || "").toLowerCase();
+  console.log("Procesando notificación ID:", n.id, "Texto:", rawContent); // <--- MIRA ESTO EN TU TERMINAL
 
-  // Mapeamos lo que YA TIENES en la base de datos a llaves nuevas
-  if (original.includes("gusta")) contentKey = "liked_collection";
-  if (original.includes("seguirte") || original.includes("siguiendo")) contentKey = "started_following";
-  if (original.includes("comentó")) contentKey = "comment";
-  if (original.includes("añadió")) contentKey = "added_item";
+  let contentKey = "unknown";
+
+  // 2. Buscamos por palabras clave raíz (sin importar el resto de la frase)
+  if (rawContent.includes("gusta") || rawContent.includes("like")) {
+    contentKey = "liked_collection";
+  } 
+  else if (rawContent.includes("siguiendo") || rawContent.includes("seguirte") || rawContent.includes("follow")) {
+    contentKey = "started_following";
+  } 
+  else if (rawContent.includes("añadió") || rawContent.includes("added") || rawContent.includes("item")) {
+    contentKey = "added_item";
+  } 
+  else if (rawContent.includes("creó") || rawContent.includes("created")) {
+    contentKey = "created_collection";
+  } 
+  else if (rawContent.includes("comentó") || rawContent.includes("comment")) {
+    contentKey = "comment";
+  }
 
   return {
     id: n.id,
     type: n.type,
-    content_key: contentKey, // <--- El frontend usará esta
-    content: n.content,      // <--- Mantenemos el original por si acaso
+    content_key: contentKey, // Esta es la que lee t(`notifications.${content_key}`)
     read: n.is_read === 1,
     created_at: n.created_at,
     user: {
@@ -44,14 +57,6 @@ exports.getNotifications = async (req, res) => {
     }
   };
 });
-
-    console.log(`Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
-    res.json(formattedNotifications);
-  } catch (error) {
-    console.error("Error en getNotifications:", error);
-    res.status(500).json({ error: "Error al sincronizar notificaciones" });
-  }
-};
 
 // PUT: Marcar una notificación como leída
 exports.markAsRead = async (req, res) => {
