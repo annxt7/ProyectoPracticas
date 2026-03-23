@@ -7,26 +7,28 @@ import { z } from "zod";
 import fotoLogin from "../assets/foto-login.webp";
 import Logo from "../assets/LogoClaro.webp";
 import api from "../services/api";
+import { useTranslation } from "react-i18next";
 
-const resetSchema = z
+const resetSchema = (t) => z
   .object({
-    email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
-    code: z.string().min(6, "El código tiene al menos 6 caracteres").toUpperCase().trim(),
+    email: z.string().email(t("reset.errors.invalid_email")).toLowerCase().trim(),
+    code: z.string().min(6, t("reset.errors.code_length")).toUpperCase().trim(),
     password: z
       .string()
-      .min(8, "Mínimo 8 caracteres")
-      .regex(/[A-Z]/, "Una mayúscula")
-      .regex(/[a-z]/, "Una minúscula")
-      .regex(/[0-9]/, "Un número")
-      .regex(/[^a-zA-Z0-9]/, "Un carácter especial"),
+      .min(8, t("reset.errors.password_min"))
+      .regex(/[A-Z]/, t("reset.errors.password_uppercase"))
+      .regex(/[a-z]/, t("reset.errors.password_lowercase"))
+      .regex(/[0-9]/, t("reset.errors.password_number"))
+      .regex(/[^a-zA-Z0-9]/, t("reset.errors.password_special")),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Las contraseñas no coinciden",
+    message: t("reset.errors.password_mismatch"),
     path: ["confirmPassword"],
   });
 
 const ResetPasswordScreen = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,7 +36,7 @@ const ResetPasswordScreen = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
-    resolver: zodResolver(resetSchema),
+    resolver: zodResolver(resetSchema(t)),
   });
 
   const watchedPassword = watch("password", "");
@@ -54,25 +56,18 @@ const ResetPasswordScreen = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     setError(null);
-    console.log("Enviando datos de recuperación:", {
-      email: data.email,
-      code: data.code,
-      password: "🔒 (Oculta)"
-    });
 
     try {
-      const response = await api.post("/users/reset-password", {
+      await api.post("/users/reset-password", {
         email: data.email,
         code: data.code,
         newPassword: data.password
       });
       
-      console.log("Respuesta del servidor:", response.data);
-      alert("¡Contraseña actualizada! Ahora puedes iniciar sesión.");
+      alert(t("reset.alerts.success"));
       navigate("/login");
     } catch (err) {
-      console.error("Error capturado en el submit:", err.response?.data || err.message);
-      setError(err.response?.data?.error || "Código inválido o expirado.");
+      setError(err.response?.data?.error || t("reset.alerts.error"));
     } finally {
       setLoading(false);
     }
@@ -85,30 +80,32 @@ const ResetPasswordScreen = () => {
         <div className="relative z-10 p-16 flex flex-col h-full text-white justify-end pb-24">
           <img src={Logo} alt="Logo" className="w-32 h-auto mb-6" />
           <h1 className="text-4xl font-bold mb-4">Tribe</h1>
-          <p className="text-xl max-w-md font-medium text-gray-200">Recupera el acceso a tu mundo de colecciones.</p>
+          <p className="text-xl max-w-md font-medium text-gray-200">{t("reset.hero_text")}</p>
         </div>
       </div>
 
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative overflow-y-auto">
-        <Link to="/login" className="absolute top-8 left-8 btn btn-ghost btn-sm gap-2 text-base-content/60">← Volver al login</Link>
+        <Link to="/login" className="absolute top-8 left-8 btn btn-ghost btn-sm gap-2 text-base-content/60">
+          ← {t("reset.back_to_login")}
+        </Link>
 
         <div className="w-full max-w-md space-y-8 mt-10 lg:mt-0">
           <div className="text-center lg:text-left">
-            <h2 className="text-4xl font-extrabold tracking-tight font-serif text-base-content">Nueva contraseña</h2>
-            <p className="text-base-content/60 mt-2">Introduce el código que te proporcionó el administrador.</p>
+            <h2 className="text-4xl font-extrabold tracking-tight font-serif text-base-content">{t("reset.title")}</h2>
+            <p className="text-base-content/60 mt-2">{t("reset.subtitle")}</p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
             {/* EMAIL */}
             <div className="form-control">
-              <label className="label"><span className="label-text font-bold">Confirmar Email</span></label>
+              <label className="label"><span className="label-text font-bold">{t("reset.fields.email_confirm")}</span></label>
               <input {...register("email")} type="email" placeholder="tu@email.com" className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`} />
               {errors.email && <span className="text-error text-xs mt-1 block">{errors.email.message}</span>}
             </div>
 
             {/* CÓDIGO */}
             <div className="form-control">
-              <label className="label"><span className="label-text font-bold">Código de Seguridad</span></label>
+              <label className="label"><span className="label-text font-bold">{t("reset.fields.security_code")}</span></label>
               <div className="relative">
                 <input {...register("code")} type="text" placeholder="EJ: A1B2C3" className="input input-bordered w-full pl-10 font-mono uppercase" />
                 <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40" size={18} />
@@ -118,7 +115,7 @@ const ResetPasswordScreen = () => {
 
             {/* PASSWORD */}
             <div className="form-control">
-              <label className="label"><span className="label-text font-bold">Nueva Contraseña</span></label>
+              <label className="label"><span className="label-text font-bold">{t("reset.fields.new_password")}</span></label>
               <div className="relative">
                 <input 
                   {...register("password")} 
@@ -141,10 +138,10 @@ const ResetPasswordScreen = () => {
                     ></div>
                   </div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                    <Requirement met={watchedPassword.length >= 8} label="8+ caracteres" />
-                    <Requirement met={/[A-Z]/.test(watchedPassword)} label="Mayúscula" />
-                    <Requirement met={/[0-9]/.test(watchedPassword)} label="Número" />
-                    <Requirement met={/[^a-zA-Z0-9]/.test(watchedPassword)} label="Especial" />
+                    <Requirement met={watchedPassword.length >= 8} label={t("reset.requirements.length")} />
+                    <Requirement met={/[A-Z]/.test(watchedPassword)} label={t("reset.requirements.uppercase")} />
+                    <Requirement met={/[0-9]/.test(watchedPassword)} label={t("reset.requirements.number")} />
+                    <Requirement met={/[^a-zA-Z0-9]/.test(watchedPassword)} label={t("reset.requirements.special")} />
                   </div>
                 </div>
               )}
@@ -153,7 +150,7 @@ const ResetPasswordScreen = () => {
 
             {/* CONFIRMAR PASSWORD */}
             <div className="form-control">
-              <label className="label"><span className="label-text font-bold">Repetir Contraseña</span></label>
+              <label className="label"><span className="label-text font-bold">{t("reset.fields.repeat_password")}</span></label>
               <input 
                 {...register("confirmPassword")} 
                 type={showPassword ? "text" : "password"} 
@@ -168,7 +165,7 @@ const ResetPasswordScreen = () => {
             <button type="submit" className="btn btn-primary w-full text-lg rounded-full mt-4" disabled={loading}>
               <span className="flex items-center gap-2">
                 {loading && <span className="loading loading-spinner"></span>}
-                Cambiar Contraseña
+                {t("reset.submit_button")}
                 {!loading && <ArrowRight size={20} />}
               </span>
             </button>

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
