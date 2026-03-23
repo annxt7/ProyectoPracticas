@@ -5,6 +5,68 @@ import api from "../services/api.js";
 import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
 
+// 1. COMPONENTE HIJO (Afuera para evitar recrearlo en cada render)
+const NotificationItem = ({ data, onMarkRead, locale }) => {
+  const { t } = useTranslation();
+
+  const getIcon = () => {
+    switch (data.type) {
+      case 'follow': return { icon: UserPlus, color: 'text-info' };
+      case 'like_collection': return { icon: Heart, color: 'text-error' };
+      default: return { icon: MessageSquare, color: 'text-primary' };
+    }
+  };
+
+  const { icon: Icon, color } = getIcon();
+
+  return (
+    <div
+      onClick={onMarkRead}
+      className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+        data.read
+          ? "bg-transparent border-transparent opacity-50 grayscale-[0.3]"
+          : "bg-base-200 border-base-content/5 hover:border-primary/40 hover:bg-base-300"
+      }`}
+    >
+      <div className="relative flex-none">
+        <img
+          src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}&background=random`}
+          className="w-12 h-12 rounded-full object-cover border border-base-content/10 shadow-sm"
+          alt=""
+        />
+        <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-base-100 flex items-center justify-center border border-base-content/10 shadow-sm ${color}`}>
+          <Icon size={12} strokeWidth={3} />
+        </div>
+      </div>
+
+      <div className="flex-1 min-w-0 text-base-content">
+        <div className="text-sm leading-snug">
+          <div className="flex items-center gap-2">
+            <span className="font-bold">
+              @{data.user?.name?.toLowerCase().replace(/\s+/g, '')}
+            </span>
+            <span className="text-base-content/70">
+              {t(`notifications.${data.content_key}`)}
+            </span>
+          </div>
+        </div>
+        <span className="text-[10px] opacity-50 font-medium">
+          {new Date(data.created_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
+        </span>
+      </div>
+
+      <div className="flex-none">
+        {!data.read ? (
+          <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(var(--p),0.5)] animate-pulse"></div>
+        ) : (
+          <CheckCircle size={14} className="opacity-20" />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// 2. COMPONENTE PRINCIPAL
 const Activity = () => {
   const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState([]);
@@ -51,7 +113,6 @@ const Activity = () => {
     return notifications.filter(n => {
       const isInteraction = n.type === 'like_collection' || n.type === 'comment';
       const isFollow = n.type === 'follow';
-
       if (activeFilter === "all") return true;
       if (activeFilter === "interactions") return isInteraction;
       if (activeFilter === "follows") return isFollow;
@@ -64,16 +125,6 @@ const Activity = () => {
     { id: 'interactions', label: t("activity.filters.interactions") },
     { id: 'follows', label: t("activity.filters.follows") }
   ];
-  const NotificationItem = ({ data, onMarkRead, locale }) => {
-  const { t } = useTranslation(); // <--- AÑADE ESTA LÍNEA AQUÍ
-  
-  const getIcon = () => {
-    switch (data.type) {
-      case 'follow': return { icon: UserPlus, color: 'text-info' };
-      case 'like_collection': return { icon: Heart, color: 'text-error' };
-      default: return { icon: MessageSquare, color: 'text-primary' };
-    }
-  };
 
   return (
     <div className="min-h-screen pb-28 md:pb-10 bg-base-300 text-base-content font-sans transition-colors duration-300">
@@ -100,7 +151,6 @@ const Activity = () => {
       </header>
 
       <div className="max-w-[1200px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] gap-8">
-
         <aside className="hidden lg:block space-y-6">
           <section>
             <h4 className="text-[10px] uppercase tracking-widest text-primary font-bold mb-4 flex items-center gap-2">
@@ -111,10 +161,11 @@ const Activity = () => {
                 <button
                   key={f.id}
                   onClick={() => setActiveFilter(f.id)}
-                  className={`text-left text-xs p-3 rounded-xl transition-all ${activeFilter === f.id
-                    ? 'bg-primary text-primary-content font-bold shadow-lg shadow-primary/20'
-                    : 'hover:bg-base-200 opacity-60 hover:opacity-100'
-                    }`}
+                  className={`text-left text-xs p-3 rounded-xl transition-all ${
+                    activeFilter === f.id
+                      ? 'bg-primary text-primary-content font-bold shadow-lg shadow-primary/20'
+                      : 'hover:bg-base-200 opacity-60 hover:opacity-100'
+                  }`}
                 >
                   {f.label}
                 </button>
@@ -166,54 +217,6 @@ const Activity = () => {
         </aside>
       </div>
       <NavMobile />
-    </div>
-  );
-};
-
-  const { icon: Icon, color } = getIcon();
-
-  return (
-    <div
-      onClick={onMarkRead}
-      className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${data.read
-        ? "bg-transparent border-transparent opacity-50 grayscale-[0.3]"
-        : "bg-base-200 border-base-content/5 hover:border-primary/40 hover:bg-base-300"
-        }`}
-    >
-      <div className="relative flex-none">
-        <img
-          src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}&background=random`}
-          className="w-12 h-12 rounded-full object-cover border border-base-content/10 shadow-sm"
-          alt=""
-        />
-        <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-base-100 flex items-center justify-center border border-base-content/10 shadow-sm ${color}`}>
-          <Icon size={12} strokeWidth={3} />
-        </div>
-      </div>
-
-      <div className="flex-1 min-w-0 text-base-content">
-        <p className="text-sm leading-snug">
-          <div className="flex items-center gap-2">
-            <span className="font-bold">
-              @{data.user?.name?.toLowerCase().replace(/\s+/g, '')}
-            </span>
-            <span className="text-base-content/70">
-              {t(`notifications.${data.content_key}`)}
-            </span>
-          </div>
-        </p>
-        <span className="text-[10px] opacity-50 font-medium">
-          {new Date(data.created_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
-        </span>
-      </div>
-
-      <div className="flex-none">
-        {!data.read ? (
-          <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(var(--p),0.5)] animate-pulse"></div>
-        ) : (
-          <CheckCircle size={14} className="opacity-20" />
-        )}
-      </div>
     </div>
   );
 };
