@@ -58,6 +58,14 @@ exports.getNotifications = async (req, res) => {
   };
 });
 
+    console.log(`Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
+    res.json(formattedNotifications);
+  } catch (error) {
+    console.error("Error en getNotifications:", error);
+    res.status(500).json({ error: "Error al sincronizar notificaciones" });
+  }
+};
+
 // PUT: Marcar una notificación como leída
 exports.markAsRead = async (req, res) => {
   const { id } = req.params;
