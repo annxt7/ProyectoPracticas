@@ -1,12 +1,9 @@
 const db = require("../config/dbconect");
 
-// GET: Obtener todas las notificaciones del usuario logueado
+// GET: Obtener todas las notificaciones del usuario
 exports.getNotifications = async (req, res) => {
   try {
-    // El ID viene del middleware verifyToken (auth)
     const userId = req.user.id; 
-
-   
     const sql = `
       SELECT 
         n.id, 
@@ -36,7 +33,7 @@ exports.getNotifications = async (req, res) => {
       }
     }));
 
-    console.log(`✅ Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
+    console.log(`Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
     res.json(formattedNotifications);
   } catch (error) {
     console.error("Error en getNotifications:", error);

@@ -1,7 +1,6 @@
 require("dotenv").config();
 const mysql = require("mysql2/promise");
 
-// Crear el pool de conexiones
 const pool = mysql.createPool({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER ,
@@ -16,11 +15,11 @@ const pool = mysql.createPool({
 pool
   .getConnection()
   .then((conn) => {
-    console.log("✅ Conectado a la Base de Datos MySQL 'Tribe'");
+    console.log("Conectado a la Base de Datos MySQL 'Tribe'");
     conn.release();
   })
   .catch((err) => {
-    console.error("❌ Error conectando a la BD:", err);
+    console.error("Error conectando a la BD:", err);
   });
 
 module.exports = pool;

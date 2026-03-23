@@ -1,14 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // 1. Importar hook
+import { useTranslation } from "react-i18next"; 
 
 const MiniUserCard = ({ user, isFollowing, onFollowToggle }) => {
-  const { t } = useTranslation(); // 2. Inicializar t
-  
+  const { t } = useTranslation(); 
   if (!user) return null;
 
   // Normalización interna
-  const displayName = user.username || user.name || t("explorer.no_users"); // Uso de fallback traducido
+  const displayName = user.username || user.name || t("explorer.no_users"); 
   const displayImg = user.avatar || user.img || user.avatar_url;
   
   const safeHandle = user.handle || `@${String(displayName).toLowerCase().replace(/\s/g, "")}`;

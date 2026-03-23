@@ -9,8 +9,7 @@ import {
   Trash2,
   Camera,
   Check,
-  AlertCircle, // Nuevo icono para errores
-  X
+  AlertCircle,
 } from "lucide-react";
 import NavMobile from "../components/NavMobile";
 import NavDesktop from "../components/NavDesktop";
@@ -58,14 +57,15 @@ const CollectionPage = () => {
       try {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
+        console.log("Datos de la colección:", data);
         setIsSaved(!!data.is_saved);
 
         setCollectionInfo({
-          id: data.collection_id || data.id,
-          title: data.collection_name || data.title,
-          description: data.collection_description || data.description || "",
-          type: data.collection_type || data.type,
-          cover: data.cover_url || data.collection_image,
+          id: data.collection_id ,
+          title: data.collection_name ,
+          description: data.collection_description ,
+          type: data.collection_type ,
+          cover: data.cover_url ,
           creatorId: data.creator_id,
           creatorName: data.creator_username,
           stats: { 
@@ -78,10 +78,10 @@ const CollectionPage = () => {
           setItems(data.items.map(item => {
             const refId = item.music_id || item.book_id || item.movie_id || item.show_id || item.game_id;
             return {
-              id: item.item_id || item.id,
-              title: item.display_title || item.custom_title || "Sin título",
-              author: item.display_subtitle || item.custom_subtitle || "Desconocido",
-              cover: item.display_image || item.custom_image,
+              id: item.item_id ,
+              title: item.display_title,
+              author: item.display_subtitle,
+              cover: item.display_image,
               item_type: item.item_type,
               reference_id: refId,
               is_custom: !refId 
@@ -212,8 +212,6 @@ const CollectionPage = () => {
           </div>
         </div>
       )}
-
-      {/* --- HERO SECTION CON BLUR --- */}
       <div className="relative">
         <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-25">
           <img src={isEditing ? editForm.cover : collectionInfo.cover} className="w-full h-full object-cover blur-3xl" alt="" />

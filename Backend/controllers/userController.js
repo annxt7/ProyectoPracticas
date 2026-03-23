@@ -8,20 +8,7 @@ const SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const DEFAULT_BANNER =
   "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
 
-exports.checkUsername = async (req, res) => {
-  try {
-   
-    const [rows] = await db.query(
-      "SELECT user_id AS userId, username, email, avatar_url AS avatar FROM Users"
-    );
-    res.status(200).json(rows.length > 0 ? rows : []);
-  } catch (error) {
-    console.error("Error en checkUsername:", error);
-    res.status(500).json({ error: "Error de servidor" });
-  }
-};
-
-// POST: Registrar usuario manual
+// POST: Crear usuario
 exports.createUser = async (req, res) => {
   const {
     username,
@@ -80,12 +67,12 @@ exports.createUser = async (req, res) => {
       bio: "Hola! Soy nuevo en Tribe.",
     });
   } catch (error) {
-    console.error("Error createUser:", error);
+    console.error(error);
     res.status(500).json({ error: "Error de servidor" });
   }
 };
 
-// POST: Login 
+// POST: Login
 exports.login = async (req, res) => {
   const { identifier, password } = req.body;
   if (!identifier || !password)
@@ -107,7 +94,7 @@ exports.login = async (req, res) => {
     if (!valid) return res.status(401).json({ error: "Contraseña incorrecta" });
 
     const token = jwt.sign(
-      { id: user.user_id, username: user.username ,role:user.role},
+      { id: user.user_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "5h" }
     );
@@ -123,12 +110,12 @@ exports.login = async (req, res) => {
       role: user.role,
     });
   } catch (error) {
-    console.error("Error login:", error);
+    console.error(error);
     res.status(500).json({ error: "Error interno" });
   }
 };
 
-// POST: Google Login 
+// POST: Login con Google
 exports.googleLogin = async (req, res) => {
   const { token } = req.body;
   if (!token) return res.status(400).json({ error: "No token" });
@@ -144,7 +131,7 @@ exports.googleLogin = async (req, res) => {
     let isNewUser = false;
 
     if (existing.length > 0) {
-      user = existing[0]; 
+      user = existing[0];
     } else {
       const sql = "INSERT INTO Users (username, email, avatar_url, google_id, banner_url, role) VALUES (?, ?, ?, ?, ?, ?)";
       const [result] = await db.query(sql, [name, email, picture, googleId, DEFAULT_BANNER, 'user']);
@@ -156,12 +143,12 @@ exports.googleLogin = async (req, res) => {
         avatar_url: picture,
         banner_url: DEFAULT_BANNER,
         bio: null,
-        role: 'user' // Por defecto
+        role: 'user'
       };
       isNewUser = true;
     }
     const appToken = jwt.sign(
-      { id: user.user_id, username: user.username, role: user.role }, 
+      { id: user.user_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "5h" }
     );
@@ -176,15 +163,16 @@ exports.googleLogin = async (req, res) => {
         banner: user.banner_url,
         bio: user.bio,
         email: user.email,
-        role: user.role 
+        role: user.role
       },
     });
   } catch (error) {
-    console.error("Error Google:", error);
+    console.error(error);
     res.status(401).json({ error: "Error auth" });
   }
 };
-// PUT: Update Profile
+
+// PUT: Actualizar perfil
 exports.updateProfile = async (req, res) => {
   if (!req.user || !req.user.id) {
     return res.status(401).json({ error: "No autorizado" });
@@ -240,12 +228,12 @@ exports.updateProfile = async (req, res) => {
       user: rows[0],
     });
   } catch (error) {
-    console.error("Error update:", error);
+    console.error(error);
     res.status(500).json({ error: "Error al actualizar" });
   }
 };
 
-// GET: Feed de Usuarios
+// GET: Feed de usuarios
 exports.getUserFeed = async (req, res) => {
   const myId = req.user.id;
   try {
@@ -263,11 +251,12 @@ exports.getUserFeed = async (req, res) => {
     const [rows] = await db.query(sql, [myId]);
     res.status(200).json(rows);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error feed" });
   }
 };
 
-// GET: Colecciones del usuario
+// GET: Colecciones de un usuario
 exports.getUserCollections = async (req, res) => {
   const userId = req.params.userId || req.user.id;
   try {
@@ -277,11 +266,12 @@ exports.getUserCollections = async (req, res) => {
     );
     res.status(200).json(rows);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error colecciones" });
   }
 };
 
-// PUT: Complete Profile (Onboarding)
+// GET: Completar perfil
 exports.completeProfile = async (req, res) => {
   const { userId, avatarUrl, interests } = req.body;
   try {
@@ -292,19 +282,21 @@ exports.completeProfile = async (req, res) => {
       ]);
 
     if (interests?.length > 0) {
-      for (const cat of interests) {
+      for (const category of interests) {
         await db.query(
           "INSERT INTO Collections (user_id, collection_type, collection_name, cover_url) VALUES (?, ?, ?, ?)",
-          [userId, cat, `Mi primera colección de ${cat}`, null]
+          [userId, category, `Mi primera colección`, null]
         );
       }
     }
     res.status(200).json({ success: true });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error onboarding" });
   }
 };
-//GET: Get User by ID (Genérico)
+
+// GET: Obtener perfil por id
 exports.getUserById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -327,27 +319,29 @@ exports.getUserById = async (req, res) => {
     }
     res.json(rows[0]);
   } catch (error) {
-    console.error("Error getUserById:", error);
+    console.error(error);
     res.status(500).json({ error: "Error al obtener perfil" });
   }
 };
-// GET: Get Users (Genérico)
+
+// GET: Obtener usuarios
 exports.getUsers = async (req, res) => {
   try {
     const [rows] = await db.query(
       "SELECT user_id AS userId, username, avatar_url AS avatar FROM Users"
     );
     res.json(rows);
-  } catch (e) {
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error" });
   }
 };
-//GET: Actividad
+
+// GET: Actividad del feed
 exports.getActivityFeed = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    //Seguidos
     const sqlFollowing = `
             SELECT 
                 c.collection_id, 
@@ -369,6 +363,7 @@ exports.getActivityFeed = async (req, res) => {
             LIMIT 20
         `;
     let [rows] = await db.query(sqlFollowing, [userId, userId]);
+    
     if (rows.length === 0) {
       const sqlGlobal = `
                 SELECT 
@@ -382,7 +377,6 @@ exports.getActivityFeed = async (req, res) => {
                     u.username, 
                     u.avatar_url,
                     'created_global' as action_type,
-                    -- Comprobamos si el usuario actual le dio like
                     (SELECT COUNT(*) FROM Collection_Likes WHERE user_id = ? AND collection_id = c.collection_id) AS has_liked
                 FROM Collections c
                 JOIN Users u ON c.user_id = u.user_id
@@ -400,12 +394,12 @@ exports.getActivityFeed = async (req, res) => {
 
     res.json(results);
   } catch (error) {
-    console.error("Error en Activity Feed:", error);
+    console.error(error);
     res.status(500).json({ error: "Error cargando el feed" });
   }
 };
 
-//Cambiar contraseña
+// PUT: Cambiar contraseña
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -441,7 +435,7 @@ exports.changePassword = async (req, res) => {
       .status(200)
       .json({ message: "¡Contraseña actualizada correctamente!" });
   } catch (error) {
-    console.error("DEBUG PRODUCCIÓN:", error);
+    console.error(error);
     return res.status(500).json({
       error: "Error interno",
       details: error.message,
@@ -450,10 +444,10 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-// Seguir
+// POST: Seguir a un usuario
 exports.followUser = async (req, res) => {
-  const followerId = req.user.id; // Tú
-  const followingId = req.params.id; // A quién sigues
+  const followerId = req.user.id;
+  const followingId = req.params.id;
 
   try {
     await db.query("INSERT INTO Follows (follower_id, following_id) VALUES (?, ?)", [followerId, followingId]);
@@ -465,12 +459,12 @@ exports.followUser = async (req, res) => {
 
     res.json({ message: "Ahora sigues a este usuario" });
   } catch (error) {
-    res.status(500).json({ error: "Error al dejar de seguir" });  
-    
+    console.error(error);
+    res.status(500).json({ error: "Error al seguir" });  
   }
 };
 
-// Dejar de seguir
+// DELETE: Dejar de seguir
 exports.unfollowUser = async (req, res) => {
   const follower_id = req.user.id;
   const following_id = req.params.id;
@@ -482,11 +476,12 @@ exports.unfollowUser = async (req, res) => {
     );
     res.json({ success: true, message: "Has dejado de seguir a este usuario" });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error al dejar de seguir" });
   }
 };
 
-// Obtener Seguidores
+// GET: Seguidores
 exports.getFollowers = async (req, res) => {
   const { id } = req.params;
   try {
@@ -506,12 +501,12 @@ exports.getFollowers = async (req, res) => {
 
     res.json(rows);
   } catch (error) {
-    console.error("Error followers:", error);
+    console.error(error);
     res.status(500).json({ error: "Error al obtener seguidores" });
   }
 };
 
-// Obtener Seguidos
+// GET: Usuarios que seguidos
 exports.getFollowing = async (req, res) => {
   const { id } = req.params;
   try {
@@ -531,12 +526,12 @@ exports.getFollowing = async (req, res) => {
 
     res.json(rows);
   } catch (error) {
-    console.error("Error following:", error);
+    console.error(error);
     res.status(500).json({ error: "Error al obtener seguidos" });
   }
 };
 
-// Estadísticas rápidas
+// GET: Stats de seguidores/seguidos
 exports.getFollowStats = async (req, res) => {
   const targetId = req.params.id;
   const myId = req.user?.id;
@@ -566,10 +561,12 @@ exports.getFollowStats = async (req, res) => {
       amIFollowing,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error al obtener stats" });
   }
 };
 
+//Solicitar reseteo de contraseña
 exports.requestPasswordReset = async (req, res) => {
     const { email } = req.body;
     try {
@@ -579,23 +576,20 @@ exports.requestPasswordReset = async (req, res) => {
         );
         res.json({ message: "Solicitud enviada al administrador." });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Error al enviar solicitud" });
     }
 };
 
+// Resetear contraseña 
 exports.resetPassword = async (req, res) => {
     const { email, code, newPassword } = req.body;
-    console.log("== DEBUG RESET PASSWORD ==");
-    console.log("Email:", email);
-    console.log("Código recibido:", code);
 
     try {
         const [request] = await db.query(
             "SELECT * FROM Password_Requests WHERE email = ? AND code = ? AND status = 'completed'",
             [email, code]
         );
-
-        console.log("Solicitud encontrada:", request.length > 0 ? "SÍ" : "NO");
 
         if (request.length === 0) {
             return res.status(400).json({ error: "Código o email incorrectos o solicitud no aprobada." });
@@ -606,8 +600,6 @@ exports.resetPassword = async (req, res) => {
             [hashedPassword, email] 
         );
 
-        console.log("Resultado update Users:", updateResult.affectedRows > 0 ? "ÉXITO" : "FALLO (Email no existe en Users)");
-
         if (updateResult.affectedRows === 0) {
             return res.status(404).json({ error: "No se encontró el usuario para actualizar." });
         }
@@ -615,11 +607,12 @@ exports.resetPassword = async (req, res) => {
 
         res.json({ message: "Contraseña actualizada con éxito." });
     } catch (error) {
-        console.error("ERROR CRÍTICO EN RESET:", error);
+        console.error(error);
         res.status(500).json({ error: "Error al actualizar contraseña" });
     }
 };
 
+// GET: Mi perfil
 exports.getMe = async (req, res) => {
   try {
     const userId = req.user.id; 
@@ -632,6 +625,7 @@ exports.getMe = async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: "No encontrado" });
     res.json(rows[0]);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error de servidor" });
   }
 };

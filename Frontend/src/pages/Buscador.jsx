@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // 1. Importar hook
+import { useTranslation } from "react-i18next";
 import ItemCover from "../components/ItemCover";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -10,9 +10,9 @@ import NavDesktop from "../components/NavDesktop";
 import NavMobile from "../components/NavMobile";
 
 const Explorer = () => {
-  const { t } = useTranslation(); // 2. Inicializar t
+  const { t } = useTranslation(); 
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("accounts"); // Cambiado a clave técnica
+  const [activeTab, setActiveTab] = useState("accounts"); 
   const [users, setUsers] = useState([]);
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,7 +60,7 @@ const Explorer = () => {
   }, [query, myId]);
 
   const handleFollowToggle = async (targetId, isFollowing) => {
-    if (!myId) return alert(t("explorer.login_alert")); // 3. Traducción alert
+    if (!myId) return alert(t("explorer.login_alert"));
     const id = Number(targetId);
     try {
       if (isFollowing) {
@@ -87,7 +87,7 @@ const Explorer = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("explorer.search_placeholder")} // 4. Placeholder
+              placeholder={t("explorer.search_placeholder")} 
               className="w-full bg-base-100 border border-base-300 rounded-2xl py-3 pl-12 pr-10 outline-none focus:border-primary/50 transition-all text-sm"
             />
             {query && (
@@ -113,7 +113,7 @@ const Explorer = () => {
                     : "opacity-40 hover:opacity-100"
                 }`}
               >
-                {tab.label} {/* 5. Labels de pestañas */}
+                {tab.label} 
               </button>
             ))}
           </div>

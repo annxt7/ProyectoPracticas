@@ -39,7 +39,6 @@ const ResetPasswordScreen = () => {
 
   const watchedPassword = watch("password", "");
 
-  // Lógica de la barra de fuerza (Idéntica a tu AuthScreen)
   useEffect(() => {
     const requirements = [
       watchedPassword.length >= 8,
@@ -81,7 +80,6 @@ const ResetPasswordScreen = () => {
 
   return (
     <div className="min-h-screen flex w-full bg-base-100">
-      {/* SECCIÓN IZQUIERDA */}
       <div className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative" style={{ backgroundImage: `url(${fotoLogin})` }}>
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent"></div>
         <div className="relative z-10 p-16 flex flex-col h-full text-white justify-end pb-24">
@@ -91,7 +89,6 @@ const ResetPasswordScreen = () => {
         </div>
       </div>
 
-      {/* SECCIÓN DERECHA */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative overflow-y-auto">
         <Link to="/login" className="absolute top-8 left-8 btn btn-ghost btn-sm gap-2 text-base-content/60">← Volver al login</Link>
 
@@ -134,7 +131,7 @@ const ResetPasswordScreen = () => {
                 </button>
               </div>
 
-              {/* Barra de fuerza visual */}
+              {/* Barra seguridad contraseña */}
               {watchedPassword.length > 0 && (
                 <div className="mt-3 space-y-2">
                   <div className="flex gap-1 h-1 w-full bg-base-300 rounded-full overflow-hidden">

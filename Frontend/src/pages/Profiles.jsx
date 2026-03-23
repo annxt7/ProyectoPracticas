@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import SettingsModal from "../components/Config";
 import FollowsModal from "../components/FollowsModal";
-import { useTranslation } from "react-i18next"; // Añadido
+import { useTranslation } from "react-i18next"; 
 import {
   Settings,
   UserPlus,
@@ -23,7 +23,7 @@ import NavDesktop from "../components/NavDesktop";
 import NavMobile from "../components/NavMobile";
 
 const Profile = () => {
-  const { t } = useTranslation(); // Inicializado
+  const { t } = useTranslation(); 
   const [activeTab, setActiveTab] = useState("collections");
   const { user, updateUser } = useAuth();
   const { userId } = useParams();
