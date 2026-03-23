@@ -160,7 +160,8 @@
   "created_collection": "created a new collection",
   "added_item": "added a new item",
   "liked_collection": "liked a collection",
-  "started_following": "started following you"
+  "started_following": "started following you",
+  "unknown": "interacted with you"
 },
 "privacy": {
   "title": "Privacy Policy",

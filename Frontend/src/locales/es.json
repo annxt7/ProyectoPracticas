@@ -160,7 +160,8 @@
   "created_collection": "creó una nueva colección",
   "added_item": "añadió un nuevo elemento",
   "liked_collection": "le dio me gusta a una colección",
-  "started_following": "empezó a seguirte"
+  "started_following": "empezó a seguirte",
+  "unknown": "interactuó contigo"
 },
 "privacy": {
   "title": "Política de Privacidad",
