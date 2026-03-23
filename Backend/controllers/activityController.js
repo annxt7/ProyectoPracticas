@@ -3,7 +3,7 @@ const db = require("../config/dbconect");
 // GET: Obtener todas las notificaciones del usuario
 exports.getNotifications = async (req, res) => {
   try {
-    const userId = req.user.id; 
+    const userId = req.user.id;
     const sql = `
       SELECT 
         n.id, 
@@ -21,17 +21,28 @@ exports.getNotifications = async (req, res) => {
 
     const [rows] = await db.query(sql, [userId]);
 
-    const formattedNotifications = rows.map(n => ({
-      id: n.id,
-      type: n.type,
-      content: n.content,
-      read: n.is_read === 1, 
-      created_at: n.created_at,
-      user: {
-        name: n.actorName || "Usuario",
-        avatar: n.actorAvatar
-      }
-    }));
+    const formattedNotifications = rows.map(n => {
+      // Mapeamos el contenido actual a llaves de traducción
+      let contentKey = "unknown";
+
+      if (n.content.includes("me gusta")) contentKey = "liked_collection";
+      if (n.content.includes("añadió")) contentKey = "added_item";
+      if (n.content.includes("creó")) contentKey = "created_collection";
+      if (n.content.includes("seguirte")) contentKey = "started_following";
+
+      return {
+        id: n.id,
+        type: n.type,
+        content_key: contentKey, // Enviamos la llave para el i18n
+        original_content: n.content, // Opcional, por si acaso
+        read: n.is_read === 1,
+        created_at: n.created_at,
+        user: {
+          name: n.actorName || "Usuario",
+          avatar: n.actorAvatar
+        }
+      };
+    });
 
     console.log(`Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
     res.json(formattedNotifications);
@@ -47,7 +58,7 @@ exports.markAsRead = async (req, res) => {
   const userId = req.user.id;
 
   try {
-  
+
     const [result] = await db.query(
       "UPDATE Notifications SET is_read = 1 WHERE id = ? AND user_id = ?",
       [id, userId]

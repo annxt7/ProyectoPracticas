@@ -156,7 +156,11 @@
   "status": "Status",
   "pending": "Pending",
   "empty": "No activity here",
-  "footer_info": "Stay up to date with those who interact with your collections."
+  "footer_info": "Stay up to date with those who interact with your collections.",
+  "created_collection": "created a new collection",
+  "added_item": "added a new item",
+  "liked_collection": "liked a collection",
+  "started_following": "started following you"
 },
 "privacy": {
   "title": "Privacy Policy",

@@ -156,7 +156,11 @@
   "status": "Estado",
   "pending": "Pendientes",
   "empty": "No hay actividad por aquí",
-  "footer_info": "Mantente al día con quienes interactúan con tus colecciones."
+  "footer_info": "Mantente al día con quienes interactúan con tus colecciones.",
+  "created_collection": "creó una nueva colección",
+  "added_item": "añadió un nuevo elemento",
+  "liked_collection": "le dio me gusta a una colección",
+  "started_following": "empezó a seguirte"
 },
 "privacy": {
   "title": "Política de Privacidad",

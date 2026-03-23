@@ -23,14 +23,14 @@ const Activity = () => {
     }
   }, []);
 
-  useEffect(() => { 
-    fetchData(); 
+  useEffect(() => {
+    fetchData();
   }, [fetchData]);
 
   const markAsRead = async (id) => {
     try {
       await api.put(`/activity/${id}/read`);
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, read: true } : n)
       );
     } catch (err) {
@@ -51,7 +51,7 @@ const Activity = () => {
     return notifications.filter(n => {
       const isInteraction = n.type === 'like_collection' || n.type === 'comment';
       const isFollow = n.type === 'follow';
-      
+
       if (activeFilter === "all") return true;
       if (activeFilter === "interactions") return isInteraction;
       if (activeFilter === "follows") return isFollow;
@@ -68,7 +68,7 @@ const Activity = () => {
   return (
     <div className="min-h-screen pb-28 md:pb-10 bg-base-300 text-base-content font-sans transition-colors duration-300">
       <NavDesktop />
-      
+
       <header className="sticky top-0 z-30 bg-base-200 backdrop-blur-md border-b border-base-content/10 py-4">
         <div className="max-w-2xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ const Activity = () => {
           </div>
 
           {notifications.some(n => !n.read) && (
-            <button 
+            <button
               onClick={markAllAsRead}
               className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70 transition-all"
             >
@@ -90,7 +90,7 @@ const Activity = () => {
       </header>
 
       <div className="max-w-[1200px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] gap-8">
-        
+
         <aside className="hidden lg:block space-y-6">
           <section>
             <h4 className="text-[10px] uppercase tracking-widest text-primary font-bold mb-4 flex items-center gap-2">
@@ -98,14 +98,13 @@ const Activity = () => {
             </h4>
             <div className="flex flex-col gap-1">
               {filters.map(f => (
-                <button 
-                  key={f.id} 
+                <button
+                  key={f.id}
                   onClick={() => setActiveFilter(f.id)}
-                  className={`text-left text-xs p-3 rounded-xl transition-all ${
-                    activeFilter === f.id 
-                      ? 'bg-primary text-primary-content font-bold shadow-lg shadow-primary/20' 
-                      : 'hover:bg-base-200 opacity-60 hover:opacity-100'
-                  }`}
+                  className={`text-left text-xs p-3 rounded-xl transition-all ${activeFilter === f.id
+                    ? 'bg-primary text-primary-content font-bold shadow-lg shadow-primary/20'
+                    : 'hover:bg-base-200 opacity-60 hover:opacity-100'
+                    }`}
                 >
                   {f.label}
                 </button>
@@ -122,11 +121,11 @@ const Activity = () => {
           ) : filteredNotifications.length > 0 ? (
             <div className="space-y-3">
               {filteredNotifications.map(n => (
-                <NotificationItem 
-                  key={n.id} 
-                  data={n} 
+                <NotificationItem
+                  key={n.id}
+                  data={n}
                   locale={i18n.language}
-                  onMarkRead={() => !n.read && markAsRead(n.id)} 
+                  onMarkRead={() => !n.read && markAsRead(n.id)}
                 />
               ))}
             </div>
@@ -173,17 +172,16 @@ const NotificationItem = ({ data, onMarkRead, locale }) => {
   const { icon: Icon, color } = getIcon();
 
   return (
-    <div 
+    <div
       onClick={onMarkRead}
-      className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-        data.read 
-          ? "bg-transparent border-transparent opacity-50 grayscale-[0.3]" 
-          : "bg-base-200 border-base-content/5 hover:border-primary/40 hover:bg-base-300"
-      }`}
+      className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${data.read
+        ? "bg-transparent border-transparent opacity-50 grayscale-[0.3]"
+        : "bg-base-200 border-base-content/5 hover:border-primary/40 hover:bg-base-300"
+        }`}
     >
       <div className="relative flex-none">
-        <img 
-          src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}&background=random`} 
+        <img
+          src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}&background=random`}
           className="w-12 h-12 rounded-full object-cover border border-base-content/10 shadow-sm"
           alt=""
         />
@@ -194,7 +192,14 @@ const NotificationItem = ({ data, onMarkRead, locale }) => {
 
       <div className="flex-1 min-w-0 text-base-content">
         <p className="text-sm leading-snug">
-          <span className="font-bold">@{data.user?.name?.toLowerCase().replace(/\s+/g, '')}</span> {data.content}
+          <div className="flex items-center gap-2">
+            <span className="font-bold">
+              @{data.user?.name?.toLowerCase().replace(/\s+/g, '')}
+            </span>
+            <span className="text-base-content/70">
+              {t(`notifications.${data.content_key}`)}
+            </span>
+          </div>}
         </p>
         <span className="text-[10px] opacity-50 font-medium">
           {new Date(data.created_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
