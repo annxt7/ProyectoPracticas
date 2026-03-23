@@ -46,7 +46,7 @@ const NotificationItem = ({ data, onMarkRead, locale }) => {
               @{data.user?.name?.toLowerCase().replace(/\s+/g, '')}
             </span>
             <span className="text-base-content/70">
-              {t(`notifications.${data.content_key}`)}
+              {t(`activity.${data.content_key}`)}
             </span>
           </div>
         </div>
