@@ -398,7 +398,8 @@
     "user_collections_title": "Colecciones",
     "managing_user": "Gestionando contenido de {{username}}",
     "no_collections": "Sin colecciones",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "confirm": "Confirmar"
   },
   "alerts": {
     "confirm_delete": "¿Estás seguro de eliminar esto? Esta acción no se puede deshacer.",

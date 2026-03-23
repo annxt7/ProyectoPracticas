@@ -388,7 +388,7 @@ const AdminDashboard = () => {
           </h3>
           <p className="py-4 opacity-70">{confirmModal.message}</p>
           <div className="modal-action">
-            <button className="btn btn-ghost btn-sm rounded-full" onClick={closeConfirm}>{t("admin.modals.cancel")}</button>
+            <button className="btn btn-ghost btn-sm rounded-full" onClick={closeConfirm}>{t("admin.modals.close")}</button>
             <button 
               className={`btn btn-sm rounded-full ${confirmModal.isDanger ? "btn-error" : "btn-primary"}`} 
               onClick={confirmModal.onConfirm}
