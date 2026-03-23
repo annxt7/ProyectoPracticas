@@ -22,27 +22,37 @@ exports.getNotifications = async (req, res) => {
     const [rows] = await db.query(sql, [userId]);
 
     const formattedNotifications = rows.map(n => {
-      // Mapeamos el contenido actual a llaves de traducción
-      let contentKey = "unknown";
+  // 1. Definimos un objeto de mapeo (Texto DB -> Llave I18N)
+  const keyMap = {
+    "creó una nueva colección": "created_collection",
+    "añadió un item": "added_item",
+    "le dio me gusta": "liked_collection",
+    "empezó a seguirte": "started_following"
+  };
 
-      if (n.content.includes("me gusta")) contentKey = "liked_collection";
-      if (n.content.includes("añadió")) contentKey = "added_item";
-      if (n.content.includes("creó")) contentKey = "created_collection";
-      if (n.content.includes("seguirte")) contentKey = "started_following";
+  // Usamos .toLowerCase() y .includes() para que sea más flexible
+  const dbContent = n.content.toLowerCase();
+  
+  let finalKey = "unknown";
+  for (const [text, key] of Object.entries(keyMap)) {
+    if (dbContent.includes(text)) {
+      finalKey = key;
+      break;
+    }
+  }
 
-      return {
-        id: n.id,
-        type: n.type,
-        content_key: contentKey, // Enviamos la llave para el i18n
-        original_content: n.content, // Opcional, por si acaso
-        read: n.is_read === 1,
-        created_at: n.created_at,
-        user: {
-          name: n.actorName || "Usuario",
-          avatar: n.actorAvatar
-        }
-      };
-    });
+  return {
+    id: n.id,
+    type: n.type,
+    content_key: finalKey, 
+    read: n.is_read === 1, 
+    created_at: n.created_at,
+    user: {
+      name: n.actorName || "Usuario",
+      avatar: n.actorAvatar
+    }
+  };
+});
 
     console.log(`Sincronizado: ${formattedNotifications.length} notificaciones para ID ${userId}`);
     res.json(formattedNotifications);
