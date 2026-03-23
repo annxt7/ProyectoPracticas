@@ -59,9 +59,14 @@ const PrivacyPolicy = () => {
               <li>{t("privacy.usage_item1")}</li>
               <li>{t("privacy.usage_item2")}</li>
               <li>
-                <Trans i18nKey="privacy.usage_item3">
-                  Protect the platform against spam and abuse through <strong>Google reCAPTCHA v3</strong>. The use of this service is subject to the <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="text-primary hover:underline">Privacy Policy</a> and the <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="text-primary hover:underline">Terms of Service</a> of Google.
-                </Trans>
+                <Trans 
+                i18nKey="privacy.usage_item3"
+                components={[
+                <strong key="0" />, 
+                <a key="1" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="text-primary hover:underline" />,
+                <a key="2" href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="text-primary hover:underline" />
+              ]}
+              />
               </li>
             </ul>
           </section>

@@ -162,7 +162,7 @@
   "title": "Privacy Policy",
   "last_update": "Last updated: March 2026",
   "intro_title": "1. Introduction",
-  "intro_text": "Welcome to <0>Tribe</0>. The data controller is <0>Tribe</0>. Our platform is designed to help you organize, search, and share your interests.",
+  "intro_text": "Welcome to Tribe. The data controller is Tribe. Our platform is designed to help you organize, search, and share your interests.",
   "collect_title": "2. Information we collect",
   "collect_acc": "<0>Account data:</0> When you register, we collect your username, email, and password (which is stored securely and encrypted).",
   "collect_google": "<0>Google Login:</0> If you choose to authenticate through Google, we receive basic public profile information (such as your email).",
