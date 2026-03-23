@@ -4,16 +4,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next"; // 1. Importar
 import api from "../../services/api";
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
-});
-
 const ForgotPasswordForm = () => {
+  const { t } = useTranslation(); // 2. Inicializar hook
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  // 3. Esquema dinámico
+  const forgotPasswordSchema = z.object({
+    email: z.string().email(t("forgot.errors.email_invalid")).toLowerCase().trim(),
+  });
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(forgotPasswordSchema),
@@ -26,9 +29,9 @@ const ForgotPasswordForm = () => {
 
     try {
       await api.post("/users/forgot-password", data);
-      setSuccess("Solicitud enviada. Revisa tu correo o contacta con el administrador.");
+      setSuccess(t("forgot.success_msg"));
     } catch (err) {
-      setError(err.response?.data?.error || "Error de conexión.");
+      setError(err.response?.data?.error || t("forgot.errors.connection"));
     } finally {
       setLoading(false);
     }
@@ -37,8 +40,15 @@ const ForgotPasswordForm = () => {
   return (
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
       <div className="form-control">
-        <label className="label"><span className="label-text font-bold">Correo electrónico</span></label>
-        <input {...register("email")} type="email" placeholder="tu@email.com" className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`} />
+        <label className="label">
+          <span className="label-text font-bold">{t("forgot.email_label")}</span>
+        </label>
+        <input 
+          {...register("email")} 
+          type="email" 
+          placeholder={t("forgot.email_placeholder")} 
+          className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`} 
+        />
         {errors.email && <span className="text-error text-xs mt-1 block">{errors.email.message}</span>}
       </div>
 
@@ -49,7 +59,9 @@ const ForgotPasswordForm = () => {
           <ShieldCheck size={20} className="shrink-0" />
           <div className="flex flex-col gap-2">
             <span>{success}</span>
-            <Link to="/reset-password" underline="always" className="font-bold hover:underline">Ir a restablecer →</Link>
+            <Link to="/reset-password" underline="always" className="font-bold hover:underline">
+              {t("forgot.reset_link")}
+            </Link>
           </div>
         </div>
       )}
@@ -57,7 +69,7 @@ const ForgotPasswordForm = () => {
       <button type="submit" className="btn btn-primary w-full text-lg rounded-full mt-4" disabled={loading}>
         <span className="flex items-center gap-2">
           {loading && <span className="loading loading-spinner"></span>}
-          Enviar Solicitud
+          {t("forgot.submit_button")}
           {!loading && <ArrowRight size={20} />}
         </span>
       </button>

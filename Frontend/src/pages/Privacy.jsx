@@ -20,12 +20,12 @@ const PrivacyPolicy = () => {
 
         {/* Contenido del documento */}
         <div className="space-y-8 text-base leading-relaxed text-base-content/80">
-          
+
           <section>
             <h2 className="text-xl font-bold text-base-content mb-3">{t("privacy.intro_title")}</h2>
             <p>
               <Trans i18nKey="privacy.intro_text">
-                Welcome to <strong>Tribe</strong>. The data controller is <strong>Tribe</strong>. 
+                Welcome to <strong>Tribe</strong>. The data controller is <strong>Tribe</strong>.
                 Our platform is designed to help you organize, search, and share your interests.
               </Trans>
             </p>
@@ -59,14 +59,14 @@ const PrivacyPolicy = () => {
               <li>{t("privacy.usage_item1")}</li>
               <li>{t("privacy.usage_item2")}</li>
               <li>
-                <Trans 
-                i18nKey="privacy.usage_item3"
-                components={[
-                <strong key="0" />, 
-                <a key="1" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="text-primary hover:underline" />,
-                <a key="2" href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="text-primary hover:underline" />
-              ]}
-              />
+                <Trans
+                  i18nKey="privacy.usage_item3"
+                  components={[
+                    <strong key="0" />,
+                    <a key="1" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="text-primary hover:underline" />,
+                    <a key="2" href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="text-primary hover:underline" />
+                  ]}
+                />
               </li>
             </ul>
           </section>
@@ -84,11 +84,18 @@ const PrivacyPolicy = () => {
               </Trans>
             </p>
           </section>
-
+          <section>
+            <h2 className="text-xl font-bold text-base-content mb-3">{t("privacy.reservation_title")}</h2>
+            <p>
+              <Trans i18nKey="privacy.reservation_text">
+                <strong>Tribe</strong> reserves the right to modify, suspend, or terminate the service (or any part thereof) at any time, with or without notice. We also reserve the right to update this policy to reflect changes in our practices or for legal reasons.
+              </Trans>
+            </p>
+          </section>
         </div>
 
         <div className="divider mt-12"></div>
-        
+
         <p className="text-center text-sm text-base-content/50 pb-8">
           {t("privacy.footer", { year: new Date().getFullYear() })}
         </p>
