@@ -100,13 +100,16 @@
   "stats": {
     "collections": "Collections",
     "followers": "Followers",
-    "following": "Following"
+    "following": "Following",
+    "common_save": "Save"
   },
   "bio_placeholder": "Write something about yourself...",
   "bio_empty": "No bio yet...",
   "tabs": {
     "collections": "COLLECTIONS",
-    "saved": "SAVED"
+    "saved": "SAVED",
+    "common_new": "New"
+
   },
   "filter": {
     "label": "Sort by:",

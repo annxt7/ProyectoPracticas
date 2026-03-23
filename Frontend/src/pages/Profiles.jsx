@@ -304,7 +304,7 @@ const Profile = () => {
                       {t("profile.delete_modal.cancel")}
                     </button>
                     <button type="submit" className="btn btn-sm btn-primary">
-                      {t("common.save") || "Guardar"}
+                      {t("profile.common_save")}
                     </button>
                   </div>
                 </form>
@@ -454,7 +454,7 @@ const Profile = () => {
               className="aspect-4/5 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-primary/50 hover:bg-white/5 transition-all opacity-60 hover:opacity-100"
             >
               <Plus size={32} />
-              <span className="text-xs font-bold mt-2 uppercase">{t("common.new") || "Nueva"}</span>
+              <span className="text-xs font-bold mt-2 uppercase">{t("profile.tabs.common_new")}</span>
             </Link>
           )}
 
