@@ -329,5 +329,83 @@
   "input_placeholder": "Collection name...",
   "error_save": "Error saving to collection",
   "error_create": "There was a problem creating the collection"
+},
+"onboarding": {
+  "steps": {
+    "photo": "Your Photo",
+    "interests": "Your Interests"
+  },
+  "step1": {
+    "welcome": "Welcome, {{username}}!",
+    "subtitle": "Personalize your profile before starting.",
+    "next": "Next",
+    "uploading": "Uploading..."
+  },
+  "step2": {
+    "title": "What are you into?",
+    "back": "Back",
+    "finish": "Get Started!"
+  },
+  "categories": {
+    "Music": "Music",
+    "Books": "Books",
+    "Movies": "Movies",
+    "Games": "Games",
+    "Shows": "Shows"
+  },
+  "alerts": {
+    "upload_error": "Error uploading image",
+    "session_error": "Session error. Please log in again.",
+    "expired": "Your session has expired. Please log in again.",
+    "save_error": "We couldn't save your preferences. Please try again."
+  }
+},
+"admin": {
+  "title": "Admin Panel",
+  "logout": "Logout",
+  "search_placeholder": "Search on this page...",
+  "loading_data": "Loading data...",
+  "no_results": "No results found",
+  "tabs": {
+    "requests": "Requests",
+    "users": "Users",
+    "collections": "Collections",
+    "catalog": "Catalog"
+  },
+  "table": {
+    "date": "Date",
+    "user": "User",
+    "status": "Status",
+    "actions": "Actions",
+    "role": "Role",
+    "id": "ID",
+    "title": "Title",
+    "owner": "Owner",
+    "items": "Items",
+    "item": "Item",
+    "details": "Details",
+    "category": "Category",
+    "generate_code": "Generate Code",
+    "content": "Content",
+    "empty_collection": "This collection is empty.",
+    "no_description": "No description"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "info": "Page {{current}} of {{total}}"
+  },
+  "modals": {
+    "user_collections_title": "Collections",
+    "managing_user": "Managing content for {{username}}",
+    "no_collections": "No collections",
+    "close": "Close"
+  },
+  "alerts": {
+    "confirm_delete": "Are you sure you want to delete this? This action cannot be undone.",
+    "delete_error": "Error deleting item",
+    "confirm_code": "Generate code \"{{code}}\" for this user?",
+    "code_error": "Error generating code."
+  }
 }
 }

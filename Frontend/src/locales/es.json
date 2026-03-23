@@ -328,5 +328,83 @@
   "input_placeholder": "Nombre de la colección...",
   "error_save": "Error al guardar en la colección",
   "error_create": "Hubo un problema al crear la colección"
+},
+"onboarding": {
+  "steps": {
+    "photo": "Tu Foto",
+    "interests": "Tus Gustos"
+  },
+  "step1": {
+    "welcome": "¡Bienvenido, {{username}}!",
+    "subtitle": "Personaliza tu perfil antes de empezar.",
+    "next": "Siguiente",
+    "uploading": "Subiendo..."
+  },
+  "step2": {
+    "title": "¿Qué te apasiona?",
+    "back": "Atrás",
+    "finish": "¡Empezar!"
+  },
+  "categories": {
+    "Music": "Música",
+    "Books": "Libros",
+    "Movies": "Cine",
+    "Games": "Juegos",
+    "Shows": "Series"
+  },
+  "alerts": {
+    "upload_error": "Error al subir la imagen",
+    "session_error": "Error de sesión. Por favor, inicia sesión de nuevo.",
+    "expired": "Tu sesión ha expirado. Identifícate de nuevo.",
+    "save_error": "No pudimos guardar tus preferencias. Inténtalo de nuevo."
+  }
+},
+"admin": {
+  "title": "Panel de Control",
+  "logout": "Salir",
+  "search_placeholder": "Buscar en esta página...",
+  "loading_data": "Cargando datos...",
+  "no_results": "No se encontraron resultados",
+  "tabs": {
+    "requests": "Solicitudes",
+    "users": "Usuarios",
+    "collections": "Colecciones",
+    "catalog": "Catálogo"
+  },
+  "table": {
+    "date": "Fecha",
+    "user": "Usuario",
+    "status": "Estado",
+    "actions": "Acciones",
+    "role": "Rol",
+    "id": "ID",
+    "title": "Título",
+    "owner": "Dueño",
+    "items": "Items",
+    "item": "Item",
+    "details": "Detalles",
+    "category": "Categoría",
+    "generate_code": "Generar Código",
+    "content": "Contenido",
+    "empty_collection": "Esta colección está vacía.",
+    "no_description": "Sin descripción"
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "info": "Página {{current}} de {{total}}"
+  },
+  "modals": {
+    "user_collections_title": "Colecciones",
+    "managing_user": "Gestionando contenido de {{username}}",
+    "no_collections": "Sin colecciones",
+    "close": "Cerrar"
+  },
+  "alerts": {
+    "confirm_delete": "¿Estás seguro de eliminar esto? Esta acción no se puede deshacer.",
+    "delete_error": "Error al eliminar",
+    "confirm_code": "¿Generar código \"{{code}}\" para este usuario?",
+    "code_error": "Error al generar el código."
+  }
 }
 }

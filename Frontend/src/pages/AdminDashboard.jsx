@@ -12,12 +12,13 @@ import {
   ChevronUp,
   Package,
   AlertCircle,
-  Library, 
+  Library,
 } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const AdminDashboard = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -50,24 +51,24 @@ const AdminDashboard = () => {
 
   const filteredData = Array.isArray(data)
     ? data.filter((item) => {
-        const term = searchTerm.toLowerCase();
-        
-        if (activeTab === "users" && (item.role === "admin" || item.owner?.role === "admin")) return false;
+      const term = searchTerm.toLowerCase();
 
-        if (activeTab === "users") {
-          return item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term);
-        }
-        if (activeTab === "requests") {
-          return item.email?.toLowerCase().includes(term);
-        }
-        if (activeTab === "collections") {
-          return item.name?.toLowerCase().includes(term);
-        }
-        if (activeTab === "custom") {
-          return item.title?.toLowerCase().includes(term) || item.category?.toLowerCase().includes(term);
-        }
-        return true;
-      })
+      if (activeTab === "users" && (item.role === "admin" || item.owner?.role === "admin")) return false;
+
+      if (activeTab === "users") {
+        return item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term);
+      }
+      if (activeTab === "requests") {
+        return item.email?.toLowerCase().includes(term);
+      }
+      if (activeTab === "collections") {
+        return item.name?.toLowerCase().includes(term);
+      }
+      if (activeTab === "custom") {
+        return item.title?.toLowerCase().includes(term) || item.category?.toLowerCase().includes(term);
+      }
+      return true;
+    })
     : [];
 
   useEffect(() => {
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
         params: {
           page: currentPage,
           limit: itemsPerPage,
-          tab: activeTab 
+          tab: activeTab
         }
       });
 
@@ -102,12 +103,11 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-
   }, [activeTab, currentPage]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const toggleCollectionDetails = async (colId) => {
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
   };
 
   const handleDelete = async (id, isModal = false) => {
-    if (!window.confirm("¿Estás seguro de eliminar esto? Esta acción no se puede deshacer.")) return;
+    if (!window.confirm(t("admin.alerts.confirm_delete"))) return;
     try {
       let type = "";
       if (activeTab === "users" && !isModal) type = "User";
@@ -143,13 +143,13 @@ const AdminDashboard = () => {
         setData((prev) => prev.filter((item) => String(item.id) !== String(id)));
       }
     } catch (error) {
-      alert("Error al eliminar");
+      alert(t("admin.alerts.delete_error"));
     }
   };
 
   const handleApproveReset = async (requestId) => {
     const newCode = generateCode();
-    if (!window.confirm(`¿Generar código "${newCode}" para este usuario?`)) return;
+    if (!window.confirm(t("admin.alerts.confirm_code", { code: newCode }))) return;
     try {
       await api.post("/admin/approve-reset", { requestId, code: newCode });
       setData((prevData) =>
@@ -158,7 +158,7 @@ const AdminDashboard = () => {
         )
       );
     } catch (error) {
-      alert("Error al generar el código.");
+      alert(t("admin.alerts.code_error"));
     }
   };
 
@@ -181,20 +181,20 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-base-200 p-4 md:p-8 font-sans text-sm">
       <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold flex items-center gap-2">
-          <ShieldAlert className="text-primary" /> Admin Panel
+          <ShieldAlert className="text-primary" /> {t("admin.title")}
         </h1>
         <button onClick={logout} className="btn btn-error btn-outline btn-sm">
-          Salir
+          {t("admin.logout")}
         </button>
       </div>
 
       <div className="max-w-7xl mx-auto bg-base-100 rounded-2xl shadow-xl overflow-hidden min-h-[600px] flex flex-col">
         {/* TABS (Actualizado a 4 columnas) */}
         <div className="grid grid-cols-2 md:grid-cols-4 border-b border-base-300">
-          <TabButton active={activeTab === "requests"} onClick={() => handleTabChange("requests")} icon={<Key size={18} />} label="Solicitudes" />
-          <TabButton active={activeTab === "users"} onClick={() => handleTabChange("users")} icon={<Users size={18} />} label="Usuarios" />
-          <TabButton active={activeTab === "collections"} onClick={() => handleTabChange("collections")} icon={<Layers size={18} />} label="Colecciones" />
-          <TabButton active={activeTab === "custom"} onClick={() => handleTabChange("custom")} icon={<Library size={18} />} label="Catálogo" />
+          <TabButton active={activeTab === "requests"} onClick={() => handleTabChange("requests")} icon={<Key size={18} />} label={t("admin.tabs.requests")} />
+          <TabButton active={activeTab === "users"} onClick={() => handleTabChange("users")} icon={<Users size={18} />} label={t("admin.tabs.users")} />
+          <TabButton active={activeTab === "collections"} onClick={() => handleTabChange("collections")} icon={<Layers size={18} />} label={t("admin.tabs.collections")} />
+          <TabButton active={activeTab === "custom"} onClick={() => handleTabChange("custom")} icon={<Library size={18} />} label={t("admin.tabs.catalog")} />
         </div>
 
         {/* SEARCH BAR */}
@@ -203,7 +203,7 @@ const AdminDashboard = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30" size={18} />
             <input
               type="text"
-              placeholder="Buscar en esta página..."
+              placeholder={t("admin.search_placeholder")}
               className="input input-bordered w-full pl-10 rounded-full bg-base-200"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -216,21 +216,21 @@ const AdminDashboard = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center h-64 gap-4">
               <span className="loading loading-spinner loading-lg text-primary"></span>
-              <p className="opacity-50">Cargando datos...</p>
+              <p className="opacity-50">{t("admin.loading_data")}</p>
             </div>
           ) : filteredData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 opacity-40">
               <AlertCircle size={48} className="mb-2" />
-              <p className="text-lg font-medium">No se encontraron resultados</p>
+              <p className="text-lg font-medium">{t("admin.no_results")}</p>
             </div>
           ) : (
             <table className="table w-full">
               <thead>
                 <tr className="bg-base-200/50">
-                  {activeTab === "requests" && (<><th>Fecha</th><th>Usuario</th><th>Estado</th><th className="text-right">Acción</th></>)}
-                  {activeTab === "users" && (<><th>Usuario</th><th>Rol</th><th>ID</th><th className="text-right">Acciones</th></>)}
-                  {activeTab === "collections" && (<><th>Título</th><th>Dueño</th><th>Items</th><th className="text-right">Acciones</th></>)}
-                  {activeTab === "custom" && (<><th>Item</th><th>Detalles</th><th>Categoría</th><th className="text-right">Acciones</th></>)}
+                  {activeTab === "requests" && (<><th>{t("admin.table.date")}</th><th>{t("admin.table.user")}</th><th>{t("admin.table.status")}</th><th className="text-right">{t("admin.table.actions")}</th></>)}
+                  {activeTab === "users" && (<><th>{t("admin.table.user")}</th><th>{t("admin.table.role")}</th><th>{t("admin.table.id")}</th><th className="text-right">{t("admin.table.actions")}</th></>)}
+                  {activeTab === "collections" && (<><th>{t("admin.table.title")}</th><th>{t("admin.table.owner")}</th><th>{t("admin.table.items")}</th><th className="text-right">{t("admin.table.actions")}</th></>)}
+                  {activeTab === "custom" && (<><th>{t("admin.table.item")}</th><th>{t("admin.table.details")}</th><th>{t("admin.table.category")}</th><th className="text-right">{t("admin.table.actions")}</th></>)}
                 </tr>
               </thead>
               <tbody>
@@ -246,7 +246,7 @@ const AdminDashboard = () => {
                             {item.codeGenerated ? (
                               <span className="font-mono text-lg font-bold bg-base-200 px-3 py-1 rounded-lg border border-base-300">{item.codeGenerated}</span>
                             ) : (
-                              <button onClick={() => handleApproveReset(item.id)} className="btn btn-xs btn-primary">Generar Código</button>
+                              <button onClick={() => handleApproveReset(item.id)} className="btn btn-xs btn-primary">{t("admin.table.generate_code")}</button>
                             )}
                           </td>
                         </>
@@ -292,7 +292,7 @@ const AdminDashboard = () => {
                               <div className="font-bold truncate max-w-[150px]">{item.title}</div>
                             </div>
                           </td>
-                          <td><div className="text-xs opacity-60 truncate max-w-[200px]">{item.subtitle || "Sin descripción"}</div></td>
+                          <td><div className="text-xs opacity-60 truncate max-w-[200px]">{item.subtitle || t("admin.table.no_description")}</div></td>
                           <td><span className="badge badge-outline badge-sm uppercase text-[10px]">{item.category}</span></td>
                           <td className="text-right">
                             <button onClick={() => handleDelete(item.id)} className="btn btn-ghost btn-xs text-error"><Trash2 size={16} /></button>
@@ -301,14 +301,14 @@ const AdminDashboard = () => {
                       )}
                     </tr>
 
-                    
+
                     {activeTab === "collections" && expandedCollection === item.id && (
                       <tr>
                         <td colSpan="4" className="bg-base-200/50 p-0">
                           <div className="p-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <h4 className="text-[10px] uppercase font-black opacity-40 mb-3 flex items-center gap-2"><Package size={12} /> Contenido</h4>
+                            <h4 className="text-[10px] uppercase font-black opacity-40 mb-3 flex items-center gap-2"><Package size={12} /> {t("admin.table.content")}</h4>
                             {loadingItems ? (
-                              <div className="flex items-center gap-2 p-2 italic opacity-50"><span className="loading loading-dots loading-sm"></span> Cargando...</div>
+                              <div className="flex items-center gap-2 p-2 italic opacity-50"><span className="loading loading-dots loading-sm"></span> {t("admin.loading_data")}</div>
                             ) : collectionItems.length > 0 ? (
                               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                                 {collectionItems.map((i) => (
@@ -319,7 +319,7 @@ const AdminDashboard = () => {
                                 ))}
                               </div>
                             ) : (
-                              <p className="text-xs opacity-50 italic p-2">Esta colección está vacía.</p>
+                              <p className="text-xs opacity-50 italic p-2">{t("admin.table.empty_collection")}</p>
                             )}
                           </div>
                         </td>
@@ -332,25 +332,25 @@ const AdminDashboard = () => {
           )}
         </div>
 
-     
+
         {activeTab === "custom" && totalPages > 1 && (
           <div className="p-4 border-t border-base-200 flex justify-center items-center gap-4 bg-base-100">
-            <button 
-              className="btn btn-sm btn-outline" 
-              disabled={currentPage === 1 || loading} 
+            <button
+              className="btn btn-sm btn-outline"
+              disabled={currentPage === 1 || loading}
               onClick={() => setCurrentPage(p => p - 1)}
             >
-              Anterior
+              {t("admin.pagination.previous")}
             </button>
             <span className="text-xs font-bold uppercase tracking-widest opacity-60">
-              Página {currentPage} de {totalPages}
+              {t("admin.pagination.info", { current: currentPage, total: totalPages })}
             </span>
-            <button 
-              className="btn btn-sm btn-outline" 
-              disabled={currentPage === totalPages || loading} 
+            <button
+              className="btn btn-sm btn-outline"
+              disabled={currentPage === totalPages || loading}
               onClick={() => setCurrentPage(p => p + 1)}
             >
-              Siguiente
+              {t("admin.pagination.next")}
             </button>
           </div>
         )}
@@ -362,13 +362,13 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg text-primary"><Layers size={24} /></div>
-              <div><h3 className="font-black text-xl">Colecciones</h3><p className="text-xs opacity-50">Gestionando contenido de {selectedUser?.username}</p></div>
+              <div><h3 className="font-black text-xl">{t("admin.modals.user_collections_title")}</h3><p className="text-xs opacity-50">{t("admin.modals.managing_user", { username: selectedUser?.username })}</p></div>
             </div>
             <form method="dialog"><button className="btn btn-sm btn-circle btn-ghost">✕</button></form>
           </div>
           <div className="space-y-3 min-h-[200px]">
             {loadingModal ? (
-              <div className="flex flex-col items-center justify-center py-10 gap-2 opacity-50"><span className="loading loading-spinner loading-md"></span><p>Buscando...</p></div>
+              <div className="flex flex-col items-center justify-center py-10 gap-2 opacity-50"><span className="loading loading-spinner loading-md"></span><p>{t("admin.loading_data")}</p></div>
             ) : userCollections.length > 0 ? (
               userCollections.map((col) => (
                 <div key={col.collection_id} className="flex justify-between items-center p-4 bg-base-200/50 hover:bg-base-200 rounded-2xl transition-all border border-base-300/50 group">
@@ -380,24 +380,13 @@ const AdminDashboard = () => {
                 </div>
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 bg-base-200/30 rounded-3xl border-2 border-dashed border-base-300"><AlertCircle size={40} className="opacity-20 mb-2" /><p className="font-bold opacity-60">Sin colecciones</p></div>
+              <div className="flex flex-col items-center justify-center py-12 bg-base-200/30 rounded-3xl border-2 border-dashed border-base-300"><AlertCircle size={40} className="opacity-20 mb-2" /><p className="font-bold opacity-60">{t("admin.modals.no_collections")}</p></div>
             )}
           </div>
-          <div className="modal-action"><form method="dialog"><button className="btn btn-ghost rounded-full">Cerrar</button></form></div>
+          <div className="modal-action"><form method="dialog"><button className="btn btn-ghost rounded-full">{t("admin.modals.close")}</button></form></div>
         </div>
       </dialog>
     </div>
   );
 };
-
-const TabButton = ({ active, onClick, icon, label }) => (
-  <button
-    onClick={onClick}
-    className={`h-14 flex items-center justify-center gap-2 font-bold border-b-2 transition-all 
-      ${active ? "border-primary text-primary bg-primary/5" : "border-transparent opacity-50 hover:opacity-100"}`}
-  >
-    {icon} <span className="hidden sm:inline">{label}</span>
-  </button>
-);
-
 export default AdminDashboard;
