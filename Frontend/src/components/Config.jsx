@@ -208,7 +208,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
               <ShieldCheck className="text-primary" size={20} /> {t("settings.legal")}
             </div>
             <div className="collapse-content px-5 pb-5 space-y-2">
-              <button onClick={() => window.open(<Privacy />)} className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 justify-start gap-3 border-none">
+              <button onClick={() => window.open('/privacy', '_blank')} className="btn btn-ghost bg-base-100 btn-block rounded-2xl h-auto py-3 justify-start gap-3 border-none">
                 <FileText size={16} className="opacity-60" />
                 <div className="flex flex-col items-start text-left">
                   <span className="text-xs font-bold">{t("settings.terms")}</span>
