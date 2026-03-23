@@ -157,6 +157,26 @@
   "pending": "Pending",
   "empty": "No activity here",
   "footer_info": "Stay up to date with those who interact with your collections."
+},
+"privacy": {
+  "title": "Privacy Policy",
+  "last_update": "Last updated: March 2026",
+  "intro_title": "1. Introduction",
+  "intro_text": "Welcome to <0>Tribe</0>. The data controller is <0>Tribe</0>. Our platform is designed to help you organize, search, and share your interests.",
+  "collect_title": "2. Information we collect",
+  "collect_acc": "<0>Account data:</0> When you register, we collect your username, email, and password (which is stored securely and encrypted).",
+  "collect_google": "<0>Google Login:</0> If you choose to authenticate through Google, we receive basic public profile information (such as your email).",
+  "collect_content": "<0>Content and preferences:</0> We save information related to catalog searches, items you add to your collections, and profile settings established during the initial registration process.",
+  "usage_title": "3. Use of information",
+  "usage_intro": "The data we collect is used exclusively to:",
+  "usage_item1": "Manage your access to the platform and keep your session active securely.",
+  "usage_item2": "Personalize your feed and suggest content based on your interests.",
+  "usage_item3": "Protect the platform against spam and abuse through <0>Google reCAPTCHA v3</0>. Use of this service is subject to Google's <1>Privacy Policy</1> and <2>Terms of Service</2>.",
+  "protection_title": "4. Data protection and retention",
+  "protection_text": "We do not sell your personal information to third parties. Your data will be kept as long as your Tribe account remains active.",
+  "rights_title": "5. Your Rights",
+  "rights_text": "You have the right to access your data, request its rectification, or demand its complete removal from our servers. You can manage these rights directly from your account settings or by contacting our support at <0>soportetribe@tribe.com</0>.",
+  "footer": "© {{year}} Tribe. All rights reserved."
 }
 }
 

@@ -157,6 +157,26 @@
   "pending": "Pendientes",
   "empty": "No hay actividad por aquí",
   "footer_info": "Mantente al día con quienes interactúan con tus colecciones."
+},
+"privacy": {
+  "title": "Política de Privacidad",
+  "last_update": "Última actualización: Marzo 2026",
+  "intro_title": "1. Introducción",
+  "intro_text": "Bienvenido a <0>Tribe</0>. El controlador de los datos es <0>Tribe</0>. Nuestra plataforma está diseñada para ayudarte a organizar, buscar y compartir tus intereses.",
+  "collect_title": "2. Información que recopilamos",
+  "collect_acc": "<0>Datos de cuenta:</0> Cuando te registras, recopilamos tu nombre de usuario, correo electrónico y contraseña (que se almacena de forma segura y encriptada).",
+  "collect_google": "<0>Google Login:</0> Si eliges autenticarte a través de Google, recibimos información básica del perfil público (como tu correo electrónico).",
+  "collect_content": "<0>Content and preferences:</0> Nosotros guardamos información relacionada con búsquedas en el catálogo, elementos que añades a tus colecciones y configuraciones de perfil establecidas durante el proceso de registro inicial.",
+  "usage_title": "3. Uso de la información",
+  "usage_intro": "La información que recopilamos se utiliza exclusivamente para:",
+  "usage_item1": "Gestionar tu acceso a la plataforma y mantener tu sesión activa de forma segura.",
+  "usage_item2": "Personalizar tu feed y sugerir contenido basado en tus intereses.",
+  "usage_item3": "Proteger la plataforma contra spam y abuso a través de <0>Google reCAPTCHA v3</0>. El uso de este servicio está sujeto a la <1>Política de Privacidad</1> y los <2>Términos de Servicio</2> de Google."
+  "protection_title": "4. Protección y conservación de datos",
+  "protection_text": "No vendemos tu información personal a terceros. Tus datos se mantendrán activos mientras tu cuenta de Tribe esté en uso.",
+  "rights_title": "5. Tus Derechos",
+  "rights_text": "Tienes el derecho a acceder a tus datos, solicitar su rectificación o exigir su eliminación completa de nuestros servidores. Puedes gestionar estos derechos directamente desde la configuración de tu cuenta o contactando con nuestro soporte en <0>soportetribe@tribe.com</0>.",
+  "footer": "© {{year}} Tribe. Todos los derechos reservados."
 }
 }
 
