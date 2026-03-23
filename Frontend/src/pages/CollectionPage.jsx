@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, Link} from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   Plus,
@@ -23,6 +24,7 @@ import { uploadFileToCloudinary } from "../services/upload.js";
 const CollectionPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const fileInputRef = useRef(null);
 
@@ -44,28 +46,25 @@ const CollectionPage = () => {
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Función para mostrar notificaciones
   const showNotification = (message, type = "success") => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3000);
   };
 
-  // 1. CARGA DE DATOS
   useEffect(() => {
     const fetchCollection = async () => {
       setLoading(true);
       try {
         const res = await api.get(`/collections/${id}`);
         const data = res.data;
-        console.log("Datos de la colección:", data);
         setIsSaved(!!data.is_saved);
 
         setCollectionInfo({
-          id: data.collection_id ,
-          title: data.collection_name ,
-          description: data.collection_description ,
-          type: data.collection_type ,
-          cover: data.cover_url ,
+          id: data.collection_id,
+          title: data.collection_name,
+          description: data.collection_description,
+          type: data.collection_type,
+          cover: data.cover_url,
           creatorId: data.creator_id,
           creatorName: data.creator_username,
           stats: { 
@@ -78,7 +77,7 @@ const CollectionPage = () => {
           setItems(data.items.map(item => {
             const refId = item.music_id || item.book_id || item.movie_id || item.show_id || item.game_id;
             return {
-              id: item.item_id ,
+              id: item.item_id,
               title: item.display_title,
               author: item.display_subtitle,
               cover: item.display_image,
@@ -89,15 +88,14 @@ const CollectionPage = () => {
           }));
         }
       } catch (err) {
-        console.error("Error cargando colección:", err);
-        showNotification("No se pudo cargar la colección", "error");
+        showNotification(t("collection.notifications.load_error"), "error");
       } finally {
         setLoading(false);
       }
     };
 
     if (id) fetchCollection();
-  }, [id]);
+  }, [id, t]);
 
   const isOwner = user && collectionInfo && String(user.id || user.userId) === String(collectionInfo.creatorId);
 
@@ -125,11 +123,10 @@ const CollectionPage = () => {
         };
         setItems(prev => [...prev, itemParaLaVista]);
         setIsAddItemOpen(false);
-        showNotification("Item añadido correctamente");
+        showNotification(t("collection.notifications.add_success"));
       }
     } catch (error) {
-      console.error("Error al guardar el item:", error);
-      showNotification("Error al guardar en la base de datos", "error");
+      showNotification(t("collection.notifications.db_error"), "error");
     }
   };
 
@@ -138,10 +135,10 @@ const CollectionPage = () => {
     setIsSaved(true);
     try {
       await api.post(`/collections/save/${id}`);
-      showNotification("Colección guardada en tu biblioteca");
+      showNotification(t("collection.notifications.save_col_success"));
     } catch (error) {
       setIsSaved(false);
-      showNotification("Error al guardar colección", "error");
+      showNotification(t("collection.notifications.save_col_error"), "error");
     }
   };
 
@@ -164,9 +161,9 @@ const CollectionPage = () => {
 
       setCollectionInfo(prev => ({ ...prev, title: editForm.title, description: editForm.description, cover: finalCoverUrl }));
       setIsEditing(false);
-      showNotification("Cambios guardados");
+      showNotification(t("collection.notifications.update_success"));
     } catch (error) {
-      showNotification("Error al actualizar la colección", "error");
+      showNotification(t("collection.notifications.update_error"), "error");
     } finally {
       setIsUploading(false);
     }
@@ -178,19 +175,22 @@ const CollectionPage = () => {
       await api.delete(`/collections/items/${itemToDelete}`);
       setItems(prev => prev.filter(i => i.id !== itemToDelete));
       setItemToDelete(null);
-      showNotification("Item eliminado", "success");
+      showNotification(t("collection.notifications.delete_success"));
     } catch (error) {
-      showNotification("No se pudo eliminar el item", "error");
+      showNotification(t("collection.notifications.delete_error"), "error");
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-base-100"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-base-100">
+      <span className="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  );
 
   return (
     <div className="min-h-screen pb-24 bg-base-300 text-base-content">
       <NavDesktop />
 
-      
       {toast.show && (
         <div className="fixed top-4 right-4 z-100 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className={`alert ${toast.type === "error" ? "alert-error" : "alert-success"} shadow-lg rounded-2xl py-3 px-6 flex items-center gap-3`}>
@@ -203,15 +203,16 @@ const CollectionPage = () => {
       {itemToDelete && (
         <div className="modal modal-open">
           <div className="modal-box rounded-3xl border border-white/10 bg-base-200">
-            <h3 className="font-bold text-lg">¿Eliminar item?</h3>
-            <p className="py-4 opacity-70 text-sm">Esta acción quitará el elemento de esta colección de forma permanente.</p>
+            <h3 className="font-bold text-lg">{t("collection.delete_modal.title")}</h3>
+            <p className="py-4 opacity-70 text-sm">{t("collection.delete_modal.text")}</p>
             <div className="modal-action">
-              <button onClick={() => setItemToDelete(null)} className="btn btn-ghost rounded-full px-6">Cancelar</button>
-              <button onClick={handleDeleteItem} className="btn btn-error rounded-full px-6 text-white">Eliminar</button>
+              <button onClick={() => setItemToDelete(null)} className="btn btn-ghost rounded-full px-6">{t("collection.actions.cancel")}</button>
+              <button onClick={handleDeleteItem} className="btn btn-error rounded-full px-6 text-white">{t("collection.delete_modal.confirm")}</button>
             </div>
           </div>
         </div>
       )}
+
       <div className="relative">
         <div className="absolute inset-0 h-[450px] overflow-hidden -z-10 opacity-25">
           <img src={isEditing ? editForm.cover : collectionInfo.cover} className="w-full h-full object-cover blur-3xl" alt="" />
@@ -220,17 +221,17 @@ const CollectionPage = () => {
 
         <div className="max-w-6xl mx-auto px-4 pt-8">
           <Link to={isOwner ? "/profile/me" : `/profile/${collectionInfo.creatorId}`} className="inline-flex items-center gap-2 text-sm opacity-60 hover:opacity-100 mb-8 transition-all">
-            <ArrowLeft size={16} /> {isOwner ? "Mi Perfil" : `Perfil de ${collectionInfo.creatorName}`}
+            <ArrowLeft size={16} /> 
+            {isOwner ? t("collection.back_my_profile") : t("collection.back_user_profile", { name: collectionInfo.creatorName })}
           </Link>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* PORTADA COLECCIÓN */}
             <div className="relative group w-full md:w-64 aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-base-300">
               <ItemCover src={isEditing ? editForm.cover : collectionInfo.cover} title={collectionInfo.title} className="w-full h-full object-cover" />
               {isEditing && (
                 <div onClick={() => fileInputRef.current.click()} className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm">
                   <Camera className="text-white mb-1" size={32} />
-                  <span className="text-white text-[10px] font-bold uppercase tracking-widest">Cambiar</span>
+                  <span className="text-white text-[10px] font-bold uppercase tracking-widest">{t("collection.actions.changing_cover")}</span>
                 </div>
               )}
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
@@ -242,7 +243,6 @@ const CollectionPage = () => {
               }} />
             </div>
 
-            {/* INFO COLECCIÓN */}
             <div className="flex-1 space-y-4 w-full">
               <span className="badge badge-primary badge-outline font-bold text-[10px] uppercase tracking-widest px-3">{collectionInfo.type}</span>
               
@@ -255,13 +255,13 @@ const CollectionPage = () => {
               {isEditing ? (
                 <textarea className="textarea textarea-ghost w-full text-lg opacity-70 px-0 focus:bg-transparent border-l-2 border-primary/30 pl-4 h-24 resize-none" value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} />
               ) : (
-                <p className="text-lg opacity-60 max-w-2xl border-l-2 border-white/10 pl-4 italic">{collectionInfo.description || "Sin descripción."}</p>
+                <p className="text-lg opacity-60 max-w-2xl border-l-2 border-white/10 pl-4 italic">{collectionInfo.description || t("collection.no_description")}</p>
               )}
 
               <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/5">
                 <div className="flex gap-8">
-                  <div><span className="block text-xl font-bold">{items.length}</span><span className="text-[10px] opacity-40 uppercase font-bold">Items</span></div>
-                  <div><span className="block text-xl font-bold">{collectionInfo.stats.likes}</span><span className="text-[10px] opacity-40 uppercase font-bold">Likes</span></div>
+                  <div><span className="block text-xl font-bold">{items.length}</span><span className="text-[10px] opacity-40 uppercase font-bold">{t("collection.stats.items")}</span></div>
+                  <div><span className="block text-xl font-bold">{collectionInfo.stats.likes}</span><span className="text-[10px] opacity-40 uppercase font-bold">{t("collection.stats.likes")}</span></div>
                 </div>
 
                 <div className="flex gap-3">
@@ -269,19 +269,19 @@ const CollectionPage = () => {
                     isEditing ? (
                       <>
                         <button onClick={handleSaveEditing} className="btn btn-primary btn-sm rounded-full px-6" disabled={isUploading}>
-                          {isUploading ? <span className="loading loading-spinner loading-xs"></span> : "Guardar"}
+                          {isUploading ? <span className="loading loading-spinner loading-xs"></span> : t("collection.actions.save_changes")}
                         </button>
-                        <button onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm rounded-full">Cancelar</button>
+                        <button onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm rounded-full">{t("collection.actions.cancel")}</button>
                       </>
                     ) : (
                       <>
-                        <button onClick={() => { setEditForm({title: collectionInfo.title, description: collectionInfo.description, cover: collectionInfo.cover}); setIsEditing(true); }} className="btn btn-outline btn-sm rounded-full gap-2 px-4"><Settings size={16} /> Editar</button>
-                        <button onClick={() => setIsAddItemOpen(true)} className="btn btn-primary btn-sm rounded-full gap-2 px-4 shadow-lg shadow-primary/20"><Plus size={16} /> Añadir</button>
+                        <button onClick={() => { setEditForm({title: collectionInfo.title, description: collectionInfo.description, cover: collectionInfo.cover}); setIsEditing(true); }} className="btn btn-outline btn-sm rounded-full gap-2 px-4"><Settings size={16} /> {t("collection.actions.edit")}</button>
+                        <button onClick={() => setIsAddItemOpen(true)} className="btn btn-primary btn-sm rounded-full gap-2 px-4 shadow-lg shadow-primary/20"><Plus size={16} /> {t("collection.actions.add")}</button>
                       </>
                     )
                   ) : (
                     <button onClick={handleSaveCollection} disabled={isSaved} className={`btn btn-sm rounded-full gap-2 px-6 transition-all duration-500 ${isSaved ? "btn-success btn-outline opacity-100" : "btn-primary shadow-lg"}`}>
-                      {isSaved ? <><Check size={18} /> Guardada</> : <><BookmarkPlus size={18} /> Guardar Colección</>}
+                      {isSaved ? <><Check size={18} /> {t("collection.actions.saved")}</> : <><BookmarkPlus size={18} /> {t("collection.actions.save")}</>}
                     </button>
                   )}
                   <button className="btn btn-square btn-ghost btn-sm rounded-full"><Share2 size={18} /></button>
@@ -292,26 +292,19 @@ const CollectionPage = () => {
         </div>
       </div>
 
-      {/* --- GRID DE ITEMS --- */}
       <main className="max-w-6xl mx-auto px-4 mt-16">
-        <h2 className="text-xl font-bold mb-8 flex items-center gap-4">Contenido <div className="h-px flex-1 bg-white/5"></div></h2>
+        <h2 className="text-xl font-bold mb-8 flex items-center gap-4">{t("collection.content_title")} <div className="h-px flex-1 bg-white/5"></div></h2>
         
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {items.map((item) => (
             <div key={item.id} className="group flex flex-col gap-3">
               <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-base-300 shadow-lg border border-white/5">
                 <ItemCover src={item.cover} title={item.title} className="w-full h-full object-cover" />
-                
                 <div className="absolute top-2 right-2 ">
                   {isOwner ? (
                     <button onClick={() => setItemToDelete(item.id)} className="btn btn-square btn-xs btn-error shadow-xl"><Trash2 size={14} /></button>
                   ) : (
-                    <button 
-                      onClick={() => setSelectedItemForSave(item)}
-                      className="btn btn-square btn-xs btn-primary shadow-xl "
-                    >
-                      <Plus size={14} />
-                    </button>
+                    <button onClick={() => setSelectedItemForSave(item)} className="btn btn-square btn-xs btn-primary shadow-xl "><Plus size={14} /></button>
                   )}
                 </div>
               </div>
@@ -324,13 +317,13 @@ const CollectionPage = () => {
           {isOwner && (
             <button onClick={() => setIsAddItemOpen(true)} className="aspect-2/3 rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 opacity-30 hover:opacity-100 hover:bg-white/5 transition-all">
               <Plus size={32} />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Añadir</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest">{t("collection.actions.add")}</span>
             </button>
           )}
         </div>
       </main>
 
-      {/* --- MODALES --- */}
+      {/* MODALES */}
       {selectedItemForSave && (
         <AddToCollectionModal 
           isOpen={!!selectedItemForSave} 

@@ -177,6 +177,68 @@
   "rights_title": "5. Tus Derechos",
   "rights_text": "Tienes el derecho a acceder a tus datos, solicitar su rectificación o exigir su eliminación completa de nuestros servidores. Puedes gestionar estos derechos directamente desde la configuración de tu cuenta o contactando con nuestro soporte en <0>soportetribe@tribe.com</0>.",
   "footer": "© {{year}} Tribe. Todos los derechos reservados."
+},
+"create_col": {
+  "title": "Nueva Colección",
+  "preview_label": "Vista previa en tiempo real",
+  "preview_waiting": "Esperando portada",
+  "preview_items": "0 elementos",
+  "preview_footer": "Así es como se verá tu tarjeta. <0>Edite los campos a la derecha</0> para ver los cambios.",
+  "label_cover": "Portada de la colección",
+  "upload_click": "Click to upload image",
+  "upload_hint": "Recommended: 4:5 or 16:9",
+  "label_name": "Nombre de la colección",
+  "placeholder_name": "Ej: Mis películas de terror favoritas",
+  "label_desc": "Descripción",
+  "placeholder_desc": "Dile a tu tribu qué trata este espacio...",
+  "label_category": "Categoría",
+  "btn_discard": "Descartar",
+  "btn_publish": "Publicar Colección",
+  "error_create": "Error: No se pudo crear",
+  "types": {
+    "movies": "Películas",
+    "books": "Libros",
+    "music": "Música",
+    "shows": "Series",
+    "games": "Juegos",
+    "custom": "Otro"
+  }
+},
+"collection": {
+  "loading": "Cargando colección...",
+  "back_my_profile": "Mi Perfil",
+  "back_user_profile": "Perfil de {{name}}",
+  "no_description": "Sin descripción.",
+  "stats": {
+    "items": "Items",
+    "likes": "Likes"
+  },
+  "actions": {
+    "edit": "Editar",
+    "add": "Agregar",
+    "save": "Guardar Colección",
+    "saved": "Guardada",
+    "cancel": "Cancelar",
+    "save_changes": "Guardar Cambios",
+    "changing_cover": "Cambiar Portada"
+  },
+  "content_title": "Contenido",
+  "delete_modal": {
+    "title": "¿Eliminar elemento?",
+    "text": "Esta acción eliminará permanentemente el elemento de esta colección.",
+    "confirm": "Eliminar"
+  },
+  "notifications": {
+    "load_error": "No se pudo cargar la colección",
+    "add_success": "Elemento agregado exitosamente",
+    "db_error": "Error al guardar en la base de datos",
+    "save_col_success": "Colección guardada en tu biblioteca",
+    "save_col_error": "Error al guardar la colección",
+    "update_success": "Cambios guardados",
+    "update_error": "Error al actualizar la colección",
+    "delete_success": "Elemento eliminado",
+    "delete_error": "No se pudo eliminar el elemento"
+  }
 }
 }
 

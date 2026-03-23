@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import {
   Image as ImageIcon,
   Music,
@@ -16,6 +17,7 @@ import NavMobile from "../components/NavMobile";
 import api from "../services/api";
 
 const CreateCollection = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,12 +31,12 @@ const CreateCollection = () => {
   });
 
   const collectionTypes = [
-    { id: "Movies", label: "Cine", icon: <Film size={20} /> },
-    { id: "Books", label: "Libros", icon: <Book size={20} /> },
-    { id: "Music", label: "Música", icon: <Music size={20} /> },
-    { id: "Shows", label: "Series", icon: <Tv size={20} /> },
-    { id: "Games", label: "Juegos", icon: <Gamepad2 size={20} /> },
-    { id: "Custom", label: "Otro", icon: <Box size={20} /> },
+    { id: "Movies", label: t("create_col.types.movies"), icon: <Film size={20} /> },
+    { id: "Books", label: t("create_col.types.books"), icon: <Book size={20} /> },
+    { id: "Music", label: t("create_col.types.music"), icon: <Music size={20} /> },
+    { id: "Shows", label: t("create_col.types.shows"), icon: <Tv size={20} /> },
+    { id: "Games", label: t("create_col.types.games"), icon: <Gamepad2 size={20} /> },
+    { id: "Custom", label: t("create_col.types.custom"), icon: <Box size={20} /> },
   ];
 
   const handleChange = (e) => {
@@ -80,8 +82,8 @@ const CreateCollection = () => {
         navigate(`/collection/${res.data.collection_id}`);
       }
     } catch (error) {
-      console.error("Error al crear:", error);
-      alert("Error: " + (error.response?.data?.sqlMessage || "No se pudo crear"));
+      console.error("Error creating:", error);
+      alert(t("create_col.error_create") + ": " + (error.response?.data?.sqlMessage || ""));
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +99,7 @@ const CreateCollection = () => {
             <button onClick={() => navigate(-1)} className="btn btn-circle btn-ghost btn-sm">
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-2xl md:text-3xl font-bold font-serif">Nueva Colección</h1>
+            <h1 className="text-2xl md:text-3xl font-bold font-serif">{t("create_col.title")}</h1>
           </div>
         </div>
 
@@ -108,7 +110,7 @@ const CreateCollection = () => {
             <div className="flex items-center justify-center gap-2 mb-4 opacity-40">
                 <Info size={14} />
                 <p className="text-[10px] uppercase tracking-[0.2em] font-bold">
-                    Vista previa en tiempo real
+                    {t("create_col.preview_label")}
                 </p>
             </div>
             
@@ -127,7 +129,7 @@ const CreateCollection = () => {
                   ) : (
                     <div className="w-full h-full bg-base-200 flex flex-col items-center justify-center text-base-content/20">
                       <ImageIcon size={48} />
-                      <span className="text-xs font-bold mt-2 uppercase tracking-widest">Esperando Portada</span>
+                      <span className="text-xs font-bold mt-2 uppercase tracking-widest">{t("create_col.preview_waiting")}</span>
                     </div>
                   )}
 
@@ -139,11 +141,11 @@ const CreateCollection = () => {
                     </div>
                     
                     <p className="text-white font-serif font-bold truncate text-xl leading-none">
-                      {formData.title || "Título de colección..."}
+                      {formData.title || t("create_col.placeholder_name")}
                     </p>
                     
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
-                      <p className="text-white/50 text-[10px] font-medium uppercase tracking-widest">0 elementos</p>
+                      <p className="text-white/50 text-[10px] font-medium uppercase tracking-widest">{t("create_col.preview_items")}</p>
                       <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                     </div>
                   </div>
@@ -155,16 +157,18 @@ const CreateCollection = () => {
               </div>
 
               <p className="mt-8 text-center text-[11px] opacity-40 leading-relaxed">
-                Esta es la apariencia final de tu card.<br /> 
-                <span className="font-bold">Edita los campos de la derecha</span> para ver los cambios.
+                <Trans i18nKey="create_col.preview_footer">
+                  This is the final look of your card.<br /> 
+                  <span className="font-bold">Edit the fields on the right</span> to see changes.
+                </Trans>
               </p>
             </div>
           </div>
 
-          {/* FORMULARIO  */}
+          {/* FORMULARIO */}
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-3">
-              <label className="text-sm font-bold opacity-70 uppercase tracking-wider">Portada de la colección</label>
+              <label className="text-sm font-bold opacity-70 uppercase tracking-wider">{t("create_col.label_cover")}</label>
               <div 
                 onClick={() => fileInputRef.current.click()} 
                 className={`w-full aspect-video md:aspect-[3/1] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${formData.coverPreview ? 'border-primary/50 bg-primary/5' : 'border-base-300 hover:border-primary hover:bg-base-200'}`}
@@ -174,8 +178,8 @@ const CreateCollection = () => {
                 ) : (
                   <div className="text-center p-6">
                     <ImageIcon size={24} className="mx-auto mb-2 opacity-40"/>
-                    <span className="text-sm font-bold">Haz clic para subir imagen</span>
-                    <p className="text-[10px] opacity-50 mt-1">Recomendado: 4:5 o 16:9</p>
+                    <span className="text-sm font-bold">{t("create_col.upload_click")}</span>
+                    <p className="text-[10px] opacity-50 mt-1">{t("create_col.upload_hint")}</p>
                   </div>
                 )}
                 <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
@@ -183,11 +187,11 @@ const CreateCollection = () => {
             </div>
 
             <div className="form-control">
-              <label className="label"><span className="label-text font-bold text-base">Nombre de la colección</span></label>
+              <label className="label"><span className="label-text font-bold text-base">{t("create_col.label_name")}</span></label>
               <input 
                 type="text" 
                 name="title" 
-                placeholder="Ej: Mis películas favoritas de terror"
+                placeholder={t("create_col.placeholder_name")}
                 value={formData.title} 
                 onChange={handleChange} 
                 className="input input-bordered w-full focus:input-primary bg-base-200/50 border-none h-14" 
@@ -196,18 +200,18 @@ const CreateCollection = () => {
             </div>
 
             <div className="form-control">
-              <label className="label"><span className="label-text font-bold text-base">Descripción</span></label>
+              <label className="label"><span className="label-text font-bold text-base">{t("create_col.label_desc")}</span></label>
               <textarea 
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 className="textarea textarea-bordered h-28 text-base resize-none w-full bg-base-200/50 border-none focus:textarea-primary" 
-                placeholder="Cuéntale a tu tribu de qué trata este espacio..."
+                placeholder={t("create_col.placeholder_desc")}
               ></textarea>
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-bold opacity-70 uppercase tracking-wider">Categoría</label>
+              <label className="text-sm font-bold opacity-70 uppercase tracking-wider">{t("create_col.label_category")}</label>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                 {collectionTypes.map((type) => (
                   <div 
@@ -224,10 +228,10 @@ const CreateCollection = () => {
             
             <div className="pt-6 flex items-center justify-end gap-4 border-t border-base-200">
               <button type="button" onClick={() => navigate(-1)} className="btn btn-ghost font-bold" disabled={isLoading}>
-                Descartar
+                {t("create_col.btn_discard")}
               </button>
               <button type="submit" className="btn btn-primary px-10 rounded-full font-bold shadow-lg shadow-primary/20" disabled={!formData.title || isLoading}>
-                {isLoading ? <span className="loading loading-spinner"></span> : "Publicar Colección"}
+                {isLoading ? <span className="loading loading-spinner"></span> : t("create_col.btn_publish")}
               </button>
             </div>
           </form>

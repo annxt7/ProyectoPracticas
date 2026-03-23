@@ -177,6 +177,68 @@
   "rights_title": "5. Your Rights",
   "rights_text": "You have the right to access your data, request its rectification, or demand its complete removal from our servers. You can manage these rights directly from your account settings or by contacting our support at <0>soportetribe@tribe.com</0>.",
   "footer": "© {{year}} Tribe. All rights reserved."
+},
+"create_col": {
+  "title": "New Collection",
+  "preview_label": "Real-time preview",
+  "preview_waiting": "Waiting for cover",
+  "preview_items": "0 elements",
+  "preview_footer": "This is how your card will look. <0>Edit the fields on the right</0> to see changes.",
+  "label_cover": "Collection cover",
+  "upload_click": "Click to upload image",
+  "upload_hint": "Recommended: 4:5 or 16:9",
+  "label_name": "Collection name",
+  "placeholder_name": "Ex: My favorite horror movies",
+  "label_desc": "Description",
+  "placeholder_desc": "Tell your tribe what this space is about...",
+  "label_category": "Category",
+  "btn_discard": "Discard",
+  "btn_publish": "Publish Collection",
+  "error_create": "Error: Could not create",
+  "types": {
+    "movies": "Movies",
+    "books": "Books",
+    "music": "Music",
+    "shows": "Series",
+    "games": "Games",
+    "custom": "Other"
+  }
+},
+"collection": {
+  "loading": "Loading collection...",
+  "back_my_profile": "My Profile",
+  "back_user_profile": "{{name}}'s Profile",
+  "no_description": "No description.",
+  "stats": {
+    "items": "Items",
+    "likes": "Likes"
+  },
+  "actions": {
+    "edit": "Edit",
+    "add": "Add",
+    "save": "Save Collection",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "save_changes": "Save",
+    "changing_cover": "Change"
+  },
+  "content_title": "Content",
+  "delete_modal": {
+    "title": "Delete item?",
+    "text": "This action will permanently remove the element from this collection.",
+    "confirm": "Delete"
+  },
+  "notifications": {
+    "load_error": "Could not load collection",
+    "add_success": "Item added successfully",
+    "db_error": "Error saving to database",
+    "save_col_success": "Collection saved to your library",
+    "save_col_error": "Error saving collection",
+    "update_success": "Changes saved",
+    "update_error": "Error updating collection",
+    "delete_success": "Item deleted",
+    "delete_error": "Could not delete item"
+  }
 }
 }
 
