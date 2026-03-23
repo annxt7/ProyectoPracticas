@@ -304,7 +304,7 @@ const Profile = () => {
                       {t("profile.delete_modal.cancel")}
                     </button>
                     <button type="submit" className="btn btn-sm btn-primary">
-                      {t("profile.common_save")}
+                      {t("profile.stats.common_save")}
                     </button>
                   </div>
                 </form>
