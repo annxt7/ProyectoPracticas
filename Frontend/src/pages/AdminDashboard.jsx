@@ -23,6 +23,7 @@ const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  // --- ESTADOS PRINCIPALES ---
   const [activeTab, setActiveTab] = useState("requests");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,7 @@ const AdminDashboard = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 20;
 
+  // --- ESTADOS DE DETALLE Y MODALES ---
   const [expandedCollection, setExpandedCollection] = useState(null);
   const [collectionItems, setCollectionItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
@@ -40,6 +42,17 @@ const AdminDashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userCollections, setUserCollections] = useState([]);
   const [loadingModal, setLoadingModal] = useState(false);
+
+  // --- NUEVO ESTADO PARA MODAL DE CONFIRMACIÓN ---
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+    isDanger: false
+  });
+
+  const closeConfirm = () => setConfirmModal(prev => ({ ...prev, isOpen: false }));
 
   const generateCode = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -53,21 +66,11 @@ const AdminDashboard = () => {
   const filteredData = Array.isArray(data)
     ? data.filter((item) => {
         const term = searchTerm.toLowerCase();
-
         if (activeTab === "users" && (item.role === "admin" || item.owner?.role === "admin")) return false;
-
-        if (activeTab === "users") {
-          return item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term);
-        }
-        if (activeTab === "requests") {
-          return item.email?.toLowerCase().includes(term);
-        }
-        if (activeTab === "collections") {
-          return item.name?.toLowerCase().includes(term);
-        }
-        if (activeTab === "custom") {
-          return item.title?.toLowerCase().includes(term) || item.category?.toLowerCase().includes(term);
-        }
+        if (activeTab === "users") return item.username?.toLowerCase().includes(term) || item.email?.toLowerCase().includes(term);
+        if (activeTab === "requests") return item.email?.toLowerCase().includes(term);
+        if (activeTab === "collections") return item.name?.toLowerCase().includes(term);
+        if (activeTab === "custom") return item.title?.toLowerCase().includes(term) || item.category?.toLowerCase().includes(term);
         return true;
       })
     : [];
@@ -80,13 +83,8 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       const response = await api.get("/admin/data", {
-        params: {
-          page: currentPage,
-          limit: itemsPerPage,
-          tab: activeTab
-        }
+        params: { page: currentPage, limit: itemsPerPage, tab: activeTab }
       });
-
       if (activeTab === "users") setData(response.data.users || []);
       else if (activeTab === "requests") setData(response.data.requests || []);
       else if (activeTab === "collections") setData(response.data.collections || []);
@@ -95,7 +93,6 @@ const AdminDashboard = () => {
         setTotalPages(response.data.pagination?.totalPages || 1);
       }
     } catch (error) {
-      console.error("Error:", error);
       setData([]);
     } finally {
       setLoading(false);
@@ -128,39 +125,55 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDelete = async (id, isModal = false) => {
-    if (!window.confirm(t("admin.alerts.confirm_delete"))) return;
-    try {
-      let type = "";
-      if (activeTab === "users" && !isModal) type = "User";
-      else if (activeTab === "collections" || isModal) type = "Collections";
-      else if (activeTab === "custom") type = "Custom";
-
-      await api.delete(`/admin/${type}/${id}`);
-
-      if (isModal) {
-        setUserCollections((prev) => prev.filter((c) => String(c.collection_id) !== String(id)));
-      } else {
-        setData((prev) => prev.filter((item) => String(item.id) !== String(id)));
+  // REFACTORIZADO CON MODAL
+  const handleDelete = (id, isModal = false) => {
+    setConfirmModal({
+      isOpen: true,
+      title: t("admin.modals.delete_title"),
+      message: t("admin.alerts.confirm_delete"),
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          let type = "";
+          if (activeTab === "users" && !isModal) type = "User";
+          else if (activeTab === "collections" || isModal) type = "Collections";
+          else if (activeTab === "custom") type = "Custom";
+          await api.delete(`/admin/${type}/${id}`);
+          if (isModal) {
+            setUserCollections((prev) => prev.filter((c) => String(c.collection_id) !== String(id)));
+          } else {
+            setData((prev) => prev.filter((item) => String(item.id) !== String(id)));
+          }
+          closeConfirm();
+        } catch (error) {
+          closeConfirm();
+        }
       }
-    } catch (error) {
-      alert(t("admin.alerts.delete_error"));
-    }
+    });
   };
 
-  const handleApproveReset = async (requestId) => {
+  // REFACTORIZADO CON MODAL
+  const handleApproveReset = (requestId) => {
     const newCode = generateCode();
-    if (!window.confirm(t("admin.alerts.confirm_code", { code: newCode }))) return;
-    try {
-      await api.post("/admin/approve-reset", { requestId, code: newCode });
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === requestId ? { ...item, status: "completed", codeGenerated: newCode } : item
-        )
-      );
-    } catch (error) {
-      alert(t("admin.alerts.code_error"));
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: t("admin.modals.generate_code_title"),
+      message: t("admin.alerts.confirm_code", { code: newCode }),
+      isDanger: false,
+      onConfirm: async () => {
+        try {
+          await api.post("/admin/approve-reset", { requestId, code: newCode });
+          setData((prevData) =>
+            prevData.map((item) =>
+              item.id === requestId ? { ...item, status: "completed", codeGenerated: newCode } : item
+            )
+          );
+          closeConfirm();
+        } catch (error) {
+          closeConfirm();
+        }
+      }
+    });
   };
 
   const openUserCollections = async (userObj) => {
@@ -172,7 +185,7 @@ const AdminDashboard = () => {
       const res = await api.get(`/collections/user/${userObj.id}`);
       setUserCollections(res.data || []);
     } catch (error) {
-      console.error("Error cargando colecciones");
+      console.error("Error");
     } finally {
       setLoadingModal(false);
     }
@@ -190,7 +203,6 @@ const AdminDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto bg-base-100 rounded-2xl shadow-xl overflow-hidden min-h-[600px] flex flex-col">
-        {/* TABS */}
         <div className="grid grid-cols-2 md:grid-cols-4 border-b border-base-300">
           <TabButton active={activeTab === "requests"} onClick={() => handleTabChange("requests")} icon={<Key size={18} />} label={t("admin.tabs.requests")} />
           <TabButton active={activeTab === "users"} onClick={() => handleTabChange("users")} icon={<Users size={18} />} label={t("admin.tabs.users")} />
@@ -198,7 +210,6 @@ const AdminDashboard = () => {
           <TabButton active={activeTab === "custom"} onClick={() => handleTabChange("custom")} icon={<Library size={18} />} label={t("admin.tabs.catalog")} />
         </div>
 
-        {/* SEARCH BAR */}
         <div className="p-4 border-b border-base-200">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30" size={18} />
@@ -212,7 +223,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* CONTENT */}
         <div className="overflow-x-auto flex-1">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -252,7 +262,6 @@ const AdminDashboard = () => {
                           </td>
                         </>
                       )}
-
                       {activeTab === "users" && (
                         <>
                           <td>
@@ -269,7 +278,6 @@ const AdminDashboard = () => {
                           </td>
                         </>
                       )}
-
                       {activeTab === "collections" && (
                         <>
                           <td className="font-bold cursor-pointer hover:text-primary flex items-center gap-2" onClick={() => toggleCollectionDetails(item.id)}>
@@ -282,7 +290,6 @@ const AdminDashboard = () => {
                           </td>
                         </>
                       )}
-
                       {activeTab === "custom" && (
                         <>
                           <td>
@@ -301,7 +308,6 @@ const AdminDashboard = () => {
                         </>
                       )}
                     </tr>
-
                     {activeTab === "collections" && expandedCollection === item.id && (
                       <tr>
                         <td colSpan="4" className="bg-base-200/50 p-0">
@@ -334,23 +340,9 @@ const AdminDashboard = () => {
 
         {activeTab === "custom" && totalPages > 1 && (
           <div className="p-4 border-t border-base-200 flex justify-center items-center gap-4 bg-base-100">
-            <button
-              className="btn btn-sm btn-outline"
-              disabled={currentPage === 1 || loading}
-              onClick={() => setCurrentPage(p => p - 1)}
-            >
-              {t("admin.pagination.previous")}
-            </button>
-            <span className="text-xs font-bold uppercase tracking-widest opacity-60">
-              {t("admin.pagination.info", { current: currentPage, total: totalPages })}
-            </span>
-            <button
-              className="btn btn-sm btn-outline"
-              disabled={currentPage === totalPages || loading}
-              onClick={() => setCurrentPage(p => p + 1)}
-            >
-              {t("admin.pagination.next")}
-            </button>
+            <button className="btn btn-sm btn-outline" disabled={currentPage === 1 || loading} onClick={() => setCurrentPage(p => p - 1)}>{t("admin.pagination.previous")}</button>
+            <span className="text-xs font-bold uppercase tracking-widest opacity-60">{t("admin.pagination.info", { current: currentPage, total: totalPages })}</span>
+            <button className="btn btn-sm btn-outline" disabled={currentPage === totalPages || loading} onClick={() => setCurrentPage(p => p + 1)}>{t("admin.pagination.next")}</button>
           </div>
         )}
       </div>
@@ -385,19 +377,36 @@ const AdminDashboard = () => {
           <div className="modal-action"><form method="dialog"><button className="btn btn-ghost rounded-full">{t("admin.modals.close")}</button></form></div>
         </div>
       </dialog>
+
+      {/* MODAL DE CONFIRMACIÓN DINÁMICO */}
+      <dialog className={`modal modal-bottom sm:modal-middle ${confirmModal.isOpen ? "modal-open" : ""}`}>
+        <div className="modal-box border border-base-300 shadow-2xl">
+          <h3 className="font-bold text-lg flex items-center gap-2">
+            {confirmModal.isDanger ? <Trash2 className="text-error" size={20} /> : <CheckCircle2 className="text-primary" size={20} />}
+            {confirmModal.title}
+          </h3>
+          <p className="py-4 opacity-70">{confirmModal.message}</p>
+          <div className="modal-action">
+            <button className="btn btn-ghost btn-sm rounded-full" onClick={closeConfirm}>{t("admin.modals.cancel")}</button>
+            <button 
+              className={`btn btn-sm rounded-full ${confirmModal.isDanger ? "btn-error" : "btn-primary"}`} 
+              onClick={confirmModal.onConfirm}
+            >
+              {t("admin.modals.confirm")}
+            </button>
+          </div>
+        </div>
+        <div className="modal-backdrop" onClick={closeConfirm}><button>close</button></div>
+      </dialog>
     </div>
   );
 };
 
-// COMPONENTE TABBUTTON
 const TabButton = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
     className={`flex items-center justify-center gap-2 py-4 px-2 transition-all duration-300 border-b-2 font-bold text-xs uppercase tracking-wider
-      ${active 
-        ? "border-primary text-primary bg-primary/5" 
-        : "border-transparent opacity-50 hover:opacity-100 hover:bg-base-200"
-      }`}
+      ${active ? "border-primary text-primary bg-primary/5" : "border-transparent opacity-50 hover:opacity-100 hover:bg-base-200"}`}
   >
     {icon}
     <span className="hidden md:inline">{label}</span>
