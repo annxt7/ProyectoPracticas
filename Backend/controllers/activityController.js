@@ -22,30 +22,21 @@ exports.getNotifications = async (req, res) => {
     const [rows] = await db.query(sql, [userId]);
 
     const formattedNotifications = rows.map(n => {
-  // 1. Definimos un objeto de mapeo (Texto DB -> Llave I18N)
-  const keyMap = {
-    "creó una nueva colección": "created_collection",
-    "añadió un item": "added_item",
-    "le dio me gusta": "liked_collection",
-    "empezó a seguirte": "started_following"
-  };
+  let contentKey = "unknown";
+  const original = n.content.toLowerCase();
 
-  // Usamos .toLowerCase() y .includes() para que sea más flexible
-  const dbContent = n.content.toLowerCase();
-  
-  let finalKey = "unknown";
-  for (const [text, key] of Object.entries(keyMap)) {
-    if (dbContent.includes(text)) {
-      finalKey = key;
-      break;
-    }
-  }
+  // Mapeamos lo que YA TIENES en la base de datos a llaves nuevas
+  if (original.includes("gusta")) contentKey = "liked_collection";
+  if (original.includes("seguirte") || original.includes("siguiendo")) contentKey = "started_following";
+  if (original.includes("comentó")) contentKey = "comment";
+  if (original.includes("añadió")) contentKey = "added_item";
 
   return {
     id: n.id,
     type: n.type,
-    content_key: finalKey, 
-    read: n.is_read === 1, 
+    content_key: contentKey, // <--- El frontend usará esta
+    content: n.content,      // <--- Mantenemos el original por si acaso
+    read: n.is_read === 1,
     created_at: n.created_at,
     user: {
       name: n.actorName || "Usuario",
