@@ -1,6 +1,6 @@
 import React from "react";
-import Logo from "../assets/LogoClaro.webp";
-import LogoOscuro from "../assets/LogoOscuro.webp"; 
+import Logo from "../assets/TribeClaro.webp";
+import LogoOscuro from "../assets/TribeOscuro.webp"; 
 import NavLinkDesktop from "./NavLinkDesktop"; 
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Search, Heart, User, LogOut } from "lucide-react"; 

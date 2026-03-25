@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Heart, ShieldAlert } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import { normalizeUser } from "../services/normalizers";
 import { useTranslation } from "react-i18next";
 import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
 import api from "../services/api.js";
-import { useAuth } from "../context/AuthContext.jsx";
-import { normalizeUser } from "../services/normalizers";
 import NavDesktop from "../components/NavDesktop.jsx";
 import NavMobile from "../components/NavMobile.jsx";
+import logoClaro from "../assets/TribeClaro.webp";
+import logoOscuro from "../assets/TribeOscuro.webp";
+
 
 const Feed = () => {
   const { t } = useTranslation();
@@ -17,6 +20,9 @@ const Feed = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [followingIds, setFollowingIds] = useState([]);
+  const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep","royal-wine"].includes(theme);
+
+
 
   const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
 
@@ -121,10 +127,18 @@ const Feed = () => {
     <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
       <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
-        
-        <div className="md:col-span-2 space-y-6">
-          <div className="md:hidden flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold font-serif">{t("feed.title")}</h1>
+       <div className="md:col-span-2 space-y-6">
+          <div className="md:hidden flex items-center justify-between mb-6 px-2">
+            <h1 className="text-3xl font-bold font-serif tracking-tight">
+              {t("feed.title")}
+            </h1>
+            <div className="w-12 h-12 flex items-center justify-center">
+              <img 
+                src={isDark ? logoClaro : logoOscuro} 
+                alt="Tribe Logo" 
+                className="w-full h-full object-contain drop-shadow-sm"
+              />
+            </div>
           </div>
 
           {loading ? (
