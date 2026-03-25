@@ -235,6 +235,10 @@
       "text": "This action will permanently remove the element from this collection.",
       "confirm": "Delete"
     },
+    "share": {
+      "default_title": "Collection in Tribe",
+      "text": "Check out this collection: {{title}}!"
+    },
     "notifications": {
       "load_error": "Could not load collection",
       "add_success": "Item added successfully",
@@ -244,7 +248,9 @@
       "update_success": "Changes saved",
       "update_error": "Error updating collection",
       "delete_success": "Item deleted",
-      "delete_error": "Could not delete item"
+      "delete_error": "Could not delete item",
+      "link_copied": "Link copied to clipboard!",
+      "link_copy_error": "Error copying link"
     }
   },
   "auth": {

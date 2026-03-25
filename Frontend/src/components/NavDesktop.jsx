@@ -30,11 +30,10 @@ const NavDesktop = () => {
       <img
         src={isDark ? Logo : LogoOscuro }
         alt="Tribe Logo"
-        className="h-14 w-auto object-contain transition-all"
+        className="h-10 w-auto object-contain transition-all"
       />
 
       <div className="flex gap-6 items-center">
-        {/* 3. Aplicar traducciones en las labels */}
         <NavLinkDesktop icon={<Home size={28} />} page={"/feed"} label={t("nav.home")} active={isActive("/feed")} />
         <NavLinkDesktop icon={<Search size={24} />} page={"/explorer"} label={t("nav.explore")} active={isActive("/explorer")} />
         <NavLinkDesktop icon={<Heart size={24} />} page={"/activity"} label={t("nav.activity")} active={isActive("/activity")} />

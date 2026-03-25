@@ -234,6 +234,10 @@
             "text": "この操作により、コレクションからアイテムが完全に削除されます。",
             "confirm": "削除"
         },
+        "share": {
+            "default_title": "TRIBEのコレクション",
+            "text": "このコレクションを見てください：{{title}}！"
+        },
         "notifications": {
             "load_error": "コレクションを読み込めませんでした",
             "add_success": "アイテムを追加しました",
@@ -243,7 +247,9 @@
             "update_success": "変更を保存しました",
             "update_error": "更新中にエラーが発生しました",
             "delete_success": "アイテムを削除しました",
-            "delete_error": "アイテムを削除できませんでした"
+            "delete_error": "アイテムを削除できませんでした",
+            "link_copied": "リンクがクリップボードにコピーされました！",
+            "link_copy_error": "リンクのコピー中にエラーが発生しました"
         }
     },
     "auth": {
