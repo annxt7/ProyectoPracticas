@@ -83,7 +83,7 @@ exports.approveReset = async (req, res) => {
     }
 };
 
-// DELETE: Eliminar usando IF / ELSE (Sin break y fácil de entender)
+// DELETE: Eliminar usuarios, colecciones o items
 exports.deleteEntity = async (req, res) => {
     const { type, id } = req.params;
     const entity = type.toLowerCase();
@@ -104,7 +104,7 @@ exports.deleteEntity = async (req, res) => {
         idField = 'custom_id';
     }
     if (!table) {
-        return res.status(400).json({ error: "Tipo de entidad no válido" });
+        return res.status(400).json({ error: "Tipo no válido" });
     }
 
     try {

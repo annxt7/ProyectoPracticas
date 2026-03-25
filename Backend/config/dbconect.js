@@ -15,7 +15,7 @@ const pool = mysql.createPool({
 pool
   .getConnection()
   .then((conn) => {
-    console.log("Conectado a la Base de Datos MySQL 'Tribe'");
+    console.log("Conectado a la base de datos'");
     conn.release();
   })
   .catch((err) => {

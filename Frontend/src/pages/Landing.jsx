@@ -49,12 +49,6 @@ const Landing = () => {
               alt="Tribe Logo"
               className="h-30 w-auto object-contain transition-all"
             />
-
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-base-300 bg-base-200/50 text-xs font-bold uppercase tracking-widest text-base-content/60">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              {t("landing.early_access")}
-            </div>
-
             <h1 className="text-5xl sm:text-7xl font-bold font-serif leading-[0.95] tracking-tight">
               {t("landing.title_main")} <br />
               <span className="text-primary font-extrabold">
@@ -85,7 +79,7 @@ const Landing = () => {
             </div>
           </div>
 
-          <div className="relative hidden lg:block h-[600px] w-full overflow-hidden rounded-3xl [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]">
+          <div className="relative hidden lg:block h-[600px] w-full overflow-hidden rounded-3xl mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)">
             <div className="absolute top-0 left-0 w-full h-full grid grid-cols-2 gap-4 rotate-12 opacity-80 -translate-y-20 translate-x-10 scale-110">
               <div className="flex flex-col gap-4 animate-[scrollY_35s_linear_infinite]">
                 {[...covers, ...covers].map((src, i) => (
