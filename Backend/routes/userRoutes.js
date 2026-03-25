@@ -111,7 +111,7 @@ router.get("/follow-stats/:id", verifyToken, userController.getFollowStats);
  *               - username
  *               - email
  *               - password
- *               - g-recaptcha-response
+ *               - 'g-recaptcha-response'
  *             properties:
  *               username:
  *                 type: string
@@ -119,7 +119,7 @@ router.get("/follow-stats/:id", verifyToken, userController.getFollowStats);
  *                 type: string
  *               password:
  *                 type: string
- *               g-recaptcha-response:
+ *               'g-recaptcha-response':
  *                 type: string
  *                 description: Token de Google reCAPTCHA
  *     responses:
