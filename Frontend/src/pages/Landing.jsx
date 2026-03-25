@@ -2,8 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight } from "lucide-react";
-import Logo from "../assets/LogoClaro.png";
-import LogoOscuro from "../assets/LogoOscuro.png";
+import Logo from "../assets/LogoClaro.webp";
+import LogoOscuro from "../assets/LogoOscuro.webp";
 import { useTheme } from "../context/ThemeContext";
 
 const Landing = () => {
