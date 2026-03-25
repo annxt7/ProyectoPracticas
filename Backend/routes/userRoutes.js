@@ -92,7 +92,7 @@ router.get("/following/:id", verifyToken, userController.getFollowing);
 router.get("/follow-stats/:id", verifyToken, userController.getFollowStats);
 
 // ==========================================
-// POST / DELETE
+// POST
 // ==========================================
 
 /**
@@ -282,7 +282,7 @@ router.post("/reset-password", userController.resetPassword);
 router.delete("/unfollow/:id", verifyToken, userController.unfollowUser);
 
 // ==========================================
-// PUTS
+// PUT
 // ==========================================
 
 /**
