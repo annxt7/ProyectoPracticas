@@ -79,17 +79,18 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-xl font-bold text-base-content mb-3">{t("privacy.rights_title")}</h2>
             <p>
-              <Trans i18nKey="privacy.rights_text">
-                You have the right to access your data, request its rectification, or demand its complete removal from our servers. You can manage these rights directly from your account settings or by contacting our support at <strong>soportetribe@tribe.com</strong>.
-              </Trans>
+              <Trans 
+              i18nKey="privacy.rights_text"
+                  components={[
+                    <strong key="0" />,
+                  ]}
+                />
             </p>
           </section>
           <section>
             <h2 className="text-xl font-bold text-base-content mb-3">{t("privacy.reservation_title")}</h2>
             <p>
-              <Trans i18nKey="privacy.reservation_text">
-                <strong>Tribe</strong> reserves the right to modify, suspend, or terminate the service (or any part thereof) at any time, with or without notice. We also reserve the right to update this policy to reflect changes in our practices or for legal reasons.
-              </Trans>
+              {t("privacy.reservation_text")}
             </p>
           </section>
         </div>
