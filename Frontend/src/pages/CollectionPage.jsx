@@ -25,7 +25,6 @@ const CollectionPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { t } = useTranslation();
-
   const fileInputRef = useRef(null);
 
   // Estados de datos
@@ -142,15 +141,12 @@ const CollectionPage = () => {
     }
   };
 
-  const handleSaveEditing = async () => {
+const handleSaveEditing = async () => {
     setIsUploading(true);
     try {
       let finalCoverUrl = collectionInfo.cover;
       if (fileToUpload) {
-        const formData = new FormData();
-        formData.append("imagen", fileToUpload);
-        const uploadRes = await api.post("/files/upload", formData);
-        finalCoverUrl = uploadRes.data.url;
+        finalCoverUrl = await uploadFileToCloudinary(fileToUpload);
       }
       
       await api.put(`/collections/${id}`, {
@@ -170,7 +166,7 @@ const CollectionPage = () => {
   };
 const handleShare = async () => {
     const shareData = {
-      title: collectionInfo?.title || t("collection.share.default_title", "Colección en Tribe"),
+      title: collectionInfo?.title || t("collection.share.default_title", "Colección en TRIBE"),
       text: t("collection.share.text", { 
         title: collectionInfo?.title, 
         defaultValue: `¡Mira esta colección: ${collectionInfo?.title}!` 
