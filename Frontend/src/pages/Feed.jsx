@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeUser } from "../services/normalizers";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "../context/ThemeContext.jsx";
 import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
 import api from "../services/api.js";
@@ -20,6 +21,7 @@ const Feed = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [followingIds, setFollowingIds] = useState([]);
+  const { theme } = useTheme(); 
   const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep","royal-wine"].includes(theme);
 
 
