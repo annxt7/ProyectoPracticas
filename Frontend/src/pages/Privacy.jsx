@@ -79,7 +79,9 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-xl font-bold text-base-content mb-3">{t("privacy.rights_title")}</h2>
             <p>
-              {t("privacy.rights_text")}
+              <Trans i18nKey="privacy.rights_text">
+                You have the right to access your data, request its rectification, or demand its complete removal from our servers. You can manage these rights directly from your account settings or by contacting our support at <a href="mailto:soportetribe@tribe.com">soportetribe@tribe.com</a>.
+              </Trans>
             </p>
           </section>
           <section>
