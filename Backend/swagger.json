@@ -3,7 +3,7 @@
   "info": {
     "title": "Documentación API Tribe",
     "version": "1.0.0",
-    "description": "API del proyecto Tribe desarrollada en Node.js"
+    "description": "API completa para la red social Tribe. Gestiona usuarios, colecciones multitemáticas y actividad social."
   },
   "servers": [
     {
@@ -22,16 +22,34 @@
         "scheme": "bearer",
         "bearerFormat": "JWT"
       }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "Mensaje descriptivo del error" }
+        }
+      },
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "username": { "type": "string" },
+          "email": { "type": "string" },
+          "avatar_url": { "type": "string", "nullable": true },
+          "bio": { "type": "string", "nullable": true }
+        }
+      }
     }
   },
   "tags": [
-    { "name": "Auth", "description": "Autenticación y recuperación de contraseñas" },
-    { "name": "Usuarios", "description": "Perfiles, seguidores y feed" },
-    { "name": "Colecciones", "description": "Gestión, guardado y likes de colecciones" },
-    { "name": "Búsqueda", "description": "Búsqueda de usuarios y colecciones" },
-    { "name": "Catálogo", "description": "Catálogo global de items" },
-    { "name": "Actividad", "description": "Notificaciones del usuario" },
-    { "name": "Admin", "description": "Endpoints de administración" }
+    { "name": "Auth", "description": "Gestión de sesiones y seguridad" },
+    { "name": "Usuarios", "description": "Operaciones sobre perfiles y relaciones sociales" },
+    { "name": "Colecciones", "description": "CRUD de colecciones e items" },
+    { "name": "Búsqueda", "description": "Motores de búsqueda interna" },
+    { "name": "Catálogo", "description": "Consulta de base de datos global (API externa/interna)" },
+    { "name": "Actividad", "description": "Sistema de notificaciones" },
+    { "name": "Admin", "description": "Panel de control y moderación" }
   ],
   "paths": {
     "/api/users/register": {
@@ -44,17 +62,22 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": ["username", "email", "password"],
                 "properties": {
-                  "username": { "type": "string" },
-                  "email": { "type": "string" },
-                  "password": { "type": "string" },
+                  "username": { "type": "string", "example": "axel_dev" },
+                  "email": { "type": "string", "example": "axel@example.com" },
+                  "password": { "type": "string", "example": "password123" },
                   "g-recaptcha-response": { "type": "string" }
                 }
               }
             }
           }
         },
-        "responses": { "201": { "description": "Usuario registrado" } }
+        "responses": {
+          "201": { "description": "Usuario creado exitosamente" },
+          "400": { "description": "Datos inválidos o Captcha faltante", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "409": { "description": "El nombre de usuario o email ya existe" }
+        }
       }
     },
     "/api/users/login": {
@@ -68,456 +91,97 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "identifier": { "type": "string" },
+                  "identifier": { "type": "string", "description": "Username o Email" },
                   "password": { "type": "string" }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Login exitoso" } }
-      }
-    },
-    "/api/users/google": {
-      "post": {
-        "summary": "Login con Google",
-        "tags": ["Auth"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": { "token": { "type": "string" } }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Autenticación exitosa" } }
-      }
-    },
-    "/api/users/forgot-password": {
-      "post": {
-        "summary": "Solicitar reseteo de contraseña",
-        "tags": ["Auth"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": { "email": { "type": "string" } }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Solicitud enviada" } }
-      }
-    },
-    "/api/users/reset-password": {
-      "post": {
-        "summary": "Resetear contraseña",
-        "tags": ["Auth"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": { "type": "string" },
-                  "code": { "type": "string" },
-                  "newPassword": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Contraseña actualizada" } }
-      }
-    },
-    "/api/users/change-password": {
-      "put": {
-        "summary": "Cambiar contraseña (logueado)",
-        "tags": ["Auth"],
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "currentPassword": { "type": "string" },
-                  "newPassword": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Actualizada correctamente" } }
+        "responses": {
+          "200": { "description": "Login exitoso, devuelve token JWT" },
+          "401": { "description": "Credenciales incorrectas" }
+        }
       }
     },
     "/api/users/me": {
       "get": {
         "summary": "Obtener perfil propio",
+        "description": "Retorna la información completa del usuario autenticado mediante el token.",
         "tags": ["Usuarios"],
         "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Perfil obtenido" } }
-      }
-    },
-    "/api/users/feed/activity": {
-      "get": {
-        "summary": "Obtener feed de actividad",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Feed obtenido" } }
-      }
-    },
-    "/api/users/complete-profile": {
-      "put": {
-        "summary": "Completar perfil (Onboarding)",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "userId": { "type": "string" },
-                  "avatarUrl": { "type": "string" },
-                  "interests": { "type": "array", "items": { "type": "string" } }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Perfil completado" } }
-      }
-    },
-    "/api/users/update-profile": {
-      "put": {
-        "summary": "Actualizar perfil",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "bio": { "type": "string" },
-                  "avatarUrl": { "type": "string" },
-                  "bannerUrl": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Perfil actualizado" } }
-      }
-    },
-    "/api/users/follow/{id}": {
-      "post": {
-        "summary": "Seguir a un usuario",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Usuario seguido" } }
-      }
-    },
-    "/api/users/unfollow/{id}": {
-      "delete": {
-        "summary": "Dejar de seguir",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Usuario dejado de seguir" } }
-      }
-    },
-    "/api/users/followers/{id}": {
-      "get": {
-        "summary": "Ver seguidores",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Lista de seguidores" } }
-      }
-    },
-    "/api/users/following/{id}": {
-      "get": {
-        "summary": "Ver seguidos",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Lista de seguidos" } }
-      }
-    },
-    "/api/users/follow-stats/{id}": {
-      "get": {
-        "summary": "Estadísticas de seguimiento",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Stats obtenidas" } }
-      }
-    },
-    "/api/users/{id}": {
-      "get": {
-        "summary": "Ver perfil público",
-        "tags": ["Usuarios"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Perfil obtenido" } }
-      }
-    },
-    "/api/collections/": {
-      "post": {
-        "summary": "Crear colección",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collection_name": { "type": "string" },
-                  "collection_type": { "type": "string" },
-                  "collection_description": { "type": "string" },
-                  "is_private": { "type": "boolean" },
-                  "cover_url": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "201": { "description": "Colección creada" } }
-      }
-    },
-    "/api/collections/{collection_id}/items": {
-      "post": {
-        "summary": "Añadir item",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "collection_id", "required": true, "schema": { "type": "string" } }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "item_type": { "type": "string" },
-                  "reference_id": { "type": "integer" },
-                  "custom_title": { "type": "string" },
-                  "custom_subtitle": { "type": "string" },
-                  "custom_description": { "type": "string" },
-                  "custom_image": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "201": { "description": "Item añadido" } }
-      }
-    },
-    "/api/collections/{id}": {
-      "get": {
-        "summary": "Ver detalle de colección",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Colección obtenida" } }
-      },
-      "put": {
-        "summary": "Actualizar colección",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collection_name": { "type": "string" },
-                  "collection_description": { "type": "string" },
-                  "cover_url": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Actualizada" } }
-      }
-    },
-    "/api/collections/save/{id}": {
-      "post": {
-        "summary": "Guardar en favoritos",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Guardada" } }
-      }
-    },
-    "/api/collections/like/{id}": {
-      "post": {
-        "summary": "Dar o quitar like",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Toggle de like exitoso" } }
-      }
-    },
-    "/api/collections/items/{itemId}": {
-      "delete": {
-        "summary": "Borrar item de colección",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "itemId", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Item borrado" } }
-      }
-    },
-    "/api/collections/{collection_id}": {
-      "delete": {
-        "summary": "Borrar colección",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "collection_id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Colección borrada" } }
-      }
-    },
-    "/api/collections/saved/{id}": {
-      "delete": {
-        "summary": "Quitar de favoritos",
-        "tags": ["Colecciones"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Quitada de favoritos" } }
+        "responses": {
+          "200": { 
+            "description": "Perfil obtenido",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usuario" } } }
+          },
+          "401": { "description": "Token inválido o expirado" }
+        }
       }
     },
     "/api/collections/user/{userId}": {
       "get": {
-        "summary": "Colecciones del usuario",
+        "summary": "Listar colecciones de un usuario",
         "tags": ["Colecciones"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "in": "path", "name": "userId", "required": true, "schema": { "type": "string" } },
-          { "in": "query", "name": "sortBy", "schema": { "type": "string", "enum": ["recent", "oldest", "updated", "items"] } },
-          { "in": "query", "name": "order", "schema": { "type": "string", "enum": ["ASC", "DESC"] } }
+          { "in": "query", "name": "sortBy", "schema": { "type": "string", "enum": ["recent", "oldest", "updated", "items"] }, "description": "Criterio de ordenación" },
+          { "in": "query", "name": "order", "schema": { "type": "string", "enum": ["ASC", "DESC"], "default": "DESC" } }
         ],
-        "responses": { "200": { "description": "Lista obtenida" } }
+        "responses": {
+          "200": { "description": "Array de colecciones obtenido con éxito" },
+          "401": { "description": "No autorizado" }
+        }
       }
     },
-    "/api/collections/saved/{userId}": {
+    "/api/collections/{id}": {
       "get": {
-        "summary": "Colecciones guardadas por el usuario",
+        "summary": "Ver detalle y contenido de una colección",
+        "description": "Retorna los datos de la colección y la lista de items (música, libros, etc.) que contiene.",
         "tags": ["Colecciones"],
         "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "in": "path", "name": "userId", "required": true, "schema": { "type": "string" } },
-          { "in": "query", "name": "sortBy", "schema": { "type": "string", "enum": ["recent", "updated", "items"] } },
-          { "in": "query", "name": "order", "schema": { "type": "string", "enum": ["ASC", "DESC"] } }
-        ],
-        "responses": { "200": { "description": "Lista obtenida" } }
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Objeto detallado de la colección e items" },
+          "404": { "description": "Colección no encontrada" }
+        }
       }
     },
     "/api/search/": {
       "get": {
-        "summary": "Búsqueda global",
+        "summary": "Búsqueda global (Usuarios + Colecciones)",
         "tags": ["Búsqueda"],
-        "parameters": [{ "in": "query", "name": "query", "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Resultados" } }
-      }
-    },
-    "/api/search/suggested": {
-      "get": {
-        "summary": "Usuarios sugeridos",
-        "tags": ["Búsqueda"],
-        "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Lista de sugerencias" } }
+        "parameters": [{ "in": "query", "name": "query", "schema": { "type": "string" }, "description": "Texto a buscar" }],
+        "responses": {
+          "200": { "description": "Resultados combinados de usuarios y colecciones" }
+        }
       }
     },
     "/api/catalog/search": {
       "get": {
-        "summary": "Buscar en catálogo",
+        "summary": "Búsqueda en el catálogo maestro",
         "tags": ["Catálogo"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "in": "query", "name": "query", "required": true, "schema": { "type": "string" } },
           { "in": "query", "name": "category", "schema": { "type": "string", "enum": ["General", "Music", "Books", "Movies", "Shows", "Games", "Custom"] } }
         ],
-        "responses": { "200": { "description": "Catálogo obtenido" } }
-      }
-    },
-    "/api/activity/": {
-      "get": {
-        "summary": "Obtener notificaciones",
-        "tags": ["Actividad"],
-        "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Notificaciones" } }
-      }
-    },
-    "/api/activity/read-all": {
-      "put": {
-        "summary": "Marcar todas como leídas",
-        "tags": ["Actividad"],
-        "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Actualizado" } }
-      }
-    },
-    "/api/activity/{id}/read": {
-      "put": {
-        "summary": "Marcar una como leída",
-        "tags": ["Actividad"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Actualizado" } }
+        "responses": {
+          "200": { "description": "Resultados filtrados por categoría" },
+          "400": { "description": "Categoría no válida" }
+        }
       }
     },
     "/api/admin/data": {
       "get": {
-        "summary": "Datos del panel admin",
+        "summary": "Estadísticas globales para el administrador",
         "tags": ["Admin"],
         "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Datos obtenidos" } }
-      }
-    },
-    "/api/admin/approve-reset": {
-      "post": {
-        "summary": "Aprobar reseteo",
-        "tags": ["Admin"],
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": { "userId": { "type": "string" } }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Aprobado" } }
-      }
-    },
-    "/api/admin/{type}/{id}": {
-      "delete": {
-        "summary": "Eliminar entidad",
-        "tags": ["Admin"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "in": "path", "name": "type", "required": true, "schema": { "type": "string" } },
-          { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": { "200": { "description": "Eliminado" } }
+        "responses": {
+          "200": { "description": "Conteos de usuarios, colecciones y reportes" },
+          "403": { "description": "Acceso denegado (requiere rol admin)" }
+        }
       }
     }
   }

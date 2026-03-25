@@ -53,7 +53,6 @@ exports.searchTribe = async (req, res, next) => {
 
 exports.getSuggestedUsers = async (req, res) => {
     const id = req.user.id;
-    console.log("ID de usuario para sugerencias:", req.user);
     try {
         const [rows] = await db.query(`
             SELECT 
