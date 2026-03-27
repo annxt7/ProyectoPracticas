@@ -3,10 +3,10 @@ import NavLinkMobile from "./NavLinkMobile";
 import { Home, Search, Heart, LogOut } from "lucide-react"; 
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTranslation } from "react-i18next"; // 1. Importar hook
+import { useTranslation } from "react-i18next"; 
 
 const NavMobile = () => {
-  const { t } = useTranslation(); // 2. Inicializar t
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, FolderOpen, Check, Loader2 } from 'lucide-react';
-import { useTranslation } from "react-i18next"; // 1. Importar
+import { useTranslation } from "react-i18next"; 
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const AddToCollectionModal = ({ item, isOpen, onClose }) => {
-  const { t } = useTranslation(); // 2. Hook
+  const { t } = useTranslation(); 
   const { user } = useAuth();
   const [collections, setCollections] = useState([]);
   const [isCreating, setIsCreating] = useState(false);

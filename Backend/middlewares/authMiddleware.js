@@ -18,7 +18,7 @@ const verifyToken = (req, res, next) => {
     req.user = decoded; 
     next();
   } catch (error) {
-   
+  
     logger.error(`Error JWT: ${error.message}`);
     return res.status(401).json({ error: "Token inválido o expirado" });
   }

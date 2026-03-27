@@ -9,7 +9,7 @@ exports.searchCatalog = async (req, res) => {
   try {
     // CATEGORÍA ESPECÍFICA
     if (category && category !== 'General' && category !== 'Custom') {
-      
+
       switch (category) {
         case "Music":
           const [musicResults] = await db.query(
@@ -57,34 +57,34 @@ exports.searchCatalog = async (req, res) => {
     }
 
     // 2. BÚSQUEDA GENERAL 
-    
+
     const searchMusic = db.query(
       `SELECT music_id as id, 'Music' as type, title, artist as subtitle, release_year, cover_url as image 
-       FROM Catalog_Music WHERE title LIKE ? OR artist LIKE ? LIMIT 5`, 
+       FROM Catalog_Music WHERE title LIKE ? OR artist LIKE ? LIMIT 5`,
       [searchTerm, searchTerm]
     );
 
     const searchBooks = db.query(
       `SELECT book_id as id, 'Books' as type, title, author as subtitle, publisher as extra_info, cover_url as image 
-       FROM Catalog_Books WHERE title LIKE ? OR author LIKE ? LIMIT 5`, 
+       FROM Catalog_Books WHERE title LIKE ? OR author LIKE ? LIMIT 5`,
       [searchTerm, searchTerm]
     );
 
     const searchMovies = db.query(
       `SELECT movie_id as id, 'Movies' as type, title, director as subtitle, release_year, poster_url as image 
-       FROM Catalog_Movies WHERE title LIKE ? LIMIT 5`, 
+       FROM Catalog_Movies WHERE title LIKE ? LIMIT 5`,
       [searchTerm]
     );
 
     const searchShows = db.query(
       `SELECT show_id as id, 'Shows' as type, title, platform as subtitle, release_year, poster_url as image 
-       FROM Catalog_Shows WHERE title LIKE ? LIMIT 5`, 
+       FROM Catalog_Shows WHERE title LIKE ? LIMIT 5`,
       [searchTerm]
     );
 
     const searchGames = db.query(
       `SELECT game_id as id, 'Games' as type, title, developer as subtitle, platform as extra_info, poster_url as image 
-       FROM Catalog_Games WHERE title LIKE ? LIMIT 5`, 
+       FROM Catalog_Games WHERE title LIKE ? LIMIT 5`,
       [searchTerm]
     );
     const searchCustom = db.query(
