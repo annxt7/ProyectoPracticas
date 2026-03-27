@@ -1,4 +1,3 @@
-import React from "react";
 import NavLinkMobile from "./NavLinkMobile";
 import { Home, Search, Heart, LogOut } from "lucide-react"; 
 import { useLocation, useNavigate, Link } from "react-router-dom";

@@ -1,4 +1,3 @@
-import React from "react";
 import Logo from "../assets/TribeClaro.webp";
 import LogoOscuro from "../assets/TribeOscuro.webp"; 
 import NavLinkDesktop from "./NavLinkDesktop"; 

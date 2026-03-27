@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Heart, UserPlus, MessageSquare, Bell, Info, Filter as FilterIcon, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import api from "../services/api.js";

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, Check, X, ShieldCheck } from "lucide-react";
-import { useTranslation } from "react-i18next"; // 1. Importar
+import { useTranslation } from "react-i18next"; 
 import GoogleSignIn from "../GoogleSignIn";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -19,16 +19,16 @@ const Requirement = ({ met, label }) => (
 );
 
 const RegisterForm = () => {
-  const { t } = useTranslation(); // 2. Inicializar
+  const { t } = useTranslation(); 
   const navigate = useNavigate();
   const { login } = useAuth();
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
-  
+
   const recaptchaRef = useRef(null);
 
   // 3. Esquema de Zod dentro del componente para usar t()
@@ -163,11 +163,11 @@ const RegisterForm = () => {
             </button>
           </div>
           {errors.password && <span className="text-error text-xs mt-1 block">{errors.password.message}</span>}
-          
+
           {watchedPassword.length > 0 && (
             <div className="mt-4 space-y-3 p-3 bg-base-200 rounded-lg">
               <div className="h-1.5 w-full bg-base-300 rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full transition-all duration-500 ${passwordStrength < 40 ? 'bg-error' : passwordStrength < 80 ? 'bg-warning' : 'bg-success'}`}
                   style={{ width: `${passwordStrength}%` }}
                 ></div>
@@ -196,7 +196,7 @@ const RegisterForm = () => {
             </span>
           </label>
           {errors.acceptTerms && <span className="text-error text-xs mt-1 block ml-8">{errors.acceptTerms.message}</span>}
-          
+
           <div className="mt-6 flex justify-center"><div ref={recaptchaRef}></div></div>
         </div>
 
