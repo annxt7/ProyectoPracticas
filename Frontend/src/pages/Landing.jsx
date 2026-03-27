@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight } from "lucide-react";
-import Logo from "../assets/LogoClaro.png";
-import LogoOscuro from "../assets/LogoOscuro.png";
+import Logo from "../assets/LogoClaro.webp";
+import LogoOscuro from "../assets/LogoOscuro.webp";
 import { useTheme } from "../context/ThemeContext";
 
 const Landing = () => {
@@ -43,11 +43,6 @@ const Landing = () => {
       <div className="relative pt-6 pb-20 lg:pt-12 lg:pb-32 px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 z-10 relative flex flex-col items-start text-left">
-            <img
-              src={isDark ? Logo : LogoOscuro}
-              alt="Tribe Logo"
-              className="h-30 w-auto object-contain transition-all"
-            />
             <h1 className="text-5xl sm:text-7xl font-bold font-serif leading-[0.95] tracking-tight">
               {t("landing.title_main")} <br />
               <span className="text-primary font-extrabold">

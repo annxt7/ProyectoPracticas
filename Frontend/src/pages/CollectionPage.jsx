@@ -25,7 +25,6 @@ const CollectionPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { t } = useTranslation();
-
   const fileInputRef = useRef(null);
 
   // Estados de datos
@@ -142,15 +141,12 @@ const CollectionPage = () => {
     }
   };
 
-  const handleSaveEditing = async () => {
+const handleSaveEditing = async () => {
     setIsUploading(true);
     try {
       let finalCoverUrl = collectionInfo.cover;
       if (fileToUpload) {
-        const formData = new FormData();
-        formData.append("imagen", fileToUpload);
-        const uploadRes = await api.post("/files/upload", formData);
-        finalCoverUrl = uploadRes.data.url;
+        finalCoverUrl = await uploadFileToCloudinary(fileToUpload);
       }
       
       await api.put(`/collections/${id}`, {
@@ -166,6 +162,34 @@ const CollectionPage = () => {
       showNotification(t("collection.notifications.update_error"), "error");
     } finally {
       setIsUploading(false);
+    }
+  };
+const handleShare = async () => {
+    const shareData = {
+      title: collectionInfo?.title || t("collection.share.default_title", "Colección en TRIBE"),
+      text: t("collection.share.text", { 
+        title: collectionInfo?.title, 
+        defaultValue: `¡Mira esta colección: ${collectionInfo?.title}!` 
+      }),
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        showNotification(t("collection.notifications.link_copied", "¡Enlace copiado al portapapeles!"));
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          showNotification(t("collection.notifications.link_copied", "¡Enlace copiado al portapapeles!"));
+        } catch (fallbackErr) {
+          showNotification(t("collection.notifications.link_copy_error", "Error al compartir"), "error");
+        }
+      }
     }
   };
 
@@ -284,7 +308,13 @@ const CollectionPage = () => {
                       {isSaved ? <><Check size={18} /> {t("collection.actions.saved")}</> : <><BookmarkPlus size={18} /> {t("collection.actions.save")}</>}
                     </button>
                   )}
-                  <button className="btn btn-square btn-ghost btn-sm rounded-full"><Share2 size={18} /></button>
+                  <button 
+                    onClick={handleShare} 
+                    className="btn btn-square btn-ghost btn-sm rounded-full "
+                    title={t("collection.actions.share", "Compartir colección")}
+                  >
+                    <Share2 size={18} />
+                  </button>
                 </div>
               </div>
             </div>

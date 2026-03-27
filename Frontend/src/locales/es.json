@@ -234,6 +234,10 @@
       "text": "Esta acción eliminará permanentemente el elemento de esta colección.",
       "confirm": "Eliminar"
     },
+    "share": {
+      "default_title": "Colección en Tribe",
+      "text": "¡Mira esta colección: {{title}}!"
+    },
     "notifications": {
       "load_error": "No se pudo cargar la colección",
       "add_success": "Elemento agregado exitosamente",
@@ -243,7 +247,9 @@
       "update_success": "Cambios guardados",
       "update_error": "Error al actualizar la colección",
       "delete_success": "Elemento eliminado",
-      "delete_error": "No se pudo eliminar el elemento"
+      "delete_error": "No se pudo eliminar el elemento",
+      "link_copied": "¡Enlace copiado al portapapeles!",
+      "link_copy_error": "Error al copiar el enlace"
     }
   },
   "auth": {
