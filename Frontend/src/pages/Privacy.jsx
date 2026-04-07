@@ -7,12 +7,12 @@ const PrivacyPolicy = () => {
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content py-12 px-6 sm:px-12 lg:px-24">
-      <div className="max-w-3xl mx-auto">
-        <div>
+      <div>
             <Link to="/" className="text-primary hover:underline">
               {t("privacy.back_to_home")}
             </Link>
           </div>
+      <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <div className="p-3 bg-primary/10 rounded-full text-primary">
             <Shield size={32} />
