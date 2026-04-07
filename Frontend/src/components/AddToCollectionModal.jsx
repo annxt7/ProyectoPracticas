@@ -1,116 +1,156 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus, FolderOpen, Check, Loader2 } from 'lucide-react';
+import { useTranslation } from "react-i18next"; 
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const AddToCollectionModal = ({ item, isOpen, onClose }) => {
-  const [collections, setCollections] = useState([
-    { id: 101, name: "Películas para llorar", count: 12 },
-    { id: 102, name: "Cine Italiano", count: 5 },
-    { id: 103, name: "Favoritos 2024", count: 28 },
-    { id: 104, name: "Watchlist", count: 0 },
-  ]);
-
+  const { t } = useTranslation(); 
+  const { user } = useAuth();
+  const [collections, setCollections] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-  
   const [isSuccess, setIsSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Resetea todo cuando el modal se abre/cierra externamente
+  useEffect(() => {
+    const fetchMyCollections = async () => {
+      if (isOpen && user) {
+        try {
+          const res = await api.get(`/collections/user/${user.id}`);
+          setCollections(res.data || []);
+        } catch (err) {
+          console.error("Error cargando colecciones:", err);
+        }
+      }
+    };
+    fetchMyCollections();
+  }, [isOpen, user]);
+
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
         setIsCreating(false);
         setNewCollectionName("");
         setIsSuccess(false);
-      }, 200); // Pequeño delay para que no se vea el reseteo mientras cierra
+        setLoading(false);
+      }, 200);
     }
   }, [isOpen]);
 
   if (!isOpen || !item) return null;
 
-  // Lógica unificada de éxito
   const triggerSuccess = () => {
     setIsSuccess(true);
     setTimeout(() => {
       onClose();
-    }, 2000);
+    }, 1500);
   };
 
-  const handleSave = (collectionName) => {
-    console.log(`Guardando "${item.title}" en: ${collectionName}`);
-    triggerSuccess();
+  const handleSaveToExisting = async (collection_id) => {
+    setLoading(true);
+    try {
+      await api.post(`/collections/${collection_id}/items`, {
+        reference_id: item.id,      
+        item_type: item.type,
+        custom_title: item.title,
+        custom_subtitle: item.author,
+        custom_image: item.cover
+      });
+      triggerSuccess();
+    } catch (err) {
+      alert(t("add_modal.error_save"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCreateAndSave = (e) => {
+  const handleCreateAndSave = async (e) => {
     e.preventDefault();
-    if (!newCollectionName.trim()) return;
+    const cleanName = newCollectionName.trim();
+    if (!cleanName) return;
 
-    const newCollection = {
-        id: Date.now(),
-        name: newCollectionName,
-        count: 1
-    };
+    setLoading(true);
+    try {
+      const resCol = await api.post('/collections', {
+        name: cleanName,
+        type: item.type || 'custom', 
+      });
 
-    setCollections([...collections, newCollection]);
-    console.log(`Colección creada y elemento guardado.`);
-    
-    // Lanzamos la animación
-    triggerSuccess();
+      const newColId = resCol.data.collection_id;
+
+      await api.post(`/collections/${newColId}/items`, {
+        reference_id: item.id,
+        item_type: item.type,
+        custom_title: item.title,
+        custom_subtitle: item.author,
+        custom_image: item.cover
+      });
+
+      triggerSuccess();
+    } catch (err) {
+      alert(t("add_modal.error_create"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      ></div>
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
 
-      {/* Caja del Modal */}
-      <div className="relative bg-base-100 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 min-h-[300px] flex flex-col">
+      <div className="relative bg-base-100 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 min-h-[350px] flex flex-col">
         
         {isSuccess ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-base-100 z-10 ">
-             <div className="w-20 h-20 bg-stone-300 rounded-full flex items-center justify-center text-stone-600 mb-4 animate-bounce">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-base-100 z-10">
+             <div className="w-20 h-20 bg-primary/20 text-primary rounded-full flex items-center justify-center mb-4 animate-bounce">
                 <Check size={40} strokeWidth={4} />
              </div>
-             <h3 className="text-xl font-bold text-base-content">¡Guardado!</h3>
-             <p className="text-sm opacity-60 mt-1">Tu colección ha sido actualizada</p>
+             <h3 className="text-xl font-bold">{t("add_modal.success_title")}</h3>
+             <p className="text-sm opacity-60 mt-1">{t("add_modal.success_subtitle")}</p>
           </div>
         ) : (
           <>
-            {/* Header */}
             <div className="p-4 border-b border-base-200 flex justify-between items-center">
-              <h3 className="font-bold text-lg">Guardar en...</h3>
+              <h3 className="font-bold text-lg">{t("add_modal.header_title")}</h3>
               <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
                 <X size={20} />
               </button>
             </div>
 
-            {/* Item Preview */}
             <div className="p-4 bg-base-200/50 flex items-center gap-3">
-                <div className="w-12 h-16 rounded overflow-hidden flex-none">
+                <div className="w-12 h-16 rounded shadow-sm overflow-hidden flex-none bg-base-300">
                     <img src={item.cover} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
                     <p className="font-bold text-sm truncate">{item.title}</p>
-                    <p className="text-xs opacity-60">{item.author}</p>
+                    <p className="text-xs opacity-60 truncate">{item.author}</p>
                 </div>
             </div>
 
-            {/* Lista de Colecciones */}
-            <div className="p-2 flex-1 overflow-y-auto max-h-60">
+            <div className="p-2 flex-1 overflow-y-auto max-h-64">
+                {loading && !isCreating && (
+                  <div className="flex justify-center p-4">
+                    <Loader2 className="animate-spin text-primary" />
+                  </div>
+                )}
+                
+                {!loading && collections.length === 0 && !isCreating && (
+                  <p className="text-center text-xs opacity-50 py-10">{t("add_modal.no_collections")}</p>
+                )}
+
                 {collections.map((col) => (
                     <button 
-                        key={col.id}
-                        onClick={() => handleSave(col.name)}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-colors text-left group"
+                        key={col.collection_id}
+                        onClick={() => handleSaveToExisting(col.collection_id)}
+                        disabled={loading}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-colors text-left group disabled:opacity-50"
                     >
-                        <div className="w-10 h-10 rounded-lg bg-base-200 group-hover:bg-white flex items-center justify-center text-base-content/50 group-hover:text-primary transition-colors">
+                        <div className="w-10 h-10 rounded-lg bg-base-200 flex items-center justify-center text-base-content/50 group-hover:text-primary transition-colors">
                             <FolderOpen size={20} />
                         </div>
                         <div className="flex-1">
-                            <p className="font-semibold text-sm">{col.name}</p>
-                            <p className="text-xs opacity-50">{col.count} items</p>
+                            <p className="font-semibold text-sm">{col.collection_name}</p>
                         </div>
                         <div className="opacity-0 group-hover:opacity-100 text-primary">
                             <Plus size={18} />
@@ -119,31 +159,31 @@ const AddToCollectionModal = ({ item, isOpen, onClose }) => {
                 ))}
             </div>
 
-            {/* Footer */}
             <div className="p-3 border-t border-base-200 bg-base-100">
                 {!isCreating ? (
                     <button 
                         onClick={() => setIsCreating(true)}
                         className="btn btn-outline btn-block btn-sm border-dashed border-base-300 gap-2 normal-case text-base-content/70 hover:bg-base-200 hover:border-primary"
                     >
-                        <Plus size={16} /> Crear nueva colección
+                        <Plus size={16} /> {t("add_modal.create_new")}
                     </button>
                 ) : (
                     <form onSubmit={handleCreateAndSave} className="flex gap-2 items-center animate-in slide-in-from-bottom-2">
                         <input 
                             type="text" 
                             autoFocus
-                            placeholder="Nombre..." 
+                            placeholder={t("add_modal.input_placeholder")} 
                             className="input input-bordered input-sm w-full focus:outline-none focus:border-primary"
                             value={newCollectionName}
                             onChange={(e) => setNewCollectionName(e.target.value)}
+                            disabled={loading}
                         />
                         <button 
                             type="submit" 
                             className="btn btn-primary btn-sm btn-square"
-                            disabled={!newCollectionName.trim()}
+                            disabled={!newCollectionName.trim() || loading}
                         >
-                        <Check size={18} />
+                          {loading ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                         </button>
                         <button 
                             type="button" 

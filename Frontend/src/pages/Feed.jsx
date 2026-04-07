@@ -1,155 +1,250 @@
-import React, { useState } from "react";
-import {
-  Heart,
-  MoreHorizontal,
-  Home,
-  Search,
-  User,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Heart, ShieldAlert } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import { normalizeUser } from "../services/normalizers";
+import { useTranslation } from "react-i18next";
+import { useTheme } from "../context/ThemeContext.jsx";
+import ItemCover from "../components/ItemCover.jsx";
 import MiniUserCard from "../components/MiniUserCard.jsx";
+import api from "../services/api.js";
 import NavDesktop from "../components/NavDesktop.jsx";
-import NavMobile from "../components/NavMobile.jsx";  
+import NavMobile from "../components/NavMobile.jsx";
+import logoClaro from "../assets/TribeClaro.webp";
+import logoOscuro from "../assets/TribeOscuro.webp";
+
 
 const Feed = () => {
-  // Datos simulados del Feed
-  const activities = [
-    {
-      id: 1,
-      user: "sofia_art",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100",
-      action: "añadió a la colección",
-      target: "Vinilos 80s",
-      image:
-        "https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&q=80&w=600",
-      title: "Pink Floyd - The Wall",
-      likes: 24,
-      comments: 3,
-      time: "2h",
-    },
-    {
-      id: 2,
-      user: "marc_design",
-      avatar:
-        "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=100",
-      action: "creó una nueva colección",
-      target: "Cámaras Analógicas",
-      image:
-        "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600",
-      title: "Canon AE-1 Program",
-      likes: 156,
-      comments: 12,
-      time: "5h",
-    },
-    {
-      id: 3,
-      user: "luna_reads",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100",
-      action: "guardó un elemento",
-      target: "Lecturas 2024",
-      image:
-        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600",
-      title: "1984 - George Orwell",
-      likes: 42,
-      comments: 8,
-      time: "1d",
-    },
-  ];
+  const { t } = useTranslation();
+  const { user: currentUser } = useAuth();
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [followingIds, setFollowingIds] = useState([]);
+  const { theme } = useTheme(); 
+  const isDark = ["dark", "natura-dark", "midnight-rose", "mocha-night", "galactic-purple", "mundi-deep","royal-wine"].includes(theme);
+
+
+
+  const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
+
+  useEffect(() => {
+    if (!myId) return;
+    const fetchMyFollowing = async () => {
+      try {
+        const res = await api.get(`/users/following/${myId}`);
+        setFollowingIds((res.data || []).map((u) => Number(u.id || u.user_id)));
+      } catch (e) {
+        console.error("Error cargando mis seguidos", e);
+      }
+    };
+    fetchMyFollowing();
+  }, [myId]);
+
+  useEffect(() => {
+    if (!myId) return;
+    const fetchFeedData = async () => {
+      setLoading(true);
+      try {
+        const activityRes = await api.get("/users/feed/activity");
+        const filteredActivity = (activityRes.data || [])
+          .filter((item) => Number(item.user_id) !== myId)
+          .map(item => ({
+            ...item,
+            username: item.username || "usuario",
+            collection_name: item.collection_name || "Sin título",
+            collection_type: item.collection_type || "Colección"
+          }));
+        setActivities(filteredActivity);
+
+        const suggestionsRes = await api.get("/search/suggested");
+        const filteredSuggestions = (suggestionsRes.data || [])
+          .map(u => normalizeUser(u))
+          .filter(u => Number(u.id) !== myId);
+        
+        setSuggestedUsers(filteredSuggestions);
+      } catch (error) {
+        console.error("Error cargando feed:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeedData();
+  }, [myId]);
+
+  const handleFollowToggle = async (targetId, currentlyFollowing) => {
+    const id = Number(targetId);
+    try {
+      if (currentlyFollowing) {
+        await api.delete(`/users/unfollow/${id}`);
+        setFollowingIds((prev) => prev.filter((fid) => fid !== id));
+      } else {
+        await api.post(`/users/follow/${id}`);
+        setFollowingIds((prev) => [...prev, id]);
+      }
+    } catch (error) {
+      console.error("Error follow toggle:", error);
+    }
+  };
+
+  const handleToggleLike = async (collectionId) => {
+    try {
+      const res = await api.post(`/collections/like/${collectionId}`);
+      if (res.data.success) {
+        setActivities((prev) =>
+          prev.map((item) => {
+            if (item.collection_id === collectionId) {
+              return {
+                ...item,
+                has_liked: res.data.liked,
+                likes: res.data.liked
+                  ? (item.likes || 0) + 1
+                  : Math.max(0, (item.likes || 0) - 1),
+              };
+            }
+            return item;
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Error al dar like en el feed:", error);
+    }
+  };
+
+  function timeAgo(dateString) {
+    if (!dateString) return t("feed.now");
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    if (seconds < 60) return t("feed.now");
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} ${t("feed.unit_min")}`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} ${t("feed.unit_hour")}`;
+    const days = Math.floor(hours / 24);
+    return `${days} ${t("feed.unit_day")}`;
+  }
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content">
-     <NavDesktop />
+    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
+      <NavDesktop />
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 px-4">
-        {/* COLUMNA IZQUIERDA (FEED) - Ocupa 2 columnas en desktop */}
-        <div className="md:col-span-2 space-y-6">
-          {/* Header móvil (solo visible en móvil) */}
-          <div className="md:hidden flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold font-serif">Tu Feed</h1>
+       <div className="md:col-span-2 space-y-6">
+          <div className="md:hidden flex items-center justify-between mb-6 px-2">
+            <h1 className="text-3xl font-bold font-serif tracking-tight">
+              {t("feed.title")}
+            </h1>
+            <div className="w-12 h-12 flex items-center justify-center">
+              <img 
+                src={isDark ? logoClaro : logoOscuro} 
+                alt="Tribe Logo" 
+                className="w-full h-full object-contain drop-shadow-sm"
+              />
+            </div>
           </div>
 
-          {/* Lista de Cards */}
-          {activities.map((item) => (
-            <div
-              key={item.id}
-              className="card border-b bg-base-100 border-base-300 md:border md:rounded-2xl md:shadow-sm overflow-hidden"
-            >
-              {/* Header de la Card */}
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="avatar">
-                    <div className="w-10 h-10 rounded-full ring ring-base-200 ring-offset-1">
-                      <img src={item.avatar} alt={item.user} />
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+          ) : activities.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 opacity-40 text-center">
+              <ShieldAlert size={48} className="mb-4" />
+              <p>{t("feed.empty")}</p>
+              <p className="text-xs">{t("feed.empty_sub")}</p>
+            </div>
+          ) : (
+            activities.map((item) => (
+              <div
+                key={`${item.collection_id}-${item.created_at}`}
+                className="bg-base-100 border-b rounded-[1%] border-base-200 md:border md:rounded-2xl overflow-hidden shadow-sm"
+              >
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Link to={`/profile/${item.user_id}`} className="w-10 h-10 rounded-full overflow-hidden border border-base-200">
+                      <img
+                        src={item.avatar_url || `https://ui-avatars.com/api/?name=${item.username}&background=random`}
+                        alt={item.username}
+                        className="w-full h-full object-cover"
+                      />
+                    </Link>
+                    <div className="text-sm">
+                      <p className="font-semibold">
+                        <Link to={`/profile/${item.user_id}`} className="hover:text-primary">
+                          @{item.username}
+                        </Link>
+                        <span className="font-normal opacity-60 ml-2">{t("feed.action_created")}</span>
+                      </p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-0.5">
+                        {item.collection_type}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-sm">
-                    <p className="font-semibold leading-none">
-                      {item.user}{" "}
-                      <span className="font-normal opacity-70">
-                        {item.action}
-                      </span>
-                    </p>
-                    <p className="text-xs font-bold mt-0.5 opacity-80">
-                      {item.target}
-                    </p>
-                  </div>
+                  <span className="text-[10px] opacity-40 font-bold uppercase">
+                    {timeAgo(item.created_at)}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs opacity-50">{item.time}</span>
-                  <button className="btn btn-ghost btn-circle btn-xs">
-                    <MoreHorizontal size={16} />
-                  </button>
-                </div>
-              </div>
 
-              {/* Imagen Principal (Hero) */}
-              <div className="relative aspect-4/3 bg-base-200 w-full overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover hover:scale-105 transition duration-700"
-                />
-                {/* Etiqueta flotante del item */}
-                <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
-                  {item.title}
-                </div>
-                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium">
-                  <button className="flex items-center gap-1 group">
-                    <Heart
-                      size={24}
-                      className="group-hover:text-red-500 transition-colors"
+                <Link to={`/collection/${item.collection_id}`}>
+                  <div className="relative aspect-video bg-base-200 w-full overflow-hidden group">
+                    <ItemCover
+                      src={item.cover_url}
+                      title={item.collection_name}
                     />
+                    <div className="absolute bottom-4 left-4 right-4">
+                        <div className="inline-block bg-black/70 backdrop-blur-md text-white px-4 py-1.5 rounded-xl text-sm font-bold shadow-xl border border-white/10">
+                          {item.collection_name}
+                        </div>
+                    </div>
+                  </div>
+                </Link>
+
+                <div className="p-4">
+                  <button
+                    onClick={() => handleToggleLike(item.collection_id)}
+                    className={`flex items-center gap-2 text-sm font-black transition-all ${
+                      item.has_liked ? "text-error" : "opacity-40 hover:opacity-100"
+                    }`}
+                  >
+                    <Heart
+                      size={22}
+                      fill={item.has_liked ? "currentColor" : "none"}
+                      strokeWidth={2.5}
+                    />
+                    <span>{item.likes || 0}</span>
                   </button>
                 </div>
               </div>
-
-              {/* Footer de Acciones */}
-              <div className="p-4 ">
-                <div className="text-sm font-semibold opacity-50">
-                  {item.likes} me gusta
-                </div>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        {/* Otros perfiles*/}
         <div className="hidden md:block col-span-1">
           <div className="sticky top-24 space-y-6">
-            <div className="bg-base-200/50 rounded-2xl p-5">
-              <h3 className="font-bold font-serif text-lg mb-4 text-primary">
-                Tribers Sugeridos
+            <div className="bg-base-100 border border-base-200 rounded-3xl p-6 shadow-sm">
+              <h3 className="font-bold text-xs uppercase tracking-[0.2em] mb-6 text-primary">
+                {t("feed.suggested")}
               </h3>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <MiniUserCard key={i} i={i} />
-                ))}
+              <div className="space-y-5">
+                {suggestedUsers.map((u) => {
+                  const targetId = Number(u.id);
+                  const isFollowingThis = followingIds.includes(targetId);
+                  
+                  return (
+                    <MiniUserCard
+                      key={targetId}
+                      user={u}
+                      isFollowing={isFollowingThis}
+                      onFollowToggle={() => handleFollowToggle(targetId, isFollowingThis)}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
+        <NavMobile />
       </main>
-     <NavMobile />
     </div>
   );
 };

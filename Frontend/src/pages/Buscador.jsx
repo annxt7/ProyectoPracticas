@@ -1,268 +1,193 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import { Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  Search,
-  X,
-  UserPlus,
-  Check,
-  ChevronRight,
-  Home,
-  Heart,
-  User,
-} from "lucide-react";
-import NavMobile from "../components/NavMobile";  
+import { useTranslation } from "react-i18next";
+import ItemCover from "../components/ItemCover";
+import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import { normalizeUser, normalizeCollection } from "../services/normalizers";
 import NavDesktop from "../components/NavDesktop";
+import NavMobile from "../components/NavMobile";
+
 const Explorer = () => {
+  const { t } = useTranslation(); 
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("cuentas"); // 'cuentas' | 'colecciones'
+  const [activeTab, setActiveTab] = useState("accounts"); 
+  const [users, setUsers] = useState([]);
+  const [collections, setCollections] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [followingIds, setFollowingIds] = useState([]);
 
-  // --- DATOS SIMULADOS ---
+  const { user: currentUser } = useAuth();
+  const myId = currentUser ? Number(currentUser.id || currentUser.user_id) : null;
 
-  // Resultados de USUARIOS (Formato Lista)
-  const users = [
-    {
-      id: 1,
-      name: "Ana Analog",
-      handle: "@ana_films",
-      bio: "Cineasta & 35mm",
-      isFollowing: false,
-      img: "https://i.pravatar.cc/150?u=1",
-    },
-    {
-      id: 2,
-      name: "Retro Dave",
-      handle: "@dave_collects",
-      bio: "Vinilos y Consolas",
-      isFollowing: true,
-      img: "https://i.pravatar.cc/150?u=2",
-    },
-    {
-      id: 3,
-      name: "Sofia Books",
-      handle: "@sofia_reads",
-      bio: "Bibliófila empedernida",
-      isFollowing: false,
-      img: "https://i.pravatar.cc/150?u=3",
-    },
-    {
-      id: 4,
-      name: "Minimalist",
-      handle: "@mini_arch",
-      bio: "Less is more",
-      isFollowing: false,
-      img: "https://i.pravatar.cc/150?u=4",
-    },
-    {
-      id: 5,
-      name: "Techno Vibes",
-      handle: "@tech_music",
-      bio: "Solo vinilos electrónicos",
-      isFollowing: false,
-      img: "https://i.pravatar.cc/150?u=5",
-    },
-  ];
+  useEffect(() => {
+    if (!myId) return;
+    const fetchFollowing = async () => {
+      try {
+        const res = await api.get(`/users/following/${myId}`);
+        const ids = (res.data || []).map((u) => Number(normalizeUser(u).id));
+        setFollowingIds(ids);
+      } catch (err) {
+        console.error("Error al cargar seguidos:", err);
+      }
+    };
+    fetchFollowing();
+  }, [myId]);
 
-  // Resultados de COLECCIONES (Formato Card con Info)
-  const collections = [
-    {
-      id: 1,
-      title: "Star Wars Vintage",
-      items: 42,
-      author: "@luke_sky",
-      cover: "https://picsum.photos/400?random=1",
-    },
-    {
-      id: 2,
-      title: "Cámaras Leica",
-      items: 12,
-      author: "@ana_films",
-      cover: "https://picsum.photos/400?random=2",
-    },
-    {
-      id: 3,
-      title: "Libros de Terror",
-      items: 156,
-      author: "@stephen_fan",
-      cover: "https://picsum.photos/400?random=3",
-    },
-    {
-      id: 4,
-      title: "Carteles Bauhaus",
-      items: 23,
-      author: "@design_daily",
-      cover: "https://picsum.photos/400?random=4",
-    },
-    {
-      id: 5,
-      title: "Sneakers 90s",
-      items: 89,
-      author: "@jordan_head",
-      cover: "https://picsum.photos/400?random=5",
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get(`/search?query=${encodeURIComponent(query)}`);
+        const data = res.data;
+        const cleanUsers = (data.users || [])
+          .map((u) => normalizeUser(u))
+          .filter((u) => Number(u.id) !== myId && u.role !== "admin");
+        const cleanCollections = (data.collections || [])
+          .map((c) => normalizeCollection(c))
+          .filter((c) => Number(c.creatorId) !== myId);
+        setUsers(cleanUsers);
+        setCollections(cleanCollections);
+      } catch (err) {
+        console.error("Error en el buscador:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    const timeoutId = setTimeout(fetchData, 400); 
+    return () => clearTimeout(timeoutId);
+  }, [query, myId]);
 
-  // Función simple para filtrar (simulada)
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(query.toLowerCase()) ||
-      u.handle.includes(query.toLowerCase())
-  );
-  const filteredCollections = collections.filter((c) =>
-    c.title.toLowerCase().includes(query.toLowerCase())
-  );
+  const handleFollowToggle = async (targetId, isFollowing) => {
+    if (!myId) return alert(t("explorer.login_alert"));
+    const id = Number(targetId);
+    try {
+      if (isFollowing) {
+        await api.delete(`/users/unfollow/${id}`);
+        setFollowingIds((prev) => prev.filter((fid) => fid !== id));
+      } else {
+        await api.post(`/users/follow/${id}`);
+        setFollowingIds((prev) => [...prev, id]);
+      }
+    } catch (err) {
+      console.error("Error en Follow Toggle:", err);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-transparent pb-24 md:pb-10 font-sans text-base-content">
+    <div className="min-h-screen pb-24 bg-base-300 text-base-content font-sans">
       <NavDesktop />
-      <div className="sticky top-0 md:top-20 z-40 pt-4 pb-0 shadow-sm border-b border-base-200">
-        <div className="max-w-2xl mx-auto px-4 md:px-0">
-          {/* Input de Búsqueda */}
-          <div className="relative mb-4 border-base-100 shadow-amber-100/50">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40"
-              size={20}
-            />
+
+      <div className="sticky top-0 md:top-16 z-40 bg-base-200/80 backdrop-blur-md p-4 border-b border-base-100">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="relative mb-6">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40" size={18} />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar personas o colecciones..."
-              className="input input-lg w-full bg-base-200/50 border-none rounded-2xl pl-11 pr-10 focus:ring-2 ring-primary/50 focus:outline-none placeholder:text-base-content/40"
-              autoFocus
+              placeholder={t("explorer.search_placeholder")} 
+              className="w-full bg-base-100 border border-base-300 rounded-2xl py-3 pl-12 pr-10 outline-none focus:border-primary/50 transition-all text-sm"
             />
             {query && (
-              <button
+              <X
+                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-40 cursor-pointer hover:opacity-100"
+                size={16}
                 onClick={() => setQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 btn btn-circle btn-xs btn-ghost"
-              >
-                <X size={16} />
-              </button>
+              />
             )}
           </div>
 
-          {/* Tabs de Selección */}
-          <div className="flex w-full border-b border-base-200">
-            <button
-              onClick={() => setActiveTab("cuentas")}
-              className={`flex-1 pb-3 text-sm font-bold border-b-2 transition-colors ${
-                activeTab === "cuentas"
-                  ? "border-base-content text-base-content"
-                  : "border-transparent text-base-content/40 hover:text-base-content/70"
-              }`}
-            >
-              Cuentas
-            </button>
-            <button
-              onClick={() => setActiveTab("colecciones")}
-              className={`flex-1 pb-3 text-sm font-bold border-b-2 transition-colors ${
-                activeTab === "colecciones"
-                  ? "border-base-content text-base-content"
-                  : "border-transparent text-base-content/40 hover:text-base-content/70"
-              }`}
-            >
-              Colecciones
-            </button>
+          <div className="flex justify-center gap-12">
+            {[
+              { id: "accounts", label: t("explorer.tab_accounts") },
+              { id: "collections", label: t("explorer.tab_collections") }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-2 text-xs font-bold uppercase tracking-widest transition-all ${
+                  activeTab === tab.id
+                    ? "text-primary border-b-2 border-primary"
+                    : "opacity-40 hover:opacity-100"
+                }`}
+              >
+                {tab.label} 
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 md:px-0 pt-4">
-        {activeTab === "cuentas" && (
-          <div className="flex flex-col gap-2">
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between p-3 hover:bg-base-200/50 rounded-xl transition-colors cursor-pointer group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="avatar">
-                      <div className="w-14 h-14 rounded-full border border-base-300">
-                        <img src={user.img} alt={user.name} />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-base leading-none">
-                        {user.name}
-                      </h3>
-                      <p className="text-sm opacity-60 mt-1">{user.handle}</p>
-                      <p className="text-xs opacity-50 mt-1 truncate max-w-[200px]">
-                        {user.bio}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Botón Seguir */}
-                  {user.isFollowing ? (
-                    <button className="btn btn-sm btn-ghost border border-base-300 px-4 text-xs font-bold bg-base-200">
-                      Siguiendo
-                    </button>
-                  ) : (
-                    <button className="btn btn-sm btn-primary px-4 text-xs font-bold gap-2">
-                      <UserPlus size={16} /> Seguir
-                    </button>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-10 opacity-50">
-                No se encontraron usuarios
-              </div>
-            )}
+      <main className="max-w-6xl mx-auto p-6 mt-4">
+        {loading && (
+          <div className="flex justify-center py-10">
+            <span className="loading loading-spinner text-primary"></span>
           </div>
         )}
 
-        {activeTab === "colecciones" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {filteredCollections.length > 0 ? (
-              filteredCollections.map((col) => (
-                <div
-                  key={col.id}
-                  className="card bg-base-100 shadow-sm border border-base-200 hover:shadow-md transition-shadow cursor-pointer overflow-hidden group"
-                >
-                  <div className="flex gap-3 p-3">
-                    {/* Mini Cover */}
-                    <div className="w-20 h-20 rounded-lg bg-base-200 overflow-hidden flex-shrink-0">
+        {!loading && activeTab === "accounts" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {users.length === 0 && (
+              <p className="text-center opacity-40 col-span-full py-10">
+                {t("explorer.no_users")}
+              </p>
+            )}
+            {users.map((u) => {
+              const isFollowing = followingIds.includes(Number(u.id));
+              return (
+                <div key={u.id} className="flex items-center justify-between p-4 bg-base-200 rounded-2xl border border-base-100 hover:border-primary/20 transition-all shadow-sm">
+                  <Link to={`/profile/${u.id}`} className="flex items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-base-300 border border-base-100">
                       <img
-                        src={col.cover}
-                        alt="cover"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff`}
+                        className="w-full h-full object-cover"
+                        alt={u.username}
                       />
                     </div>
-                    {/* Info */}
-                    <div className="flex flex-col justify-center flex-1 min-w-0">
-                      <h3 className="font-bold font-serif text-lg truncate leading-tight">
-                        {col.title}
-                      </h3>
-                      <p className="text-xs opacity-50 mt-1">
-                        {col.items} elementos
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <div className="w-4 h-4 rounded-full bg-primary/20 overflow-hidden">
-                          <img
-                            src={`https://i.pravatar.cc/100?u=${col.id}`}
-                            alt="creator"
-                          />
-                        </div>
-                        <span className="text-xs font-medium opacity-70">
-                          {col.author}
-                        </span>
-                      </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm truncate">@{u.username}</p>
                     </div>
-                    <div className="flex items-center text-base-content/20">
-                      <ChevronRight size={20} />
-                    </div>
-                  </div>
+                  </Link>
+
+                  <button
+                    onClick={() => handleFollowToggle(u.id, isFollowing)}
+                    className={`btn btn-xs px-5 rounded-lg font-bold transition-all ${
+                      isFollowing ? "btn-ghost bg-base-300" : "btn-primary"
+                    }`}
+                  >
+                    {isFollowing ? t("explorer.btn_following") : t("explorer.btn_follow")}
+                  </button>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-10 opacity-50">
-                No se encontraron colecciones
-              </div>
-            )}
+              );
+            })}
           </div>
         )}
-      </div>
+
+        {!loading && activeTab === "collections" && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {collections.length === 0 && (
+              <p className="text-center opacity-40 col-span-full py-10">
+                {t("explorer.no_collections")}
+              </p>
+            )}
+            {collections.map((col) => (
+              <Link key={col.id} to={`/collection/${col.id}`} className="group">
+                <div className="flex flex-col gap-3">
+                  <div className="aspect-video rounded-2xl overflow-hidden bg-base-200 border border-base-200 group-hover:border-primary/40 transition-all relative shadow-sm">
+                    <ItemCover src={col.cover} title={col.title} className="group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <div className="px-1">
+                    <h3 className="font-bold truncate text-[13px] group-hover:text-primary transition-colors">{col.title}</h3>
+                    <p className="text-[10px] text-color-secondary font-extrabold uppercase">@{col.author}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </main>
       <NavMobile />
     </div>
   );

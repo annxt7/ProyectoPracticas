@@ -1,11 +1,13 @@
-// tailwind.config.js
+import daisyui from "daisyui" 
 
-module.exports = {
-  // ... otras configuraciones de Tailwind
-  
-  plugins: [require("daisyui")],
-  
-  daisyui: {
-    themes: ["lofi", "black"], // "lofi" para claro minimalista, "black" para oscuro puro
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {},
   },
+  daisyui: {
+    themes: ["light", "dark", "cupcake", "synthwave", "retro", "aqua"],
+  },
+  plugins: [daisyui], 
 }

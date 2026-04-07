@@ -1,0 +1,418 @@
+{
+  "landing": {
+    "early_access": "Early Access",
+    "title_main": "Tribe",
+    "title_find": "Find",
+    "title_people": "your people",
+    "description": "Stop being a stranger on the internet, find your tribe. Organize your world and discover others.",
+    "btn_register": "Register Now",
+    "btn_login": "Log In"
+  },
+  "feed": {
+    "title": "Your Feed",
+    "empty": "No recent activity from people you follow.",
+    "empty_sub": "Follow more Tribers to fill your feed!",
+    "suggested": "Suggested Tribers",
+    "action_created": "created a collection",
+    "now": "Now",
+    "unit_min": "min",
+    "unit_hour": "h",
+    "unit_day": "d"
+  },
+  "settings": {
+    "title": "Settings",
+    "version": "Tribe Platform v1.0.2",
+    "language": "Language",
+    "appearance": "Appearance",
+    "security": "Security",
+    "current_pass": "Current password",
+    "new_pass": "New password",
+    "btn_update_pass": "Update password",
+    "password_success": "Password updated successfully",
+    "password_error": "Error updating password",
+    "about": "About Us",
+    "about_desc": "Tribe was born with a clear mission: to organize digital chaos. We believe value lies in curation.",
+    "vision_title": "The Vision",
+    "vision_text": "Your catalog of passions.",
+    "community_title": "Community",
+    "community_text": "Real connection without algorithms.",
+    "support": "Support Us",
+    "coffee": "Buy us a coffee",
+    "coffee_price": "3€ Contribution",
+    "legal": "Legal",
+    "terms": "Terms and Conditions",
+    "terms_desc": "Platform usage agreement",
+    "privacy": "Privacy Policy",
+    "privacy_desc": "How we protect your data",
+    "logout": "Log Out",
+    "footer": "© Tribe All rights reserved"
+  },
+  "themes": {
+    "light": "Light",
+    "dark": "Dark",
+    "hawaii": "Hawaii",
+    "royal-wine": "Royal Wine",
+    "pinky": "Pastel Pink",
+    "midnight-rose": "Midnight Rose",
+    "mocha-night": "Mocha Night",
+    "lavender-dream": "Lavender Dream",
+    "sandstone": "Sandstone",
+    "natura": "Natura",
+    "natura-dark": "Natura Dark",
+    "orange": "Orange",
+    "terra-mundi": "Terra Mundi",
+    "galactic": "Galactic Deep",
+    "coral": "Electric Coral"
+  },
+  "explorer": {
+    "search_placeholder": "Search in Tribe...",
+    "tab_accounts": "Accounts",
+    "tab_collections": "Collections",
+    "no_users": "No users found",
+    "no_collections": "No collections found",
+    "btn_following": "Following",
+    "btn_follow": "Follow",
+    "login_alert": "You must log in"
+  },
+  "nav": {
+    "home": "Home",
+    "explore": "Explore",
+    "activity": "Activity",
+    "profile": "Profile",
+    "logout": "Log Out"
+  },
+  "addItem": {
+    "search_catalog": "Search entire catalog",
+    "search_in": "Search in: {{type}}",
+    "add_manual": "Add manual element",
+    "tab_search": "Search Database",
+    "tab_custom": "Create Manually",
+    "unknown": "Unknown",
+    "placeholder_title": "Title",
+    "placeholder_subtitle": "Subtitle",
+    "placeholder_description": "Optional description",
+    "btn_add": "Add to collection"
+  },
+  "profile": {
+    "edit_btn": "Edit Profile",
+    "follow_btn": "Follow",
+    "following_btn": "Following",
+    "stats": {
+      "collections": "Collections",
+      "followers": "Followers",
+      "following": "Following",
+      "common_save": "Save"
+    },
+    "bio_placeholder": "Write something about yourself...",
+    "bio_empty": "No bio yet...",
+    "tabs": {
+      "collections": "COLLECTIONS",
+      "saved": "SAVED",
+      "common_new": "New"
+    },
+    "filter": {
+      "label": "Sort by:",
+      "recent_desc": "Newest",
+      "recent_asc": "Oldest",
+      "updated": "Recently Updated",
+      "items": "Most Items",
+      "option_recent": "Most Recent (Creation)",
+      "option_old": "Oldest",
+      "option_updated": "Recently Updated",
+      "option_items": "No. of Items"
+    },
+    "delete_modal": {
+      "title_own": "Delete collection?",
+      "title_saved": "Remove from saved?",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "loading": "Uploading {{type}}...",
+      "bio_updated": "Bio updated",
+      "img_updated": "Image updated",
+      "error_update": "Error updating",
+      "deleted": "Deleted",
+      "unfollowed": "Unfollowed",
+      "following_success": "Following"
+    }
+  },
+  "follows": {
+    "empty": "No users found",
+    "following": "Following",
+    "follow": "Follow",
+    "me": "You"
+  },
+  "activity": {
+    "title": "Activity",
+    "mark_all_read": "Mark all as read",
+    "filter_by": "Filter by",
+    "filters": {
+      "all": "All",
+      "interactions": "Likes & Feedback",
+      "follows": "New Followers"
+    },
+    "status": "Status",
+    "pending": "Pending",
+    "empty": "No activity here",
+    "footer_info": "Stay up to date with those who interact with your collections.",
+    "created_collection": "created a new collection",
+    "added_item": "added a new item",
+    "liked_collection": "liked a collection",
+    "started_following": "started following you",
+    "unknown": "interacted with you"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "last_update": "Last updated: March 2026",
+    "intro_title": "1. Introduction",
+    "intro_text": "Welcome to Tribe. The data controller is Tribe. Our platform is designed to help you organize, search, and share your interests.",
+    "collect_title": "2. Information we collect",
+    "collect_acc": "<0>Account data:</0> When you register, we collect your username, email, and password (which is stored securely and encrypted).",
+    "collect_google": "<0>Google Login:</0> If you choose to authenticate through Google, we receive basic public profile information (such as your email).",
+    "collect_content": "<0>Content and preferences:</0> We save information related to catalog searches, items you add to your collections, and profile settings established during the initial registration process.",
+    "usage_title": "3. Use of information",
+    "usage_intro": "The data we collect is used exclusively to:",
+    "usage_item1": "Manage your access to the platform and keep your session active securely.",
+    "usage_item2": "Personalize your feed and suggest content based on your interests.",
+    "usage_item3": "Protect the platform against spam and abuse through <0>Google reCAPTCHA v3</0>. Use of this service is subject to Google's <1>Privacy Policy</1> and <2>Terms of Service</2>.",
+    "protection_title": "4. Data protection and retention",
+    "protection_text": "We do not sell your personal information to third parties. Your data will be kept as long as your Tribe account remains active.",
+    "rights_title": "5. Your Rights",
+    "rights_text": "You have the right to access your data, request its rectification, or demand its complete removal from our servers. You can manage these rights directly from your account settings or by contacting our support at <0>soportetribe@tribe.com</0>.",
+    "footer": "© {{year}} Tribe. All rights reserved.",
+    "reservation_title": "Reservation of Rights and Modifications",
+    "reservation_text": "Tribe reserves the right to modify, suspend, or terminate the service (or any part thereof) at any time, with or without notice. We also reserve the right to update this policy to reflect changes in our practices or for legal reasons."
+  
+  },
+  "create_col": {
+    "title": "New Collection",
+    "preview_label": "Real-time preview",
+    "preview_waiting": "Waiting for cover",
+    "preview_items": "0 elements",
+    "preview_footer": "This is how your card will look. <0>Edit the fields on the right</0> to see changes.",
+    "label_cover": "Collection cover",
+    "upload_click": "Click to upload image",
+    "upload_hint": "Recommended: 4:5 or 16:9",
+    "label_name": "Collection name",
+    "placeholder_name": "Ex: My favorite horror movies",
+    "label_desc": "Description",
+    "placeholder_desc": "Tell your tribe what this space is about...",
+    "label_category": "Category",
+    "btn_discard": "Discard",
+    "btn_publish": "Publish Collection",
+    "error_create": "Error: Could not create",
+    "types": {
+      "movies": "Movies",
+      "books": "Books",
+      "music": "Music",
+      "shows": "Series",
+      "games": "Games",
+      "custom": "Other"
+    }
+  },
+  "collection": {
+    "loading": "Loading collection...",
+    "back_my_profile": "My Profile",
+    "back_user_profile": "{{name}}'s Profile",
+    "no_description": "No description.",
+    "stats": {
+      "items": "Items",
+      "likes": "Likes"
+    },
+    "actions": {
+      "edit": "Edit",
+      "add": "Add",
+      "save": "Save Collection",
+      "saved": "Saved",
+      "cancel": "Cancel",
+      "save_changes": "Save",
+      "changing_cover": "Change"
+    },
+    "content_title": "Content",
+    "delete_modal": {
+      "title": "Delete item?",
+      "text": "This action will permanently remove the element from this collection.",
+      "confirm": "Delete"
+    },
+    "share": {
+      "default_title": "Collection in Tribe",
+      "text": "Check out this collection: {{title}}!"
+    },
+    "notifications": {
+      "load_error": "Could not load collection",
+      "add_success": "Item added successfully",
+      "db_error": "Error saving to database",
+      "save_col_success": "Collection saved to your library",
+      "save_col_error": "Error saving collection",
+      "update_success": "Changes saved",
+      "update_error": "Error updating collection",
+      "delete_success": "Item deleted",
+      "delete_error": "Could not delete item",
+      "link_copied": "Link copied to clipboard!",
+      "link_copy_error": "Error copying link"
+    }
+  },
+  "auth": {
+  "hero_subtitle": "Organize what inspires you and connect.",
+  "back_home": "Home",
+  "forgot_title": "Forgot my password",
+  "login_title": "Welcome back",
+  "register_title": "Join Tribe",
+  "back_to_login": "Back to login",
+  "no_account": "Don't have an account?",
+  "register_now": "Sign up",
+  "already_member": "Already a member?",
+  "login_now": "Log in"
+},
+"login": {
+  "identifier_label": "Username or Email",
+  "identifier_placeholder": "username or email",
+  "password_label": "Password",
+  "password_placeholder": "••••••••",
+  "forgot_password": "Forgot your password?",
+  "submit_button": "Log In",
+  "divider": "Or continue with",
+  "errors": {
+    "identifier_min": "Minimum 3 characters",
+    "password_required": "Password is required",
+    "connection": "Connection error.",
+    "google_error": "Error connecting with Google."
+  }
+},
+"register": {
+  "username_label": "Username",
+  "username_placeholder": "e.g., pixel_collector",
+  "email_label": "Email address",
+  "email_placeholder": "hello@example.com",
+  "password_label": "Password",
+  "password_placeholder": "••••••••",
+  "confirm_password_label": "Repeat password",
+  "terms_prefix": "I have read and accept the",
+  "terms_link": "privacy policy",
+  "terms_suffix": "of Tribe.",
+  "submit_button": "Create Account",
+  "divider": "Or continue with",
+  "requirements": {
+    "length": "8+ chars",
+    "upper": "Uppercase",
+    "number": "Number",
+    "special": "Special"
+  },
+  "errors": {
+    "user_min": "Minimum 4 characters",
+    "user_regex": "Only letters, numbers, and underscores",
+    "email_invalid": "Invalid email address",
+    "pass_min": "Minimum 8 characters",
+    "pass_upper": "One uppercase letter",
+    "pass_lower": "One lowercase letter",
+    "pass_number": "One number",
+    "pass_special": "One special character",
+    "pass_match": "Passwords do not match",
+    "terms_required": "You must accept the privacy policy",
+    "captcha_required": "Please complete the reCAPTCHA.",
+    "google_error": "Error connecting with Google.",
+    "connection": "Connection error."
+  }
+},
+"forgot": {
+  "email_label": "Email address",
+  "email_placeholder": "your@email.com",
+  "submit_button": "Send Request",
+  "success_msg": "Request sent. Check your email or contact the administrator.",
+  "reset_link": "Go to reset →",
+  "errors": {
+    "email_invalid": "Invalid email address",
+    "connection": "Connection error."
+  }
+},
+"add_modal": {
+  "success_title": "Added!",
+  "success_subtitle": "Saved to your collection",
+  "header_title": "Save to...",
+  "no_collections": "You don't have any collections yet.",
+  "create_new": "Create new collection",
+  "input_placeholder": "Collection name...",
+  "error_save": "Error saving to collection",
+  "error_create": "There was a problem creating the collection"
+},
+"onboarding": {
+  "steps": {
+    "photo": "Your Photo",
+    "interests": "Your Interests"
+  },
+  "step1": {
+    "welcome": "Welcome, {{username}}!",
+    "subtitle": "Personalize your profile before starting.",
+    "next": "Next",
+    "uploading": "Uploading..."
+  },
+  "step2": {
+    "title": "What are you into?",
+    "back": "Back",
+    "finish": "Get Started!"
+  },
+  "categories": {
+    "Music": "Music",
+    "Books": "Books",
+    "Movies": "Movies",
+    "Games": "Games",
+    "Shows": "Shows"
+  },
+  "alerts": {
+    "upload_error": "Error uploading image",
+    "session_error": "Session error. Please log in again.",
+    "expired": "Your session has expired. Please log in again.",
+    "save_error": "We couldn't save your preferences. Please try again."
+  }
+},
+"admin": {
+  "title": "Admin Panel",
+  "logout": "Logout",
+  "search_placeholder": "Search on this page...",
+  "loading_data": "Loading data...",
+  "no_results": "No results found",
+  "tabs": {
+    "requests": "Requests",
+    "users": "Users",
+    "collections": "Collections",
+    "catalog": "Catalog"
+  },
+  "table": {
+    "date": "Date",
+    "user": "User",
+    "status": "Status",
+    "actions": "Actions",
+    "role": "Role",
+    "id": "ID",
+    "title": "Title",
+    "owner": "Owner",
+    "items": "Items",
+    "item": "Item",
+    "details": "Details",
+    "category": "Category",
+    "generate_code": "Generate Code",
+    "content": "Content",
+    "empty_collection": "This collection is empty.",
+    "no_description": "No description"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "info": "Page {{current}} of {{total}}"
+  },
+  "modals": {
+    "user_collections_title": "Collections",
+    "managing_user": "Managing content for {{username}}",
+    "no_collections": "No collections",
+    "close": "Close",
+    "confirm": "Confirm"
+  },
+  "alerts": {
+    "confirm_delete": "Are you sure you want to delete this? This action cannot be undone.",
+    "delete_error": "Error deleting item",
+    "confirm_code": "Generate code \"{{code}}\" for this user?",
+    "code_error": "Error generating code."
+  }
+}
+}

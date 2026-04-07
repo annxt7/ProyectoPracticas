@@ -1,195 +1,222 @@
-import React, { useState } from "react";
-import Logo from "../assets/LogoClaro.png";
-import {
-  Heart,
-  UserPlus,
-  MessageSquare,
-  Star,
-  Zap,
-  Home,
-  Search,
-  User,
-} from "lucide-react";
-import NavMobile from "../components/NavMobile";  
-import NavDesktop from "../components/NavDesktop";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { Heart, UserPlus, MessageSquare, Bell, Info, Filter as FilterIcon, CheckCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import api from "../services/api.js";
+import NavDesktop from "../components/NavDesktop.jsx";
+import NavMobile from "../components/NavMobile.jsx";
 
-const Activity = () => {
-  const [filter, setFilter] = useState("all");
+// 1. COMPONENTE HIJO (Afuera para evitar recrearlo en cada render)
+const NotificationItem = ({ data, onMarkRead, locale }) => {
+  const { t } = useTranslation();
 
-  const notifications = [
-    {
-      id: 1,
-      type: "like_collection",
-      user: { name: "Ana_Design", avatar: "https://i.pravatar.cc/150?u=1" },
-      content: "le gustó tu colección",
-      target: "Minimalist Workspaces",
-      image:
-        "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=200",
-      time: "2min",
-      read: false,
-    },
-    {
-      id: 2,
-      type: "follow",
-      user: { name: "Julian.Arch", avatar: "https://i.pravatar.cc/150?u=2" },
-      content: "empezó a seguirte",
-      time: "1h",
-      read: false,
-      isFollowing: false,
-    },
-    {
-      id: 3,
-      type: "comment",
-      user: { name: "Luisa_V", avatar: "https://i.pravatar.cc/150?u=3" },
-      content: "comentó en",
-      target: "Sci-Fi Classics",
-      commentSnippet: '"¡Increíble selección! Blade Runner es top."',
-      image:
-        "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=200",
-      time: "5h",
-      read: true,
-    },
-    {
-      id: 4,
-      type: "system",
-      content: "Bienvenido al Early Access de Tribe.",
-      time: "1d",
-      read: true,
-    },
-    {
-      id: 5,
-      type: "like_item",
-      user: { name: "Dave_Grohl", avatar: "https://i.pravatar.cc/150?u=4" },
-      content: "le gustó un elemento en",
-      target: "Vinilos 70s",
-      image:
-        "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=200",
-      time: "2d",
-      read: true,
-    },
-  ];
+  const getIcon = () => {
+    switch (data.type) {
+      case 'follow': return { icon: UserPlus, color: 'text-info' };
+      case 'like_collection': return { icon: Heart, color: 'text-error' };
+      default: return { icon: MessageSquare, color: 'text-primary' };
+    }
+  };
 
-  return (
-    <>
-      <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content">
-        <NavDesktop/>
-        <div className="mx-auto px-2 sm:px-4 py-4 space-y-6">
-          <div>
-            <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-widest mb-3 pl-2">
-              Hoy
-            </h3>
-            <div className="flex flex-col gap-1">
-              {notifications
-                .filter((n) => !n.read)
-                .map((notif) => (
-                  <NotificationItem key={notif.id} data={notif} />
-                ))}
-            </div>
-          </div>
+  const { icon: Icon, color } = getIcon();
 
-          <div>
-            <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-widest mb-3 pl-2">
-              Esta semana
-            </h3>
-            <div className="flex flex-col gap-1">
-              {notifications
-                .filter((n) => n.read)
-                .map((notif) => (
-                  <NotificationItem key={notif.id} data={notif} />
-                ))}
-            </div>
-          </div>
-        </div>
-        <NavMobile />
-      </div>
-    </>
-  );
-};
-
-const NotificationItem = ({ data }) => {
   return (
     <div
-      className={`
-      relative group flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 border-2 border-base-300
-      ${data.read ? "hover:bg-base-200/50" : "bg-base-200/30 hover:bg-base-200"}
-    `}
+      onClick={onMarkRead}
+      className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+        data.read
+          ? "bg-transparent border-transparent opacity-50 grayscale-[0.3]"
+          : "bg-base-200 border-base-content/5 hover:border-primary/40 hover:bg-base-300"
+      }`}
     >
-      {!data.read && (
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary"></div>
-      )}
-
       <div className="relative flex-none">
-        {data.type === "system" ? (
-          <div className="w-10 h-10 rounded-full bg-base-300 flex items-center justify-center">
-            <Zap size={20} />
-          </div>
-        ) : (
-          <div className="avatar">
-            <div className="w-10 h-10 rounded-full ring ring-base-100 ring-offset-2">
-              <img src={data.user.avatar} alt={data.user.name} />
-            </div>
-            <div
-              className={`
-              absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-base-100 text-white text-[10px]
-              ${
-                data.type.includes("like")
-                  ? "bg-pink-500"
-                  : data.type === "follow"
-                  ? "bg-blue-500"
-                  : "bg-green-500"
-              }
-            `}
-            >
-              {data.type.includes("like") && (
-                <Heart size={10} fill="currentColor" />
-              )}
-              {data.type === "follow" && <UserPlus size={10} />}
-              {data.type === "comment" && <MessageSquare size={10} />}
-            </div>
-          </div>
-        )}
+        <img
+          src={data.user?.avatar || `https://ui-avatars.com/api/?name=${data.user?.name}&background=random`}
+          className="w-12 h-12 rounded-full object-cover border border-base-content/10 shadow-sm"
+          alt=""
+        />
+        <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-base-100 flex items-center justify-center border border-base-content/10 shadow-sm ${color}`}>
+          <Icon size={12} strokeWidth={3} />
+        </div>
       </div>
 
-      <div className="flex-1 min-w-0 pt-0.5">
-        {data.type === "system" ? (
-          <p className="text-sm font-medium">{data.content}</p>
-        ) : (
-          <p className="text-sm leading-snug">
-            <span className="font-bold cursor-pointer hover:text-primary">
-              {data.user.name}
-            </span>{" "}
-            <span className="opacity-80">{data.content}</span>{" "}
-            {data.target && (
-              <span className="font-medium">"{data.target}"</span>
-            )}
-            {data.commentSnippet && (
-              <span className="block mt-1 text-xs opacity-60 pl-2 border-l-2 border-base-300 italic">
-                {data.commentSnippet}
-              </span>
-            )}
-          </p>
-        )}
-        <span className="text-xs opacity-40 mt-1 block">{data.time}</span>
+      <div className="flex-1 min-w-0 text-base-content">
+        <div className="text-sm leading-snug">
+          <div className="flex items-center gap-2">
+            <span className="font-bold">
+              @{data.user?.name?.toLowerCase().replace(/\s+/g, '')}
+            </span>
+            <span className="text-base-content/70">
+              {t(`activity.${data.content_key}`)}
+            </span>
+          </div>
+        </div>
+        <span className="text-[10px] opacity-50 font-medium">
+          {new Date(data.created_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
+        </span>
       </div>
 
       <div className="flex-none">
-        {data.type === "follow" && (
-          <button className="btn btn-sm btn-outline rounded-full px-4 hover:btn-primary">
-            Seguir
-          </button>
+        {!data.read ? (
+          <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(var(--p),0.5)] animate-pulse"></div>
+        ) : (
+          <CheckCircle size={14} className="opacity-20" />
         )}
+      </div>
+    </div>
+  );
+};
 
-        {(data.type.includes("like") || data.type === "comment") &&
-          data.image && (
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden border border-base-300">
-              <img
-                src={data.image}
-                alt="preview"
-                className="w-full h-full object-cover"
-              />
+// 2. COMPONENTE PRINCIPAL
+const Activity = () => {
+  const { t, i18n } = useTranslation();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("all");
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/activity");
+      setNotifications(res.data);
+    } catch (err) {
+      console.error("Sync error:", err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const markAsRead = async (id) => {
+    try {
+      await api.put(`/activity/${id}/read`);
+      setNotifications(prev =>
+        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      );
+    } catch (err) {
+      console.error("Error updating notification:", err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await api.put("/activity/read-all");
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (err) {
+      console.error("Error marking all as read:", err);
+    }
+  };
+
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter(n => {
+      const isInteraction = n.type === 'like_collection' || n.type === 'comment';
+      const isFollow = n.type === 'follow';
+      if (activeFilter === "all") return true;
+      if (activeFilter === "interactions") return isInteraction;
+      if (activeFilter === "follows") return isFollow;
+      return true;
+    });
+  }, [notifications, activeFilter]);
+
+  const filters = [
+    { id: 'all', label: t("activity.filters.all") },
+    { id: 'interactions', label: t("activity.filters.interactions") },
+    { id: 'follows', label: t("activity.filters.follows") }
+  ];
+
+  return (
+    <div className="min-h-screen pb-28 md:pb-10 bg-base-300 text-base-content font-sans transition-colors duration-300">
+      <NavDesktop />
+
+      <header className="sticky top-0 z-30 bg-base-200 backdrop-blur-md border-b border-base-content/10 py-4">
+        <div className="max-w-2xl mx-auto px-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+              <Bell size={20} />
+            </div>
+            <h2 className="text-xl font-bold tracking-tight">{t("activity.title")}</h2>
+          </div>
+
+          {notifications.some(n => !n.read) && (
+            <button
+              onClick={markAllAsRead}
+              className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70 transition-all"
+            >
+              {t("activity.mark_all_read")}
+            </button>
+          )}
+        </div>
+      </header>
+
+      <div className="max-w-[1200px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] gap-8">
+        <aside className="hidden lg:block space-y-6">
+          <section>
+            <h4 className="text-[10px] uppercase tracking-widest text-primary font-bold mb-4 flex items-center gap-2">
+              <FilterIcon size={12} /> {t("activity.filter_by")}
+            </h4>
+            <div className="flex flex-col gap-1">
+              {filters.map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setActiveFilter(f.id)}
+                  className={`text-left text-xs p-3 rounded-xl transition-all ${
+                    activeFilter === f.id
+                      ? 'bg-primary text-primary-content font-bold shadow-lg shadow-primary/20'
+                      : 'hover:bg-base-200 opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        </aside>
+
+        <main className="max-w-2xl w-full mx-auto">
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+          ) : filteredNotifications.length > 0 ? (
+            <div className="space-y-3">
+              {filteredNotifications.map(n => (
+                <NotificationItem
+                  key={n.id}
+                  data={n}
+                  locale={i18n.language}
+                  onMarkRead={() => !n.read && markAsRead(n.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-24 bg-base-200/50 rounded-[3rem] border border-dashed border-base-content/10">
+              <Info className="mx-auto mb-4 opacity-20" size={40} />
+              <p className="opacity-40 text-sm">{t("activity.empty")}</p>
             </div>
           )}
+        </main>
+
+        <aside className="hidden lg:block">
+          <div className="p-6 rounded-4xl bg-base-200 border border-base-content/5 text-center shadow-sm">
+            <h4 className="text-[10px] uppercase tracking-widest opacity-40 font-bold mb-6">{t("activity.status")}</h4>
+            <div className="space-y-4">
+              <div className="flex flex-col">
+                <span className="text-4xl font-black text-primary">
+                  {notifications.filter(n => !n.read).length}
+                </span>
+                <span className="text-[9px] opacity-60 uppercase font-black tracking-tighter">{t("activity.pending")}</span>
+              </div>
+              <div className="h-px bg-base-content/10 w-8 mx-auto"></div>
+              <p className="text-[11px] opacity-50 leading-relaxed px-2">
+                {t("activity.footer_info")}
+              </p>
+            </div>
+          </div>
+        </aside>
       </div>
+      <NavMobile />
     </div>
   );
 };

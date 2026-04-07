@@ -1,36 +1,54 @@
+require("dotenv").config();
 const express = require("express");
+const path = require("path");
+const applySecurity = require("./middlewares");
+const requestLogger = require("./middlewares/logMiddleware");
+const swaggerUI = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
 const app = express();
-const port = 3000;
-const userRoutes= require('./routes/userRoutes')
-const dbconection = require("./config/dbconect");
+const port = process.env.PORT || 3000;
+const userRoutes = require('./routes/userRoutes');
+const collectionRoutes = require('./routes/collectionRoutes');
+const uploadRoutes = require('./routes/uploadFileRoutes');
+const catalogRoutes = require('./routes/catalogRoutes');
+const searchRoutes = require('./routes/searchRoutes');
+const activityRoutes = require('./routes/activityRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+// SECURITY MIDDLEWARES
+applySecurity(app);
+
+app.use((req, res, next) => {
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+    next();
 });
-async function fetchData() {
-  try {
-    const [rows, fields] = await dbconection.execute("SELECT * FROM `Users`");
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
-    console.log("Resultados de Users:", rows);
-  } catch (error) {
-    console.error("ERROR al ejecutar SELECT * FROM Users:", error);
-  }
-}
+// RUTAS 
+app.use('/api/users', userRoutes);
+app.use('/api/collections', collectionRoutes);
+app.use('/api/catalog', catalogRoutes);
+app.use('/api/files', uploadRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/activity', activityRoutes);
+app.use('/api/admin', adminRoutes);
 
-app.use('/api/users',userRoutes)
-app.get("/test-db", (req, res) => {
-  dbconection.query("SELECT 1 + 1 AS solution", (err, rows) => {
-    if (err) {
-      console.log("Error en la consulta: ", err);
-      res.status(500).send("Error al consultar la base de datos");
-    } else {
-      console.log("La solución es:", rows[0].solution);
-      res.send("TODO OK");
-    }
-  });
+// HEALTH CHECK
+app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", message: "Servidor seguro y funcionando" });
 });
 
+app.use((req, res) => {
+    res.status(404).json({ error: "La ruta solicitada no existe." });
+});
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+    console.log(`-------------------------------------------`);
+    console.log(`✅ Servidor Tribe corriendo en puerto ${port}`);
+    console.log(`📄 Swagger: https://axel.informaticamajada.es/api-docs`);
+    console.log(`-------------------------------------------`);
 });

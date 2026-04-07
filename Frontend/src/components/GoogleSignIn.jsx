@@ -1,4 +1,3 @@
-import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 
 // Recibe la prop de manejo de éxito del padre (AuthScreen)
@@ -21,8 +20,8 @@ const GoogleSignIn = ({ onGoogleSuccess, isLoading }) => {
         onSuccess={onSuccess}
         onError={onError}
         text= "continue_with" 
-        shape="pill"
-        theme="outline"
+        shape= "square"
+        theme= "filled_blue"
       />
     </div>
   );

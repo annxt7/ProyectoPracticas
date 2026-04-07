@@ -1,292 +1,577 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
+import SettingsModal from "../components/Config";
+import FollowsModal from "../components/FollowsModal";
+import { useTranslation } from "react-i18next"; 
 import {
   Settings,
-  Plus,
   UserPlus,
-  Grid,
-  Bookmark,
   Check,
-  MapPin,
-  Share2,
   X,
-  Camera, // Icono para la foto
+  Camera,
+  Plus,
+  Trash2,
+  Filter,
+  ArrowDownWideNarrow
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import NavMobile from "../components/NavMobile";
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
+import ItemCover from "../components/ItemCover";
+import { normalizeUser } from "../services/normalizers";
 import NavDesktop from "../components/NavDesktop";
+import NavMobile from "../components/NavMobile";
 
-const Profile = ({ isOwnProfile = false }) => {
+const Profile = () => {
+  const { t } = useTranslation(); 
   const [activeTab, setActiveTab] = useState("collections");
-
-  // ESTADO DE LA IMAGEN DE PERFIL
-  const [profileImage, setProfileImage] = useState(
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300"
-  );
-
-  // REFERENCIA AL INPUT INVISIBLE DE ARCHIVO
-  const fileInputRef = useRef(null);
-
-  const [description, setDescription] = useState(
-    "Cineasta visual y recolectora de vinilos de los 70s. Intentando organizar mi caos visual en pequeñas dosis. ☕️ & 🎬"
-  );
-
+  const { user, updateUser } = useAuth();
+  const { userId } = useParams();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isMe = userId === "me" || Number(userId) === Number(user?.id);
+  const targetId = isMe ? user?.id : userId;
+  const [profileData, setProfileData] = useState(null);
+  const [collections, setCollections] = useState([]);
+  const [savedCollections, setSavedCollections] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [followStats, setFollowStats] = useState({
+    followers: 0,
+    following: 0,
+  });
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followModal, setFollowModal] = useState({
+    open: false,
+    type: "followers",
+    title: "",
+  });
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    id: null,
+    type: null,
+    title: "",
+  });
+  const [filter, setFilter] = useState({ sortBy: "recent", order: "DESC" });
+  
+  const avatarInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState("");
 
-  const stats = [
-    { label: "Colecciones", value: "12" },
-    { label: "Seguidores", value: "1.4k" },
-    { label: "Siguiendo", value: "342" },
-  ];
+  const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&color=fff&name=User";
+  const DEFAULT_BANNER = "https://salaocho.com/wp-content/uploads/2025/05/shaolin-soccer-screenshot.jpg";
 
-  // Activar edición
-  const handleStartEditing = () => {
-    setNewDescription(description);
-    setIsEditing(true);
-  };
+  const getImg = (url, fallback) => (url ? url : fallback);
 
-  // Guardar biografía
-  const handleSave = (e) => {
+  useEffect(() => {
+    if (isMe && user) {
+      const normalized = normalizeUser(user);
+      setProfileData(normalized);
+      setNewDescription(normalized.bio || "");
+    }
+  }, [user, isMe]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!targetId) return;
+      setIsLoading(true);
+
+      try {
+        const queryParams = `?sortBy=${filter.sortBy}&order=${filter.order}`;
+        const collectionsPromise = api.get(`/collections/user/${targetId}${queryParams}`);
+        const statsPromise = api.get(`/users/follow-stats/${targetId}`);
+        let userPromise = Promise.resolve({ data: null });
+        let savedPromise = Promise.resolve({ data: [] });
+
+        if (!isMe) {
+          userPromise = api.get(`/users/${targetId}`);
+        } else {
+          savedPromise = api.get(`/collections/saved/${targetId}${queryParams}`);
+        }
+        const [colRes, uRes, sRes, statsRes] = await Promise.all([
+          collectionsPromise,
+          userPromise,
+          savedPromise,
+          statsPromise,
+        ]);
+
+        setCollections(colRes.data || []);
+        setSavedCollections(isMe ? sRes.data || [] : []);
+        setFollowStats({
+          followers: statsRes.data.followers || 0,
+          following: statsRes.data.following || 0,
+        });
+        setIsFollowing(statsRes.data.amIFollowing || false);
+
+        if (!isMe && uRes.data) {
+          setProfileData(normalizeUser(uRes.data));
+        }
+      } catch (error) {
+        console.error("Error cargando perfil:", error);
+        toast.error(t("profile.messages.error_update"));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [targetId, isMe, filter, t]);
+
+  const handleSaveBio = async (e) => {
     e.preventDefault();
-    if (newDescription.trim()) {
-      setDescription(newDescription);
+    try {
+      const res = await api.put("/users/update-profile", {
+        bio: newDescription,
+      });
+      updateUser(res.data.user);
       setIsEditing(false);
+      toast.success(t("profile.messages.bio_updated"));
+    } catch (error) {
+      toast.error(t("profile.messages.error_update"));
     }
   };
 
-  // CAMBIAR FOTO DE PERFIL
-  const handleImageChange = (e) => {
+  const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfileImage(imageUrl);
+    if (!file) return;
+    setIsUploading(true);
+    const loadingToast = toast.loading(t("profile.messages.loading", { type }));
+    try {
+      const fd = new FormData();
+      fd.append("imagen", file);
+      const uploadRes = await api.post("/files/upload", fd);
+      const payload = type === "avatar" ? { avatarUrl: uploadRes.data.url } : { bannerUrl: uploadRes.data.url };
+      const updateRes = await api.put("/users/update-profile", payload);
+      updateUser(updateRes.data.user);
+      toast.success(t("profile.messages.img_updated"), { id: loadingToast });
+    } catch (error) {
+      toast.error(t("profile.messages.error_update"), { id: loadingToast });
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const handlePhotoClick = () => {
-    if (isOwnProfile && fileInputRef.current) {
-      fileInputRef.current.click();
+  const handleDeleteCollection = (e, collection_id, name) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteConfirm({
+      isOpen: true,
+      id: collection_id,
+      type: "own",
+      title: name,
+    });
+  };
+
+  const handleDeleteSavedCollection = (e, collection_id, name) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteConfirm({
+      isOpen: true,
+      id: collection_id,
+      type: "saved",
+      title: name,
+    });
+  };
+
+  const executeDelete = async () => {
+    const { id, type } = deleteConfirm;
+    setDeleteConfirm({ ...deleteConfirm, isOpen: false });
+    const tId = toast.loading(t("common.loading") || "...");
+
+    try {
+      if (type === "own") {
+        await api.delete(`/collections/${id}`);
+        setCollections((prev) => prev.filter((c) => c.collection_id !== id));
+      } else {
+        await api.delete(`/collections/saved/${id}`);
+        setSavedCollections((prev) => prev.filter((c) => c.collection_id !== id));
+      }
+      toast.success(t("profile.messages.deleted"), { id: tId });
+    } catch (error) {
+      toast.error(t("profile.messages.error_update"), { id: tId });
     }
   };
+
+  const handleFollowToggle = async () => {
+    if (!targetId) return;
+    const prevFollowingState = isFollowing;
+
+    setIsFollowing(!isFollowing);
+    setFollowStats((prev) => ({
+      ...prev,
+      followers: isFollowing ? prev.followers - 1 : prev.followers + 1,
+    }));
+
+    try {
+      if (prevFollowingState) {
+        await api.delete(`/users/unfollow/${targetId}`);
+        toast.success(t("profile.messages.unfollowed"));
+      } else {
+        await api.post(`/users/follow/${targetId}`);
+        toast.success(t("profile.messages.following_success"));
+      }
+    } catch (error) {
+      setIsFollowing(prevFollowingState);
+      toast.error(t("profile.messages.error_update"));
+    }
+  };
+
+  if (isLoading && !profileData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-100">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-100">
+    <div className="min-h-screen pb-24 md:pb-10 font-sans text-base-content bg-base-300">
+      <Toaster position="bottom-center" />
       <NavDesktop />
 
-      <main className=" mx-auto">
-        {/* HEADER */}
-        <div className="relative">
-          {/* BANNER (Fondo) - CORREGIDO */}
-          <div className="h-40 md:h-80 w-full relative bg-neutral-900 overflow-hidden">
-            {/* Imagen normal (sin opacity-50 que la dejaba gris) */}
-            <img
-              src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=1000"
-              alt="cover"
-              className="w-full h-full object-cover"
-            />
-            {/* Degradado negro solo abajo para que se lea el texto, sin tapar la foto entera */}
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
-          </div>
+      <main className="mx-auto">
+        <div className="relative h-40 md:h-80 w-full bg-neutral-900 overflow-hidden group">
+          <img src={getImg(profileData?.banner, DEFAULT_BANNER)} className="w-full h-full object-cover" alt="banner" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
+          {isMe && isEditing && (
+            <button onClick={() => !isUploading && bannerInputRef.current.click()} className="absolute bottom-4 right-4 bg-base-100 p-2 rounded-full shadow-md z-20 hover:bg-base-200 transition-all">
+              {isUploading ? <span className="loading loading-spinner loading-xs" /> : <Camera size={20} />}
+            </button>
+          )}
+          <input type="file" ref={bannerInputRef} onChange={(e) => handleFileUpload(e, "banner")} className="hidden" accept="image/*" />
+        </div>
 
-          <div className="px-6 relative">
-            <div className="flex justify-between items-end -mt-12 mb-4">
-              {/* === FOTO DE PERFIL (ESTILO INSTAGRAM) === */}
-              <div className="relative" onClick={handlePhotoClick}>
-                <div className="avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm cursor-pointer">
-                  <div className="w-24 md:w-32 rounded-full overflow-hidden relative bg-base-200">
-                    <img
-                      src={profileImage}
-                      alt="profile"
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
+        <div className="px-6 relative">
+          <div className="flex justify-between items-end -mt-12 mb-4">
+            <div className="relative">
+              <div onClick={() => isMe && isEditing && !isUploading && avatarInputRef.current.click()} className={`avatar ring-4 ring-base-100 rounded-full bg-base-100 shadow-sm ${isMe && isEditing ? "cursor-pointer hover:ring-primary" : ""}`}>
+                <div className="w-24 md:w-32 rounded-full overflow-hidden bg-base-200">
+                  <img src={getImg(profileData?.avatar, DEFAULT_AVATAR)} alt="avatar" />
                 </div>
-
-                {/* BOTÓN DE CÁMARA FLOTANTE (Badge) - Soluciona el problema móvil */}
-                {isOwnProfile && (
-                  <button
-                    className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-base-100 text-base-content p-2 rounded-full shadow-md border border-base-200 hover:bg-base-200 transition-colors z-10"
-                    title="Cambiar foto"
-                  >
-                    <Camera size={16} className="md:w-5 md:h-5" />
-                  </button>
-                )}
-
-                {/* Input file oculto */}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
-                  className="hidden"
-                  accept="image/*"
-                />
               </div>
-
-              {/* Botones de Acción */}
-              <div className="flex gap-2 mt-2 mb-2">
-                {isOwnProfile ? (
-                  <>
-                    <button
-                      onClick={handleStartEditing}
-                      className="btn btn-sm md:btn-md py-1 btn-ghost border border-base-300 rounded-full px-4 md:px-6 hover:bg-base-200"
-                    >
-                      Editar Perfil
-                    </button>
-                    <button
-                      onClick={handleStartEditing}
-                      className="btn btn-sm md:btn-md btn-circle btn-ghost border border-base-300"
-                    >
-                      <Settings size={18} />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button className="btn btn-primary btn-sm rounded-full px-6 gap-2">
-                      <UserPlus size={16} /> Seguir
-                    </button>
-                    <button className="btn btn-sm btn-circle btn-ghost border border-base-300">
-                      <Share2 size={18} />
-                    </button>
-                  </>
-                )}
-              </div>
+              {isMe && isEditing && !isUploading && (
+                <div className="absolute bottom-1 right-1 bg-base-100 p-1.5 rounded-full shadow-md pointer-events-none"><Camera size={16} /></div>
+              )}
+              <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, "avatar")} className="hidden" accept="image/*" />
             </div>
 
-            {/* Texto Bio */}
-            <div className="space-y-3 mb-6">
-              <div>
-                <h1 className="text-2xl md:text-4xl font-bold font-serif tracking-tight">
-                  Usuario_07
-                </h1>
-                <p className="text-sm text-base-content/60 flex items-center gap-1 mt-1 font-medium">
-                  <MapPin size={14} /> Madrid, ES
-                </p>
-              </div>
+            <div className="flex gap-2 mb-2">
+              {isMe ? (
+                <>
+                  {!isEditing ? (
+                    <button onClick={() => setIsEditing(true)} className="btn btn-sm md:btn-md btn-ghost border border-white/40 rounded-full">
+                      {t("profile.edit_btn")}
+                    </button>
+                  ) : (
+                    <button onClick={() => setIsEditing(false)} className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40">
+                      <X size={18} />
+                    </button>
+                  )}
+                  <button onClick={() => setIsSettingsOpen(true)} className="btn btn-sm md:btn-md btn-circle btn-ghost border border-white/40"><Settings size={18} /></button>
+                </>
+              ) : (
+                <button onClick={handleFollowToggle} className={`btn btn-sm md:btn-md rounded-full px-6 gap-2 ${isFollowing ? "btn-neutral" : "btn-primary"}`}>
+                  {isFollowing ? <><Check size={16} /> {t("profile.following_btn")}</> : <><UserPlus size={16} /> {t("profile.follow_btn")}</>}
+                </button>
+              )}
+            </div>
+          </div>
 
-              {/* === ZONA DE EDICIÓN DE BIO === */}
+          {/* INFORMACIÓN DEL PERFIL */}
+          <div className="space-y-3 mb-6">
+            <h1 className="text-2xl md:text-4xl font-bold font-serif">
+              {profileData?.username || t("profile.default_username")}
+            </h1>
+
+            <div className="mt-2 text-sm md:text-base">
               {isEditing ? (
                 <form
-                  onSubmit={handleSave}
-                  className="flex flex-col md:flex-row gap-3 items-start max-w-xl animate-in fade-in duration-300"
+                  onSubmit={handleSaveBio}
+                  className="flex flex-col gap-2 max-w-xl"
                 >
-                  <div className="w-full relative group">
-                    <textarea
-                      className="w-full bg-base-200/60 text-base-content text-base p-4 rounded-xl outline-none focus:bg-base-100 focus:ring-2 focus:ring-primary transition-all resize-none shadow-inner h-32"
-                      value={newDescription}
-                      onChange={(e) => setNewDescription(e.target.value)}
-                      placeholder="Cuéntanos sobre ti..."
-                      autoFocus
-                    />
-                    <div className="inline-flex gap-1 mt-2 items-center justify-between w-full">
-                      <div className="text-xs text-right mt-1 opacity-40 px-1 font-medium">
-                        {newDescription.length}/200
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          className="btn btn-primary btn-sm btn-square rounded-lg shadow-lg hover:scale-105 transition-transform"
-                          disabled={!newDescription.trim()}
-                        >
-                          <Check size={14} strokeWidth={3} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsEditing(false)}
-                          className="btn btn-ghost btn-sm btn-square rounded-lg hover:bg-base-200"
-                        >
-                          <X size={18} />
-                        </button>
-                      </div>
-                    </div>
+                  <textarea
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    className="textarea textarea-bordered w-full resize-none bg-base-100 text-base"
+                    rows={3}
+                    placeholder={t("profile.bio_placeholder")}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="btn btn-sm btn-ghost"
+                    >
+                      {t("profile.delete_modal.cancel")}
+                    </button>
+                    <button type="submit" className="btn btn-sm btn-primary">
+                      {t("profile.stats.common_save")}
+                    </button>
                   </div>
                 </form>
               ) : (
-                <p className="max-w-md text-base leading-relaxed opacity-80 whitespace-pre-wrap">
-                  {description}
+                <p className="opacity-80">
+                  {profileData?.bio || t("profile.bio_empty")}
                 </p>
               )}
+            </div>
 
-              {/* Stats Row */}
-              <div className="flex gap-6 py-4 mt-4">
-                {stats.map((stat, idx) => (
-                  <div
-                    key={idx}
-                    className="flex flex-col md:flex-row md:gap-2 items-center md:items-baseline group cursor-pointer hover:opacity-80 transition-opacity"
-                  >
-                    <span className="font-bold text-lg">{stat.value}</span>
-                    <span className="text-xs md:text-sm opacity-60 uppercase tracking-wide font-medium">
-                      {stat.label}
-                    </span>
-                  </div>
-                ))}
+            {/* CONTADORES */}
+            <div className="flex gap-6 py-4 mt-4">
+              <div className="flex gap-1 items-baseline">
+                <span className="font-bold text-lg">{collections.length}</span>
+                <span className="text-xs uppercase opacity-60 font-bold">
+                  {t("profile.stats.collections")}
+                </span>
+              </div>
+
+              <div
+                className="flex gap-1 items-baseline cursor-pointer hover:opacity-70 transition-opacity"
+                onClick={() =>
+                  setFollowModal({
+                    open: true,
+                    type: "followers",
+                    title: t("profile.stats.followers"),
+                  })
+                }
+              >
+                <span className="font-bold text-lg">
+                  {followStats.followers}
+                </span>
+                <span className="text-xs uppercase opacity-60 font-bold">
+                  {t("profile.stats.followers")}
+                </span>
+              </div>
+
+              <div
+                className="flex gap-1 items-baseline cursor-pointer hover:opacity-70 transition-opacity"
+                onClick={() =>
+                  setFollowModal({
+                    open: true,
+                    type: "following",
+                    title: t("profile.stats.following"),
+                  })
+                }
+              >
+                <span className="font-bold text-lg">
+                  {followStats.following}
+                </span>
+                <span className="text-xs uppercase opacity-60 font-bold">
+                  {t("profile.stats.following")}
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* TABS */}
-        <div className="border-t border-base-200 mt-4 sticky top-16 bg-base-100/95 backdrop-blur-sm z-30">
-          <div className="flex justify-center gap-4 md:gap-12">
-            <button
-              onClick={() => setActiveTab("collections")}
-              className={`flex items-center gap-2 py-4 border-b-2 px-4 text-sm font-bold tracking-wide transition-all ${
-                activeTab === "collections"
-                  ? "border-primary text-base-content"
-                  : "border-transparent text-base-content/40 hover:text-base-content/70"
-              }`}
-            >
-              <Grid size={18} /> MIS COLECCIONES
-            </button>
-            <button
-              onClick={() => setActiveTab("saved")}
-              className={`flex items-center gap-2 py-4 border-b-2 px-4 text-sm font-bold tracking-wide transition-all ${
-                activeTab === "saved"
-                  ? "border-primary text-base-content"
-                  : "border-transparent text-base-content/40 hover:text-base-content/70"
-              }`}
-            >
-              <Bookmark size={18} /> GUARDADO
-            </button>
+        {/* TABS NAVEGACIÓN */}
+        <div className="border-t border-secondary mt-4 sticky top-16 bg-base-100/95 z-30 backdrop-blur-md shadow-sm">
+          <div className="max-w-6xl mx-auto px-2 relative flex flex-col md:flex-row items-center md:justify-center">
+            
+            {/* COLECCIONES/GUARDADAS */}
+            <div className="flex gap-8 md:gap-12 justify-center">
+              <button
+                onClick={() => setActiveTab("collections")}
+                className={`py-4 border-b-2 px-2 text-sm font-bold transition-all ${
+                  activeTab === "collections"
+                    ? "border-primary text-primary"
+                    : "border-transparent opacity-50 hover:opacity-80"
+                }`}
+              >
+                {t("profile.tabs.collections")}
+              </button>
+              {isMe && (
+                <button
+                  onClick={() => setActiveTab("saved")}
+                  className={`py-4 border-b-2 px-2 text-sm font-bold transition-all ${
+                    activeTab === "saved"
+                      ? "border-primary text-primary"
+                      : "border-transparent opacity-50 hover:opacity-80"
+                  }`}
+                >
+                  {t("profile.tabs.saved")}
+                </button>
+              )}
+            </div>
+
+            {/* FILTRO */}
+            <div className="py-2 md:py-0 flex items-center gap-2 md:absolute md:right-2">
+              <div className="dropdown dropdown-end">
+                <div tabIndex={0} role="button" className="btn btn-sm btn-ghost gap-2 opacity-80 hover:opacity-100 font-normal">
+                  <Filter size={16} />
+                  <span className="hidden md:inline">{t("profile.filter.label")}</span>
+                  <span className="font-bold">
+                    {filter.sortBy === 'recent' && filter.order === 'DESC' && t("profile.filter.recent_desc")}
+                    {filter.sortBy === 'recent' && filter.order === 'ASC' && t("profile.filter.recent_asc")}
+                    {filter.sortBy === 'updated' && t("profile.filter.updated")}
+                    {filter.sortBy === 'items' && t("profile.filter.items")}
+                  </span>
+                </div>
+                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 mt-4 border border-white/10">
+                  <li>
+                    <button 
+                      onClick={() => setFilter({ sortBy: 'recent', order: 'DESC' })}
+                      className={filter.sortBy === 'recent' && filter.order === 'DESC' ? 'active' : ''}
+                    >
+                      {t("profile.filter.option_recent")}
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setFilter({ sortBy: 'recent', order: 'ASC' })}
+                      className={filter.sortBy === 'recent' && filter.order === 'ASC' ? 'active' : ''}
+                    >
+                      {t("profile.filter.option_old")}
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setFilter({ sortBy: 'updated', order: 'DESC' })}
+                      className={filter.sortBy === 'updated' ? 'active' : ''}
+                    >
+                      {t("profile.filter.option_updated")}
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setFilter({ sortBy: 'items', order: 'DESC' })}
+                      className={filter.sortBy === 'items' ? 'active' : ''}
+                    >
+                      {t("profile.filter.option_items")}
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        {/* GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 md:px-6 min-h-[300px]">
-          {isOwnProfile && activeTab === "collections" && (
-            <div className="aspect-4/5 bg-base-100 border-2 border-dashed border-base-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-base-200/50 hover:border-primary/50 transition-all group">
-              <Link to={"/create-collection"} className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white group-hover:scale-110 transition-all duration-300">
-                <Plus size={24} />
-              </Link>
-              <span className="text-xs font-bold uppercase tracking-wider opacity-50 group-hover:opacity-100">
-                Nueva Colección
-              </span>
-            </div>
+        {/* GRID DE CONTENIDO */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 min-h-[300px] max-w-6xl mx-auto">
+          {isMe && activeTab === "collections" && (
+            <Link
+              to="/create-collection"
+              className="aspect-4/5 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-primary/50 hover:bg-white/5 transition-all opacity-60 hover:opacity-100"
+            >
+              <Plus size={32} />
+              <span className="text-xs font-bold mt-2 uppercase">{t("profile.tabs.common_new")}</span>
+            </Link>
           )}
 
-          {[1, 2, 3, 4, 5].map((item) => (
-            <Link
-              to={`/collection/${item}`}
-              key={item}
-              className="group cursor-pointer block"
-            >
-              <div className="card bg-base-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl overflow-hidden aspect-4/5 relative">
-                <img
-                  src={`https://picsum.photos/400?random=${item + 10}`}
-                  alt="Collection"
-                  className="w-full h-full object-cover transition duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-90 flex flex-col justify-end p-5">
-                  <p className="text-white font-serif font-bold truncate text-lg transform translate-y-1 group-hover:translate-y-0 transition-transform">
-                    Retro Vibes
-                  </p>
-                  <p className="text-white/70 text-xs font-medium uppercase tracking-wider mt-1">
-                    24 items
-                  </p>
-                </div>
+          {(activeTab === "collections" ? collections : savedCollections).map(
+            (col) => (
+              <div
+                key={col.collection_id}
+                className="relative aspect-4/5 rounded-2xl overflow-hidden bg-base-200 shadow-sm"
+              >
+                <Link
+                  to={`/collection/${col.collection_id}`}
+                  className="w-full h-full block"
+                >
+                  <ItemCover
+                    src={col.cover_url}
+                    title={col.collection_name}
+                    className="w-full h-full object-cover"
+                  />
+
+                  <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
+                    <h3 className="text-white font-bold leading-tight">
+                      {col.collection_name}
+                    </h3>
+                    {activeTab === "saved" && col.username && (
+                      <p className="text-primary text-[10px] font-bold uppercase mt-1">
+                        @ {col.username}
+                      </p>
+                    )}
+                    <p className="text-white/70 text-xs mt-1 capitalize">
+                      {col.collection_type}
+                    </p>
+                  </div>
+                </Link>
+
+                {isMe && activeTab === "collections" && (
+                  <button
+                    onClick={(e) =>
+                      handleDeleteCollection(
+                        e,
+                        col.collection_id,
+                        col.collection_name,
+                      )
+                    }
+                    className="absolute top-2 right-2 p-2 text-warning text-base rounded-full shadow-lg z-20 "
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+
+                {isMe && activeTab === "saved" && (
+                  <button
+                    onClick={(e) =>
+                      handleDeleteSavedCollection(
+                        e,
+                        col.collection_id,
+                        col.collection_name,
+                      )
+                    }
+                    className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full shadow-lg z-20 "
+                  >
+                    <X size={16} />
+                  </button>
+                )}
               </div>
-            </Link>
-          ))}
+            ),
+          )}
         </div>
+
+        {/* MODAL DE ELIMINACIÓN */}
+        {deleteConfirm.isOpen && (
+          <div className="modal modal-open">
+            <div className="modal-box bg-base-200 border border-white/10 rounded-3xl max-w-xs text-center p-8">
+              <h3 className="font-bold text-lg mb-2">
+                {deleteConfirm.type === "own"
+                  ? t("profile.delete_modal.title_own")
+                  : t("profile.delete_modal.title_saved")}
+              </h3>
+              <p className="text-sm opacity-60 mb-6 italic">
+                "{deleteConfirm.title}"
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={executeDelete}
+                  className="btn btn-primary rounded-2xl w-full"
+                >
+                  {t("profile.delete_modal.confirm")}
+                </button>
+                <button
+                  onClick={() =>
+                    setDeleteConfirm({ ...deleteConfirm, isOpen: false })
+                  }
+                  className="btn btn-ghost rounded-2xl w-full"
+                >
+                  {t("profile.delete_modal.cancel")}
+                </button>
+              </div>
+            </div>
+            <div
+              className="modal-backdrop bg-black/60"
+              onClick={() =>
+                setDeleteConfirm({ ...deleteConfirm, isOpen: false })
+              }
+            />
+          </div>
+        )}
+
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+        <FollowsModal
+          isOpen={followModal.open}
+          onClose={() => setFollowModal({ ...followModal, open: false })}
+          userId={targetId}
+          type={followModal.type}
+          title={followModal.title}
+        />
       </main>
 
       <NavMobile />
