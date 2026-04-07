@@ -57,4 +57,4 @@ La aplicación está disponible para visualización en el siguiente enlace:
 [https://axel.informaticamajada.es/](https://axel.informaticamajada.es/)
 
 ## 8. Licencia y Propiedad 📜
-**Propiedad Intelectual de Anyi Yagüe y Axel González.** Este proyecto ha sido desarrollado como parte del Proyecto de Prácticas. Queda **estrictamente prohibida** su reproducción, uso, copia o distribución por parte de terceros sin autorización expresa de los autores.
+**Propiedad Intelectual de Anyi Yague y Axel González.** Este proyecto ha sido desarrollado como parte del Proyecto de Prácticas. Queda **estrictamente prohibida** su reproducción, uso, copia o distribución por parte de terceros sin autorización expresa de los autores.
