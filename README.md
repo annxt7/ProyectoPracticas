@@ -45,7 +45,7 @@ JWT_SECRET=jwt_secret
 ```
 
 ## 6. Despliegue (CI/CD) 🔄
-Este proyecto cuenta con un flujo de **CI/CD** automático. Al realizar un *push* a la rama `develop`, GitHub Actions se conecta al VPS vía SSH para automatizar las siguientes tareas:
+Este proyecto cuenta con un flujo de **CI/CD** automático. Al realizar un *push* a la rama correspondiente, GitHub Actions se conecta al VPS vía SSH para automatizar las siguientes tareas:
 
 1. Actualización de código vía Git.
 2. Reinstalación de dependencias (`npm i`).
