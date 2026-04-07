@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Plus, X, Database, PenTool, Camera, Loader2 } from "lucide-react";
-import { useTranslation } from "react-i18next"; // 1. Importar
+import { useTranslation } from "react-i18next"; 
 import ItemCover from "./ItemCover";
 import api from "../services/api";
 
@@ -13,7 +13,7 @@ const INITIAL_FORM_STATE = {
 };
 
 const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
-  const { t } = useTranslation(); // 2. Inicializar
+  const { t } = useTranslation(); 
   const [mode, setMode] = useState("search");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);

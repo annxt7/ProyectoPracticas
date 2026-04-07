@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus, FolderOpen, Check, Loader2 } from 'lucide-react';
 import { useTranslation } from "react-i18next"; 
 import api from '../services/api';

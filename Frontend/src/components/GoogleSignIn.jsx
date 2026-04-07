@@ -1,4 +1,3 @@
-import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 
 // Recibe la prop de manejo de éxito del padre (AuthScreen)
