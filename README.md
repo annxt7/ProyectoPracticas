@@ -1,5 +1,5 @@
-# Tribe 🚀
-Una aplicación Full-Stack para entusiastas que desean organizar, valorar y compartir sus colecciones personales de forma segura.
+# Tribe 
+Una aplicación Full-Stack para aquello/as que desean organizar y compartir sus gustos creando colecciones ya sea un estilo de música, sus películas favoritas, los próximos libros que quieres leer o viendo la de otros para descubir títulos que no conocías.
 
 ## 1. Tecnologías 🛠️
 Organización por capas para garantizar escalabilidad y orden:
@@ -23,7 +23,7 @@ Organización por capas para garantizar escalabilidad y orden:
 ## 4. Guía de Instalación ⚙️
 Pasos necesarios para el despliegue en entorno local:
 
-1. **Clonar el repositorio:** `git clone [URL_DEL_REPO]`
+1. **Clonar el repositorio:** `git clone https://github.com/annxt7/ProyectoPracticas.git`
 2. **Configurar Backend:**
    * Entrar en `/Backend` y ejecutar `npm install`.
    * Crear un archivo `.env` con las credenciales de MySQL y Cloudinary.
@@ -31,7 +31,7 @@ Pasos necesarios para el despliegue en entorno local:
    * Entrar en `/Frontend` y ejecutar `npm install`.
    * Ejecutar el comando `npm run dev`.
 
-## 5. Variables de Entorno (Template) 🔑
+## 5. Variables de Entorno 🔑
 Claves necesarias para la correcta inicialización de los servicios:
 
 ```env
@@ -58,6 +58,3 @@ La aplicación está disponible para visualización en el siguiente enlace:
 
 ## 8. Licencia y Propiedad 📜
 **Propiedad Intelectual de Anyi Yagüe y Axel González.** Este proyecto ha sido desarrollado como parte del Proyecto de Prácticas. Queda **estrictamente prohibida** su reproducción, uso, copia o distribución por parte de terceros sin autorización expresa de los autores.
-```
-
----
