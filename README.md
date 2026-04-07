@@ -1,5 +1,5 @@
 # Tribe 
-Una aplicación Full-Stack para aquello/as que desean organizar y compartir sus gustos creando colecciones ya sea un estilo de música, sus películas favoritas, los próximos libros que quieres leer o viendo la de otros para descubir títulos que no conocías.
+Una aplicación Full-Stack para quines que desean organizar y compartir sus gustos creando colecciones, ya sea un estilo de música, sus películas favoritas, los próximos libros que quieres leer o viendo la de otros para descubir títulos que no conocías.
 
 ## 1. Tecnologías 🛠️
 Organización por capas para garantizar escalabilidad y orden:
