@@ -16,7 +16,7 @@ const OnboardingPage = () => {
   const username = location.state?.username || user?.username || ''; 
   const googleAvatar = location.state?.googleAvatar || user?.avatar || null; 
 
-  // Definición de categorías con traducción dinámica
+  // Definición de categorías 
   const categories = [
     { id: 'Music', label: t("onboarding.categories.Music"), icon: <Music size={32} /> },
     { id: 'Books', label: t("onboarding.categories.Books"), icon: <Book size={32} /> },
