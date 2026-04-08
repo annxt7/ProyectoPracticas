@@ -107,7 +107,7 @@ const AddItemModal = ({ isOpen, onClose, collectionType, onAddItem }) => {
           </button>
         </div>
 
-        {/* TABS TRADUCIDAS */}
+        {/* TABS */}
         <div className="flex border-b border-base-200">
           <button
             onClick={() => setMode("search")}
