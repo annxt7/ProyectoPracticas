@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck } from "lucide-react";
-import { useTranslation } from "react-i18next"; // 1. Importar
+import { useTranslation } from "react-i18next"; 
 import api from "../../services/api";
 
 const ForgotPasswordForm = () => {
-  const { t } = useTranslation(); // 2. Inicializar hook
+  const { t } = useTranslation(); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);

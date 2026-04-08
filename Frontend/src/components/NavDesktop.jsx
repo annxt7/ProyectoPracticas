@@ -1,4 +1,3 @@
-import React from "react";
 import Logo from "../assets/TribeClaro.webp";
 import LogoOscuro from "../assets/TribeOscuro.webp"; 
 import NavLinkDesktop from "./NavLinkDesktop"; 
@@ -6,10 +5,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Search, Heart, User, LogOut } from "lucide-react"; 
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext"; 
-import { useTranslation } from "react-i18next"; // 1. Importar hook
+import { useTranslation } from "react-i18next"; 
 
 const NavDesktop = () => {
-  const { t } = useTranslation(); // 2. Inicializar t
+  const { t } = useTranslation(); 
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();

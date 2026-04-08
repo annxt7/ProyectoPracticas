@@ -2,52 +2,52 @@ const db = require("../config/dbconect");
 
 // Crear una colección nueva
 exports.createCollection = async (req, res) => {
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({ error: "Usuario no identificado" });
-  }
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ error: "Usuario no identificado" });
+    }
 
-  const user_id = req.user.id;
-  const { 
-    name, collection_name, 
-    type, collection_type, 
-    description, collection_description, 
-    is_private, 
-    cover_url 
-  } = req.body;
+    const user_id = req.user.id;
+    const {
+        name, collection_name,
+        type, collection_type,
+        description, collection_description,
+        is_private,
+        cover_url
+    } = req.body;
 
-  const finalName = collection_name || name || "Mi Nueva Colección";
-  const finalType = collection_type || type || 'Otros';
-  const finalDesc = collection_description || description || "";
-  const finalPrivate = is_private ? 1 : 0;
-  const finalCover = cover_url || '';
+    const finalName = collection_name || name || "Mi Nueva Colección";
+    const finalType = collection_type || type || 'Otros';
+    const finalDesc = collection_description || description || "";
+    const finalPrivate = is_private ? 1 : 0;
+    const finalCover = cover_url || '';
 
-  try {
-    const sql = `
+    try {
+        const sql = `
       INSERT INTO Collections 
       (user_id, collection_name, collection_type, collection_description, is_private, cover_url)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
 
-    const [result] = await db.query(sql, [
-      user_id, 
-      finalName, 
-      finalType, 
-      finalDesc, 
-      finalPrivate, 
-      finalCover 
-    ]);
+        const [result] = await db.query(sql, [
+            user_id,
+            finalName,
+            finalType,
+            finalDesc,
+            finalPrivate,
+            finalCover
+        ]);
 
-    res.status(201).json({ 
-        success: true,
-        message: "Colección creada", 
-        collection_id: result.insertId,
-        cover_url: finalCover // Devolvemos la imagen generada por si el front la necesita
-    });
+        res.status(201).json({
+            success: true,
+            message: "Colección creada",
+            collection_id: result.insertId,
+            cover_url: finalCover // Devolvemos la imagen generada por si el front la necesita
+        });
 
-  } catch (error) {
-    console.error("ERROR SQL:", error);
-    res.status(500).json({ error: "Error de base de datos" });
-  }
+    } catch (error) {
+        console.error("ERROR SQL:", error);
+        res.status(500).json({ error: "Error de base de datos" });
+    }
 };
 
 // Obtener todas las colecciones de un usuario 
@@ -56,10 +56,10 @@ exports.getUserCollections = async (req, res) => {
     const { sortBy, order } = req.query;
 
     const allowedSortFields = {
-        recent: 'c.created_at',    
-        oldest: 'c.created_at',     
-        updated: 'c.updated_at',   
-        items: 'c.item_count'    
+        recent: 'c.created_at',
+        oldest: 'c.created_at',
+        updated: 'c.updated_at',
+        items: 'c.item_count'
     };
 
     const sortColumn = allowedSortFields[sortBy] || 'c.created_at';
@@ -73,7 +73,7 @@ exports.getUserCollections = async (req, res) => {
             WHERE c.user_id = ?
             ORDER BY ${sortColumn} ${sortOrder}
         `;
-        
+
         const [rows] = await db.query(sql, [userId]);
         res.json(rows);
     } catch (error) {
@@ -85,7 +85,7 @@ exports.getUserCollections = async (req, res) => {
 
 // Ver el detalle de una colección 
 exports.getCollectionDetails = async (req, res) => {
-    const { id } = req.params; 
+    const { id } = req.params;
     const viewerId = req.user ? req.user.id : null;
 
     try {
@@ -104,18 +104,18 @@ exports.getCollectionDetails = async (req, res) => {
             LEFT JOIN Users u ON c.user_id = u.user_id
             WHERE c.collection_id = ?
         `;
-        
+
         const [collectionRows] = await db.query(sqlCollection, [viewerId, viewerId, id]);
-        
+
         if (collectionRows.length === 0) {
             return res.status(404).json({ error: "Colección no encontrada" });
         }
 
         const collection = collectionRows[0];
         collection.is_saved = collection.is_saved > 0;
-        collection.has_liked = collection.has_liked > 0; 
+        collection.has_liked = collection.has_liked > 0;
 
-      const itemsSql = `
+        const itemsSql = `
     SELECT 
         i.item_id, 
         i.item_type, 
@@ -133,9 +133,9 @@ exports.getCollectionDetails = async (req, res) => {
     LEFT JOIN Catalog_Games g ON i.game_id = g.game_id
     WHERE i.collection_id = ?
 `;
-        
+
         const [items] = await db.query(itemsSql, [id]);
-        
+
         res.json({ ...collection, items });
 
     } catch (error) {
@@ -146,54 +146,54 @@ exports.getCollectionDetails = async (req, res) => {
 
 // Añadir un item a la colección
 exports.addItemToCollection = async (req, res) => {
-  const { collection_id } = req.params;
-  const { 
-    item_type, 
-    reference_id, 
-    custom_title, 
-    custom_subtitle, 
-    custom_description,
-    custom_image
-  } = req.body;
+    const { collection_id } = req.params;
+    const {
+        item_type,
+        reference_id,
+        custom_title,
+        custom_subtitle,
+        custom_description,
+        custom_image
+    } = req.body;
 
-  const columnMap = {
-    'music': 'music_id', 'books': 'book_id', 'movies': 'movie_id',
-    'shows': 'show_id', 'games': 'game_id', 'custom': 'custom_id' 
-  };
+    const columnMap = {
+        'music': 'music_id', 'books': 'book_id', 'movies': 'movie_id',
+        'shows': 'show_id', 'games': 'game_id', 'custom': 'custom_id'
+    };
 
-  try {
-    const typeLower = item_type ? item_type.toLowerCase() : 'custom';
-    const colName = columnMap[typeLower];
-    let finalItemId;
+    try {
+        const typeLower = item_type ? item_type.toLowerCase() : 'custom';
+        const colName = columnMap[typeLower];
+        let finalItemId;
 
-    if (reference_id && colName) {
-        const sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
-        const [result] = await db.query(sql, [collection_id, typeLower, reference_id]);
-        finalItemId = result.insertId;
-    } else {
-        const sqlCatalog = `
+        if (reference_id && colName) {
+            const sql = `INSERT INTO Items (collection_id, item_type, ${colName}) VALUES (?, ?, ?)`;
+            const [result] = await db.query(sql, [collection_id, typeLower, reference_id]);
+            finalItemId = result.insertId;
+        } else {
+            const sqlCatalog = `
             INSERT INTO Catalog_Custom (title, subtitle, description, image_url, category) 
             VALUES (?, ?, ?, ?, ?)
         `;
-        const [catalogResult] = await db.query(sqlCatalog, [
-            custom_title, custom_subtitle, custom_description || "", custom_image, typeLower.toUpperCase()
-        ]);
+            const [catalogResult] = await db.query(sqlCatalog, [
+                custom_title, custom_subtitle, custom_description || "", custom_image, typeLower.toUpperCase()
+            ]);
 
-        const newCustomId = catalogResult.insertId;
-        const sqlItem = `INSERT INTO Items (collection_id, item_type, custom_id) VALUES (?, ?, ?)`;
-        const [result] = await db.query(sqlItem, [collection_id, 'custom', newCustomId]);
-        finalItemId = result.insertId;
+            const newCustomId = catalogResult.insertId;
+            const sqlItem = `INSERT INTO Items (collection_id, item_type, custom_id) VALUES (?, ?, ?)`;
+            const [result] = await db.query(sqlItem, [collection_id, 'custom', newCustomId]);
+            finalItemId = result.insertId;
+        }
+        await db.query("UPDATE Collections SET updated_at = NOW() WHERE collection_id = ?", [collection_id]);
+        res.status(201).json({
+            success: true,
+            itemId: finalItemId
+        });
+
+    } catch (error) {
+        console.error("Error añadiendo item:", error);
+        res.status(500).json({ error: "Error de base de datos" });
     }
-    await db.query("UPDATE Collections SET updated_at = NOW() WHERE collection_id = ?", [collection_id]);
-    res.status(201).json({ 
-        success: true, 
-        itemId: finalItemId
-    });
-
-  } catch (error) {
-    console.error("Error añadiendo item:", error);
-    res.status(500).json({ error: "Error de base de datos" });
-  }
 };
 
 //  Borrar un item
@@ -236,11 +236,11 @@ exports.deleteCollection = async (req, res) => {
 // Actualizar una colección existente
 exports.updateCollection = async (req, res) => {
     const { id } = req.params;
-    const userId = req.user.id; 
+    const userId = req.user.id;
     const { collection_name, collection_description, cover_url } = req.body;
 
     try {
-    
+
         const sql = `
             UPDATE Collections 
             SET 
@@ -251,10 +251,10 @@ exports.updateCollection = async (req, res) => {
         `;
 
         const [result] = await db.query(sql, [
-            collection_name, 
-            collection_description, 
-            cover_url || null, 
-            id, 
+            collection_name,
+            collection_description,
+            cover_url || null,
+            id,
             userId
         ]);
         if (result.affectedRows === 0) {
@@ -288,14 +288,14 @@ exports.saveCollection = async (req, res) => {
         );
         res.json({ success: true, message: "Colección guardada" });
     } catch (error) {
-        console.error("DETALLE ERROR GUARDAR:", error); 
+        console.error("DETALLE ERROR GUARDAR:", error);
         res.status(500).json({ error: "Error de servidor al guardar", detail: error.message });
     }
 };
 
 //Obtener colecciones guardadas
 exports.getSavedCollections = async (req, res) => {
-    const userId = req.params.userId || req.user.id; 
+    const userId = req.params.userId || req.user.id;
     const { sortBy, order } = req.query;
 
     const allowedSortFields = {
@@ -317,7 +317,7 @@ exports.getSavedCollections = async (req, res) => {
             ORDER BY ${sortColumn} ${sortOrder}
         `;
         const [result] = await db.query(sql, [userId]);
-        res.json(result); 
+        res.json(result);
     } catch (error) {
         console.error("Error obteniendo colecciones guardadas:", error);
         res.status(500).json({ error: "Error de servidor" });
@@ -328,57 +328,57 @@ exports.getSavedCollections = async (req, res) => {
 exports.deleteSavedCollection = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
-    try{
+    try {
         const sql = "DELETE FROM Saved_Collections WHERE user_id = ? AND collection_id = ?";
         const [result] = await db.query(sql, [userId, id]);
         res.json({ success: true, message: "Colección eliminada de guardadas" });
-    }catch(error){
+    } catch (error) {
         console.error('No se ha podido eliminar la colección guardada:', error);
         res.status(500).json({ error: "Error de servidor" });
     };
 };
 exports.toggleLikeCollection = async (req, res) => {
-  const userId = req.user.id;
-  const collectionId = req.params.id;
+    const userId = req.user.id;
+    const collectionId = req.params.id;
 
-  try {
-    const [exists] = await db.query(
-      "SELECT * FROM Collection_Likes WHERE user_id = ? AND collection_id = ?",
-      [userId, collectionId]
-    );
-
-    if (exists.length > 0) {
-      await db.query(
-        "DELETE FROM Collection_Likes WHERE user_id = ? AND collection_id = ?",
-        [userId, collectionId]
-      );
-      await db.query(
-        "UPDATE Collections SET likes = GREATEST(0, likes - 1) WHERE collection_id = ?",
-        [collectionId]
-      );
-      
-      return res.json({ success: true, liked: false });
-    } else {
-      await db.query(
-        "INSERT INTO Collection_Likes (user_id, collection_id) VALUES (?, ?)",
-        [userId, collectionId]
-      );
-      await db.query(
-        "UPDATE Collections SET likes = likes + 1 WHERE collection_id = ?",
-        [collectionId]
-      );
-      const [owner] = await db.query("SELECT user_id FROM Collections WHERE collection_id = ?", [collectionId]);
-      if (owner[0].user_id !== userId) {
-        await db.query(
-          "INSERT INTO Notifications (user_id, actor_id, type, content) VALUES (?, ?, 'like_collection', 'le ha dado like a tu colección')",
-          [owner[0].user_id, userId]
+    try {
+        const [exists] = await db.query(
+            "SELECT * FROM Collection_Likes WHERE user_id = ? AND collection_id = ?",
+            [userId, collectionId]
         );
-      }
 
-      return res.json({ success: true, liked: true });
+        if (exists.length > 0) {
+            await db.query(
+                "DELETE FROM Collection_Likes WHERE user_id = ? AND collection_id = ?",
+                [userId, collectionId]
+            );
+            await db.query(
+                "UPDATE Collections SET likes = GREATEST(0, likes - 1) WHERE collection_id = ?",
+                [collectionId]
+            );
+
+            return res.json({ success: true, liked: false });
+        } else {
+            await db.query(
+                "INSERT INTO Collection_Likes (user_id, collection_id) VALUES (?, ?)",
+                [userId, collectionId]
+            );
+            await db.query(
+                "UPDATE Collections SET likes = likes + 1 WHERE collection_id = ?",
+                [collectionId]
+            );
+            const [owner] = await db.query("SELECT user_id FROM Collections WHERE collection_id = ?", [collectionId]);
+            if (owner[0].user_id !== userId) {
+                await db.query(
+                    "INSERT INTO Notifications (user_id, actor_id, type, content) VALUES (?, ?, 'like_collection', 'le ha dado like a tu colección')",
+                    [owner[0].user_id, userId]
+                );
+            }
+
+            return res.json({ success: true, liked: true });
+        }
+    } catch (error) {
+        console.error("Error en toggleLikeCollection:", error);
+        res.status(500).json({ error: "Error al procesar el like" });
     }
-  } catch (error) {
-    console.error("Error en toggleLikeCollection:", error);
-    res.status(500).json({ error: "Error al procesar el like" });
-  }
 };

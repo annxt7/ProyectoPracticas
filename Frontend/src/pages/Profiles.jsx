@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import SettingsModal from "../components/Config";

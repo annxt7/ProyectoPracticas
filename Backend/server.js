@@ -1,10 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const applySecurity = require("./middlewares"); 
-const requestLogger = require("./middlewares/logMiddleware"); 
+const applySecurity = require("./middlewares");
+const requestLogger = require("./middlewares/logMiddleware");
 const swaggerUI = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json'); 
+const swaggerDocument = require('./swagger.json');
 const app = express();
 const port = process.env.PORT || 3000;
 const userRoutes = require('./routes/userRoutes');
@@ -19,18 +19,18 @@ const adminRoutes = require('./routes/adminRoutes');
 applySecurity(app);
 
 app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  next();
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+    next();
 });
-app.use(express.json({ limit: '10kb' })); 
+app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 // RUTAS 
 app.use('/api/users', userRoutes);
-app.use('/api/collections', collectionRoutes); 
+app.use('/api/collections', collectionRoutes);
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/files', uploadRoutes);
 app.use('/api/search', searchRoutes);

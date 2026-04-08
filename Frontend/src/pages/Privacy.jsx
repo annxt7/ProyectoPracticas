@@ -1,12 +1,17 @@
-import React from "react";
 import { Shield } from "lucide-react";
 import { useTranslation, Trans } from "react-i18next";
+import {Link} from "react-router-dom";    
 
 const PrivacyPolicy = () => {
   const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content py-12 px-6 sm:px-12 lg:px-24">
+      <div>
+            <Link to="/" className="text-primary hover:underline">
+              {t("privacy.back_to_home")}
+            </Link>
+          </div>
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <div className="p-3 bg-primary/10 rounded-full text-primary">

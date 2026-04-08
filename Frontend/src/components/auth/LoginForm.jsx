@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
-import { useTranslation } from "react-i18next"; // 1. Importar
+import { useTranslation } from "react-i18next";
 import GoogleSignIn from "../GoogleSignIn";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { normalizeUser } from "../../services/normalizers";
 
 const LoginForm = () => {
-  const { t } = useTranslation(); // 2. Hook
+  const { t } = useTranslation(); 
   const navigate = useNavigate();
   const { login } = useAuth();
   

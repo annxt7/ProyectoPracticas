@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Music, Book, Film, Gamepad2, Tv, Camera, Check, ArrowRight, Plus } from 'lucide-react';
-import { useTranslation } from "react-i18next"; // 1. Importar
+import { useTranslation } from "react-i18next"; 
 import api from "../services/api"; 
 import { uploadFileToCloudinary } from '../services/upload'; 
 import { useAuth } from '../context/AuthContext'; 
 
 const OnboardingPage = () => {
-  const { t } = useTranslation(); // 2. Inicializar
+  const { t } = useTranslation();
   const { login, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const OnboardingPage = () => {
   const username = location.state?.username || user?.username || ''; 
   const googleAvatar = location.state?.googleAvatar || user?.avatar || null; 
 
-  // Definición de categorías con traducción dinámica
+  // Definición de categorías 
   const categories = [
     { id: 'Music', label: t("onboarding.categories.Music"), icon: <Music size={32} /> },
     { id: 'Books', label: t("onboarding.categories.Books"), icon: <Book size={32} /> },

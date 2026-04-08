@@ -1,6 +1,5 @@
-import React from "react";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // 1. Importar
+import { useTranslation } from "react-i18next"; 
 import fotoLogin from "../assets/foto-login.webp";
 import Logo from "../assets/LogoClaro.webp";
 import LoginForm from "../components/auth/LoginForm";
@@ -8,7 +7,7 @@ import RegisterForm from "../components/auth/RegisterForm";
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
 
 const AuthScreen = ({ type = "login" }) => {
-  const { t } = useTranslation(); // 2. Inicializar hook
+  const { t } = useTranslation(); 
   const isLogin = type === "login";
   const isForgot = type === "forgot";
   const isRegister = type === "register";

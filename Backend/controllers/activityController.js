@@ -24,7 +24,7 @@ exports.getNotifications = async (req, res) => {
   const formattedNotifications = rows.map(n => {
   // 1. Limpiamos el texto: minúsculas y sin tildes básicas
   const rawContent = (n.content || "").toLowerCase();
-  console.log("Procesando notificación ID:", n.id, "Texto:", rawContent); // <--- MIRA ESTO EN TU TERMINAL
+  console.log("Procesando notificación ID:", n.id, "Texto:", rawContent); 
 
   let contentKey = "unknown";
 
